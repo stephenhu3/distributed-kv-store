@@ -11,8 +11,8 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 
 public class UDPRequest {
-
-    private static final int MAX_MSG_SIZE = 16384;
+    // max message size is 250 bytes, not 16 KB stated in criteria, based on my debuggin
+    private static final int MAX_MSG_SIZE = 250;
     private static final int UNIQUE_ID_SIZE = 16;
     private static final int SECRET_CODE_LEN_SIZE = 4;
     // default timeout of 100ms
@@ -51,7 +51,7 @@ public class UDPRequest {
     }
 
     public static byte[] sendRequest(String ip, int port, int snum) throws Exception {
-        DatagramSocket socket = new DatagramSocket();
+        DatagramSocket socket = new DatagramSocket(port);
         byte[] uniqueID = generateUniqueID();
         byte[] req = generateRequest(snum, uniqueID);
 
@@ -59,16 +59,14 @@ public class UDPRequest {
         System.out.println("Request HEX String: " + hexString);
 
         InetAddress address = InetAddress.getByName(ip);
-
-//        DatagramPacket resPacket = new DatagramPacket(req, req.length);
         System.out.println("Sending ID: " + snum);
 
         for (int i = 0, timeoutMs = TIMEOUT; i <= MAX_RETRIES; i++, timeoutMs*=2) {
             socket.setSoTimeout(timeoutMs);
             // send request
             System.out.println("Sending packet");
-            DatagramPacket reqPacket = new DatagramPacket(req, req.length, address, port);
-            socket.send(reqPacket);
+            DatagramPacket packet = new DatagramPacket(req, req.length, address, port);
+            socket.send(packet);
 
             /*
             First 16 bytes are the unique ID of the corresponding request, rest is the application level
@@ -77,37 +75,36 @@ public class UDPRequest {
             Secret code (byte array), Possible padding (to be ignored)
             */
 
-//            reqPacket = new DatagramPacket(req, req.length);
             try {
-                socket.receive(reqPacket);
+                socket.receive(packet);
             } catch(SocketTimeoutException e) {
                 System.out.format("Exceeded timeout of %d ms, retrying...\n", timeoutMs);
                 continue;
             }
 
             System.out.println("Received packet");
-            System.out.println(bytesToHex(reqPacket.getData()));
+            System.out.println(bytesToHex(packet.getData()));
 
             // check matching uniqueID
-            byte[] res = reqPacket.getData();
+            byte[] res = packet.getData();
             if (!Arrays.equals(Arrays.copyOf(res, UNIQUE_ID_SIZE), uniqueID)) {
                 System.out.println("uniqueID not matching");
                 throw new Exception("Mismatched uniqueID detected between request and response.");
             }
             // TODO: Break this parsing logic into separate function or class
             // get secret code's length
-            ByteBuffer byteBuffer = ByteBuffer.allocate(SECRET_CODE_LEN_SIZE);
-            byteBuffer.limit(SECRET_CODE_LEN_SIZE);
+            ByteBuffer byteBuffer = ByteBuffer.allocate(MAX_MSG_SIZE);
+            byteBuffer.limit(MAX_MSG_SIZE);
             byteBuffer.order(ByteOrder.BIG_ENDIAN);
-            byteBuffer.put(reqPacket.getData());
-            int secretCodeLength = byteBuffer.getInt();
-            System.out.println("Secret code length: " + SECRET_CODE_LEN_SIZE);
+            byteBuffer.put(res);
+            int secretCodeLength = byteBuffer.getInt(UNIQUE_ID_SIZE - 1);
+            System.out.println("Secret code length: " + secretCodeLength);
 
             // get secret code
-            byteBuffer = ByteBuffer.allocate(secretCodeLength);
-            byteBuffer.limit(secretCodeLength);
+            byteBuffer = ByteBuffer.allocate(MAX_MSG_SIZE);
+            byteBuffer.limit(MAX_MSG_SIZE);
             byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-            byteBuffer.put(reqPacket.getData());
+            byteBuffer.put(res);
 
             byte[] secretCode = new byte[secretCodeLength];
             byteBuffer.get(secretCode, SECRET_CODE_LEN_SIZE, MAX_MSG_SIZE - SECRET_CODE_LEN_SIZE);
