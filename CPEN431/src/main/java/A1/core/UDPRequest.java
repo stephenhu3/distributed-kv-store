@@ -29,6 +29,7 @@ public class UDPRequest {
         // the rest is the application level payload.
         byteBuffer.put(uniqueID);
         String requestHexString = bytesToHex(byteBuffer.array());
+        // TODO: Double check this, seems like snum maybe entered in BIG ENDIAN instead of little endian
         System.out.println("Request: " + requestHexString);
         // The client’s payload (student id) is an integer (4 bytes), in little-endian format.
         // 8 digit student number, each hex digit is 4 bits, 4*8 = 32 bits = 4 bytes
@@ -97,17 +98,19 @@ public class UDPRequest {
             byteBuffer.limit(MAX_MSG_SIZE);
             byteBuffer.order(ByteOrder.BIG_ENDIAN);
             byteBuffer.put(res);
-            int secretCodeLength = byteBuffer.getInt(UNIQUE_ID_SIZE - 1);
+            // response in big-endian format
+            res = byteBuffer.array();
+            int secretCodeLength = byteBuffer.getInt(UNIQUE_ID_SIZE);
             System.out.println("Secret code length: " + secretCodeLength);
 
             // get secret code
-            byteBuffer = ByteBuffer.allocate(MAX_MSG_SIZE);
-            byteBuffer.limit(MAX_MSG_SIZE);
+            byteBuffer.clear();
             byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
             byteBuffer.put(res);
 
             byte[] secretCode = new byte[secretCodeLength];
-            byteBuffer.get(secretCode, SECRET_CODE_LEN_SIZE, MAX_MSG_SIZE - SECRET_CODE_LEN_SIZE);
+            byteBuffer.get(secretCode, UNIQUE_ID_SIZE + SECRET_CODE_LEN_SIZE,
+                    MAX_MSG_SIZE - UNIQUE_ID_SIZE - SECRET_CODE_LEN_SIZE);
             String secretCodeHexString = bytesToHex(secretCode);
             System.out.println("Secret: " + secretCodeHexString);
             socket.close();
