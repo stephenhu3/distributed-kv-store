@@ -6,6 +6,8 @@ import net.sourceforge.argparse4j.inf.Subparser;
 import A1.core.UDPRequest;
 import io.dropwizard.setup.Bootstrap;
 
+import static A1.core.Constants.VERBOSE;
+
 public class UDPRequestCommand extends io.dropwizard.cli.Command {
     public UDPRequestCommand() {
         super("request", "Prints IP entered");
@@ -38,9 +40,11 @@ public class UDPRequestCommand extends io.dropwizard.cli.Command {
         String ip = namespace.getString("ip");
         int port = namespace.getInt("port");
         int snum = namespace.getInt("snum");
-        System.out.println("IP Address: " + ip);
-        System.out.println("Port: " + port);
-        System.out.println("Student Number: " + snum);
+        if (VERBOSE) {
+            System.out.println("IP Address: " + ip);
+            System.out.println("Port: " + port);
+            System.out.println("Student Number: " + snum);
+        }
         UDPRequest.sendRequest(ip, port, snum);
     }
 }

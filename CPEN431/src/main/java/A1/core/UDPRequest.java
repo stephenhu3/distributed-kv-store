@@ -10,15 +10,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
+import static A1.core.Constants.*;
+
 public class UDPRequest {
-    // based on my debugging, max message size is 250 bytes, not 16 KB as stated in criteria
-    private static final boolean VERBOSE = false;
-    private static final int MAX_MSG_SIZE = 250;
-    private static final int UNIQUE_ID_SIZE = 16;
-    private static final int SECRET_CODE_LEN_SIZE = 4;
-    private static final int TIMEOUT = 100; // default timeout of 100ms
-    private static final int MAX_RETRIES = 3;
-    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+
 
     public static byte[] generateRequest(int snum, byte[] uniqueID) throws NoSuchAlgorithmException {
         ByteBuffer byteBuffer = ByteBuffer.allocate(MAX_MSG_SIZE);
@@ -80,7 +75,9 @@ public class UDPRequest {
             try {
                 socket.receive(packet);
             } catch(SocketTimeoutException e) {
-                System.out.format("Exceeded timeout of %d ms, retrying...\n", timeoutMs);
+                if (VERBOSE) {
+                    System.out.format("Exceeded timeout of %d ms, retrying...\n", timeoutMs);
+                }
                 continue;
             }
 
