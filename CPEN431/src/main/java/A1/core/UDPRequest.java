@@ -1,5 +1,7 @@
 package A1.core;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -104,13 +106,17 @@ public class UDPRequest {
             System.out.println("Secret code length: " + secretCodeLength);
 
             // get secret code
-            byteBuffer.clear();
-            byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-            byteBuffer.put(res);
-
-            byte[] secretCode = new byte[secretCodeLength];
-            byteBuffer.get(secretCode, UNIQUE_ID_SIZE + SECRET_CODE_LEN_SIZE,
-                    MAX_MSG_SIZE - UNIQUE_ID_SIZE - SECRET_CODE_LEN_SIZE);
+//            byteBuffer.clear();
+//            byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+//            byteBuffer.put(res);
+//
+//            byte[] secretCode = new byte[secretCodeLength];
+//            byteBuffer.get(secretCode, UNIQUE_ID_SIZE + SECRET_CODE_LEN_SIZE, secretCodeLength);
+//            String secretCodeHexString = bytesToHex(secretCode);
+            byte[] secretCode = Arrays.copyOfRange(res, UNIQUE_ID_SIZE + SECRET_CODE_LEN_SIZE,
+                    UNIQUE_ID_SIZE + SECRET_CODE_LEN_SIZE + secretCodeLength);
+            // reverse for little-endian
+            ArrayUtils.reverse(secretCode);
             String secretCodeHexString = bytesToHex(secretCode);
             System.out.println("Secret: " + secretCodeHexString);
             socket.close();
