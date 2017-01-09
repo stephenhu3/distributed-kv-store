@@ -1,7 +1,5 @@
 package A1.core;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -13,17 +11,16 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 
 public class UDPRequest {
-    // max message size is 250 bytes, not 16 KB stated in criteria, based on my debuggin
+    // based on my debugging, max message size is 250 bytes, not 16 KB as stated in criteria
+    private static final boolean VERBOSE = false;
     private static final int MAX_MSG_SIZE = 250;
     private static final int UNIQUE_ID_SIZE = 16;
     private static final int SECRET_CODE_LEN_SIZE = 4;
-    // default timeout of 100ms
-    private static final int TIMEOUT = 100;
+    private static final int TIMEOUT = 100; // default timeout of 100ms
     private static final int MAX_RETRIES = 3;
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
     public static byte[] generateRequest(int snum, byte[] uniqueID) throws NoSuchAlgorithmException {
-        // Maximum payload size 16KB
         ByteBuffer byteBuffer = ByteBuffer.allocate(MAX_MSG_SIZE);
         byteBuffer.limit(MAX_MSG_SIZE);
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -32,14 +29,13 @@ public class UDPRequest {
         byteBuffer.put(uniqueID);
         String requestHexString = bytesToHex(byteBuffer.array());
         // TODO: Double check this, seems like snum maybe entered in BIG ENDIAN instead of little endian
-        System.out.println("Request: " + requestHexString);
         // The client’s payload (student id) is an integer (4 bytes), in little-endian format.
         // 8 digit student number, each hex digit is 4 bits, 4*8 = 32 bits = 4 bytes
         byteBuffer.putInt(snum);
-        System.out.println("Position: " + byteBuffer.position());
-        System.out.println("Remaining: " + byteBuffer.remaining());
-        requestHexString = bytesToHex(byteBuffer.array());
-        System.out.println("Request: " + requestHexString);
+        if (VERBOSE) {
+            System.out.println("Position: " + byteBuffer.position());
+            System.out.println("Remaining: " + byteBuffer.remaining());
+        }
         return byteBuffer.array();
     }
 
@@ -58,8 +54,9 @@ public class UDPRequest {
         byte[] uniqueID = generateUniqueID();
         byte[] req = generateRequest(snum, uniqueID);
 
-        String hexString = bytesToHex(req);
-        System.out.println("Request HEX String: " + hexString);
+        if (VERBOSE) {
+            System.out.println("Request HEX String: " + bytesToHex(req));
+        }
 
         InetAddress address = InetAddress.getByName(ip);
         System.out.println("Sending ID: " + snum);
@@ -67,7 +64,9 @@ public class UDPRequest {
         for (int i = 0, timeoutMs = TIMEOUT; i <= MAX_RETRIES; i++, timeoutMs*=2) {
             socket.setSoTimeout(timeoutMs);
             // send request
-            System.out.println("Sending packet");
+            if (VERBOSE) {
+                System.out.println("Sending packet...");
+            }
             DatagramPacket packet = new DatagramPacket(req, req.length, address, port);
             socket.send(packet);
 
@@ -85,13 +84,14 @@ public class UDPRequest {
                 continue;
             }
 
-            System.out.println("Received packet");
-            System.out.println(bytesToHex(packet.getData()));
+            if (VERBOSE) {
+                System.out.println("Received packet");
+                System.out.println(bytesToHex(packet.getData()));
+            }
 
             // check matching uniqueID
             byte[] res = packet.getData();
             if (!Arrays.equals(Arrays.copyOf(res, UNIQUE_ID_SIZE), uniqueID)) {
-                System.out.println("uniqueID not matching");
                 throw new Exception("Mismatched uniqueID detected between request and response.");
             }
             // TODO: Break this parsing logic into separate function or class
@@ -104,19 +104,9 @@ public class UDPRequest {
             res = byteBuffer.array();
             int secretCodeLength = byteBuffer.getInt(UNIQUE_ID_SIZE);
             System.out.println("Secret code length: " + secretCodeLength);
-
-            // get secret code
-//            byteBuffer.clear();
-//            byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-//            byteBuffer.put(res);
-//
-//            byte[] secretCode = new byte[secretCodeLength];
-//            byteBuffer.get(secretCode, UNIQUE_ID_SIZE + SECRET_CODE_LEN_SIZE, secretCodeLength);
-//            String secretCodeHexString = bytesToHex(secretCode);
+            // get secret code (little-endian)
             byte[] secretCode = Arrays.copyOfRange(res, UNIQUE_ID_SIZE + SECRET_CODE_LEN_SIZE,
                     UNIQUE_ID_SIZE + SECRET_CODE_LEN_SIZE + secretCodeLength);
-            // reverse for little-endian
-            ArrayUtils.reverse(secretCode);
             String secretCodeHexString = bytesToHex(secretCode);
             System.out.println("Secret: " + secretCodeHexString);
             socket.close();
