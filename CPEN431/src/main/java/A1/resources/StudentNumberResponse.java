@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-import static A1.DistributedSystemConfiguration.MAX_MSG_UDP_SIZE;
+import static A1.DistributedSystemConfiguration.REQ_UDP_SIZE;
 import static A1.DistributedSystemConfiguration.UNIQUE_ID_UDP_SIZE;
 import static A1.utils.ByteRepresentation.bytesToHex;
 
@@ -18,14 +18,9 @@ public class StudentNumberResponse {
     Secret code (byte array), Possible padding (to be ignored)
     */
     public static void parseResponse(byte[] res, byte[] uniqueID) throws Exception {
-        // check matching uniqueID
-        if (!Arrays.equals(Arrays.copyOf(res, UNIQUE_ID_UDP_SIZE), uniqueID)) {
-            throw new Exception("Mismatched uniqueID detected between request and response.");
-        }
-
         // get secret code's length
-        ByteBuffer byteBuffer = ByteBuffer.allocate(MAX_MSG_UDP_SIZE);
-        byteBuffer.limit(MAX_MSG_UDP_SIZE);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(REQ_UDP_SIZE);
+        byteBuffer.limit(REQ_UDP_SIZE);
         // response in big-endian format
         byteBuffer.order(ByteOrder.BIG_ENDIAN);
         byteBuffer.put(res);

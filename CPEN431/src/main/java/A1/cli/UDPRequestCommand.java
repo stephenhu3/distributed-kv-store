@@ -60,7 +60,7 @@ public class UDPRequestCommand extends io.dropwizard.cli.Command {
 
         System.out.println("Sending ID: " + snum);
 
-        byte[] res = UDPClient.sendRequest(req, ip, port);
+        byte[] res = UDPClient.sendRequest(req, ip, port, uniqueID);
         StudentNumberResponse.parseResponse(res, uniqueID);
     }
 }
