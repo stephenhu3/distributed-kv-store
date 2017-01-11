@@ -1,13 +1,25 @@
-# DistributedSystem
+Name:
+Stephen Hu
 
-How to start the DistributedSystem application
----
+Student Number:
+31580129
 
-1. Run `mvn clean install` to build your application
-1. Start application with `java -jar target/CPEN431-1.0.jar server config.yml`
-1. To check that your application is running enter url `http://localhost:8080`
+Secret Code:
+096A883072EAC51641E8CDB33F174E18
 
-Health Check
----
+# Running the code with sample student number:
+`java -jar A1.jar request -ip 137.82.252.191 -port 5627 -snum 1381632`
 
-To see your applications health enter url `http://localhost:8081/healthcheck`
+# Usage
+Argument:
+'request': Send student number UDP request
+
+Required Flags:
+'-ip': Destination IP address of request
+'-port': Destination port of request
+'-snum': Student number to send
+
+# Building package:
+1. `mvn package`
+2. `java -jar target/CPEN431-1.0.jar request -ip 137.82.252.191 -port 5627 -snum 1381632`
+

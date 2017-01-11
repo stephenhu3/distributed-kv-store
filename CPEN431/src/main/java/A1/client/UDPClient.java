@@ -39,18 +39,18 @@ public class UDPClient {
 
             byte[] res = packet.getData();
 
-            // check matching uniqueID
+            if (VERBOSE) {
+                System.out.println("Received packet");
+                System.out.println(bytesToHex(res));
+            }
+
+  	    // check matching uniqueID
             if (!Arrays.equals(Arrays.copyOf(res, UNIQUE_ID_UDP_SIZE), uniqueID)) {
                 if (VERBOSE) {
                     System.out.format("Mismatched uniqueID detected between request and response," +
                             "retrying...\n");
                 }
                 continue;
-            }
-
-            if (VERBOSE) {
-                System.out.println("Received packet");
-                System.out.println(bytesToHex(res));
             }
 
             socket.close();
@@ -60,3 +60,4 @@ public class UDPClient {
         throw new Exception("Failed to receive message after max retries attempted.");
     }
 }
+
