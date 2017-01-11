@@ -5,7 +5,7 @@ import java.nio.ByteOrder;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-import static A1.DistributedSystemConfiguration.REQ_UDP_SIZE;
+import static A1.DistributedSystemConfiguration.MSG_MAX_UDP_SIZE;
 import static A1.DistributedSystemConfiguration.UNIQUE_ID_UDP_SIZE;
 import static A1.DistributedSystemConfiguration.VERBOSE;
 
@@ -15,8 +15,8 @@ public class StudentNumberRequest {
     the rest is the application level payload.
     */
     public static byte[] generateRequest(int snum, byte[] uniqueID) throws NoSuchAlgorithmException {
-        ByteBuffer byteBuffer = ByteBuffer.allocate(REQ_UDP_SIZE);
-        byteBuffer.limit(REQ_UDP_SIZE);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(MSG_MAX_UDP_SIZE);
+        byteBuffer.limit(MSG_MAX_UDP_SIZE);
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
         byteBuffer.put(uniqueID);
         /*
@@ -32,8 +32,8 @@ public class StudentNumberRequest {
     }
 
     public static byte[] generateUniqueID() throws NoSuchAlgorithmException {
-        byte[] uniqueId = new byte[UNIQUE_ID_UDP_SIZE];
-        SecureRandom.getInstanceStrong().nextBytes(uniqueId);
-        return uniqueId;
+        byte[] uniqueID = new byte[UNIQUE_ID_UDP_SIZE];
+        SecureRandom.getInstanceStrong().nextBytes(uniqueID);
+        return uniqueID;
     }
 }
