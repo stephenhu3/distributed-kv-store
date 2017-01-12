@@ -29,7 +29,6 @@ public class UDPClient {
                 System.out.println("Sending packet...");
             }
             // send request
-            // TODO: Maybe getting FFFFFFF mismatched uniqueID because retry issue? move this above for loop
             socket.send(reqPacket);
 
             try {
