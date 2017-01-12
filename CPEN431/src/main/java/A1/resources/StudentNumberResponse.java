@@ -9,7 +9,7 @@ import static A1.DistributedSystemConfiguration.UNIQUE_ID_UDP_SIZE;
 import static A1.utils.ByteRepresentation.bytesToHex;
 
 public class StudentNumberResponse {
-    public static final int SECRET_CODE_LEN_SIZE = 4;
+    private static final int SECRET_CODE_LEN_SIZE = 4;
 
     /*
     First 16 bytes are the unique ID of the corresponding request, rest is the application level

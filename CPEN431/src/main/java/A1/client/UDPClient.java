@@ -44,7 +44,7 @@ public class UDPClient {
                 System.out.println(bytesToHex(res));
             }
 
-  	    // check matching uniqueID
+  	        // check matching uniqueID
             if (!Arrays.equals(Arrays.copyOf(res, UNIQUE_ID_UDP_SIZE), uniqueID)) {
                 if (VERBOSE) {
                     System.out.format("Mismatched uniqueID detected between request and response," +
@@ -60,4 +60,3 @@ public class UDPClient {
         throw new Exception("Failed to receive message after max retries attempted.");
     }
 }
-

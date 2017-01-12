@@ -17,7 +17,7 @@ public class StudentNumberRequest {
     public static byte[] generateRequest(int snum, byte[] uniqueID) throws NoSuchAlgorithmException {
         ByteBuffer byteBuffer = ByteBuffer.allocate(MSG_MAX_UDP_SIZE);
         byteBuffer.limit(MSG_MAX_UDP_SIZE);
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        byteBuffer.order(ByteOrder.BIG_ENDIAN); // DEBUGGING: Try big-endian see if sample still works
         byteBuffer.put(uniqueID);
         /*
         The client’s payload (student id) is an integer (4 bytes), in little-endian format.
