@@ -13,11 +13,15 @@ import static A1.utils.ByteRepresentation.bytesToHex;
 public class UDPClient {
     private static final int TIMEOUT = 100; // default timeout of 100ms
     private static final int MAX_RETRIES = 3;
+    private static final int RES_UDP_SIZE = 36; // response size is 36 bytes
 
     public static byte[] sendRequest(byte[] req, String ip, int port, byte[] uniqueID) throws Exception {
         DatagramSocket socket = new DatagramSocket(port);
         InetAddress address = InetAddress.getByName(ip);
-        DatagramPacket packet = new DatagramPacket(req, req.length, address, port);
+
+        byte[] res = new byte[RES_UDP_SIZE];
+        DatagramPacket reqPacket = new DatagramPacket(req, req.length, address, port);
+        DatagramPacket resPacket = new DatagramPacket(res, res.length, address, port);
 
         for (int i = 0, timeoutMs = TIMEOUT; i <= MAX_RETRIES; i++, timeoutMs*=2) {
             socket.setSoTimeout(timeoutMs);
@@ -26,10 +30,10 @@ public class UDPClient {
             }
             // send request
             // TODO: Maybe getting FFFFFFF mismatched uniqueID because retry issue? move this above for loop
-            socket.send(packet);
+            socket.send(reqPacket);
 
             try {
-                socket.receive(packet);
+                socket.receive(resPacket);
             } catch(SocketTimeoutException e) {
                 if (VERBOSE) {
                     System.out.format("Exceeded timeout of %d ms, retrying...\n", timeoutMs);
@@ -37,7 +41,7 @@ public class UDPClient {
                 continue;
             }
 
-            byte[] res = packet.getData();
+            res = resPacket.getData();
 
             if (VERBOSE) {
                 System.out.println("Received packet");

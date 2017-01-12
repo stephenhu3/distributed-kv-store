@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-import static A1.DistributedSystemConfiguration.MSG_MAX_UDP_SIZE;
 import static A1.DistributedSystemConfiguration.UNIQUE_ID_UDP_SIZE;
 import static A1.utils.ByteRepresentation.bytesToHex;
 
@@ -18,14 +17,14 @@ public class StudentNumberResponse {
     Secret code (byte array), Possible padding (to be ignored)
     */
     public static void parseResponse(byte[] res, byte[] uniqueID) throws Exception {
-        // get secret code's length
-        ByteBuffer byteBuffer = ByteBuffer.allocate(MSG_MAX_UDP_SIZE);
-        byteBuffer.limit(MSG_MAX_UDP_SIZE);
-        // response in big-endian format
+        // order response in big-endian format
+        ByteBuffer byteBuffer = ByteBuffer.allocate(res.length);
+        byteBuffer.limit(res.length);
         byteBuffer.order(ByteOrder.BIG_ENDIAN);
         byteBuffer.put(res);
 
         res = byteBuffer.array();
+        // get secret code's length
         int secretCodeLength = byteBuffer.getInt(UNIQUE_ID_UDP_SIZE);
         System.out.println("Secret code length: " + secretCodeLength);
 
