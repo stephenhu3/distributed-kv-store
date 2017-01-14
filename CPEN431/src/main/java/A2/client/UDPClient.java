@@ -118,7 +118,7 @@ public class UDPClient {
             // check matching messageID
             if (!Arrays.equals(responseMsg.getMessageID().toByteArray(), messageID)) {
                 if (VERBOSE) {
-                    System.out.format("Mismatched uniqueID detected between request and response," +
+                    System.out.format("Mismatched messageID detected between request and response," +
                             "retrying...\n");
                 }
                 continue;
