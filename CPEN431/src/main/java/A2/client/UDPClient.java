@@ -87,13 +87,6 @@ public class UDPClient {
             // send request
             socket.send(reqPacket);
 
-            /*
-            TODO: Sending has no exception, only when receiving
-            com.google.protobuf.InvalidProtocolBufferException: While parsing a protocol message,
-            the input ended unexpectedly in the middle of a field.  This could mean either that the
-            input has been truncated or that an embedded message misreported its own length.
-             */
-
             try {
                 socket.receive(resPacket);
             } catch(SocketTimeoutException e) {
@@ -103,16 +96,15 @@ public class UDPClient {
                 continue;
             }
 
-            res = reqPacket.getData();
+            res = resPacket.getData();
             // deserialize from response byte array exactly as large as number of bytes received
-            responseMsg = Msg.parseFrom(Arrays.copyOf(res, reqPacket.getLength()));
+            responseMsg = Msg.parseFrom(Arrays.copyOf(res, resPacket.getLength()));
 
             if (VERBOSE) {
-                System.out.println("Received packet");
-                System.out.println(bytesToHex(res));
-                System.out.println("MessageID:" + bytesToHex(responseMsg.getMessageID().toByteArray()));
-                System.out.println("Payload:" + bytesToHex(responseMsg.getPayload().toByteArray()));
-                System.out.println("Checksum:" + responseMsg.getCheckSum());
+                System.out.println("Received packet: " + bytesToHex(res));
+                System.out.println("Received MessageID:" + bytesToHex(responseMsg.getMessageID().toByteArray()));
+                System.out.println("Received Payload:" + bytesToHex(responseMsg.getPayload().toByteArray()));
+                System.out.println("Received Checksum:" + responseMsg.getCheckSum());
             }
 
             // check matching messageID
