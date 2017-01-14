@@ -101,10 +101,10 @@ public class UDPClient {
             responseMsg = Msg.parseFrom(Arrays.copyOf(res, resPacket.getLength()));
 
             if (VERBOSE) {
-                System.out.println("Received packet: " + bytesToHex(res));
-                System.out.println("Received MessageID:" + bytesToHex(responseMsg.getMessageID().toByteArray()));
-                System.out.println("Received Payload:" + bytesToHex(responseMsg.getPayload().toByteArray()));
-                System.out.println("Received Checksum:" + responseMsg.getCheckSum());
+                System.out.println("Received packet: " + bytesToHex(Arrays.copyOf(res, resPacket.getLength())));
+                System.out.println("Received MessageID: " + bytesToHex(responseMsg.getMessageID().toByteArray()));
+                System.out.println("Received Payload: " + bytesToHex(responseMsg.getPayload().toByteArray()));
+                System.out.println("Received Checksum: " + responseMsg.getCheckSum());
             }
 
             // check matching messageID
