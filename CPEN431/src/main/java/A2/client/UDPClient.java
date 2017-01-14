@@ -72,8 +72,8 @@ public class UDPClient {
         InetAddress address = InetAddress.getByName(ip);
 
         byte[] req = msg.toByteArray();
-        // TODO: find out how large response is in bytes
-        byte[] res = new byte[250];
+        // allocate response with 1kB, truncate when number of byte received is known
+        byte[] res = new byte[1024];
 
         DatagramPacket reqPacket = new DatagramPacket(req, req.length, address, port);
         DatagramPacket resPacket = new DatagramPacket(res, res.length, address, port);
@@ -87,6 +87,13 @@ public class UDPClient {
             // send request
             socket.send(reqPacket);
 
+            /*
+            TODO: Sending has no exception, only when receiving
+            com.google.protobuf.InvalidProtocolBufferException: While parsing a protocol message,
+            the input ended unexpectedly in the middle of a field.  This could mean either that the
+            input has been truncated or that an embedded message misreported its own length.
+             */
+
             try {
                 socket.receive(resPacket);
             } catch(SocketTimeoutException e) {
@@ -96,8 +103,9 @@ public class UDPClient {
                 continue;
             }
 
-            res = resPacket.getData();
-            responseMsg = Msg.parseFrom(res);
+            res = reqPacket.getData();
+            // deserialize from response byte array exactly as large as number of bytes received
+            responseMsg = Msg.parseFrom(Arrays.copyOf(res, reqPacket.getLength()));
 
             if (VERBOSE) {
                 System.out.println("Received packet");

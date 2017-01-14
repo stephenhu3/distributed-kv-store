@@ -66,6 +66,7 @@ public class ProtocolBufferRequestCommand extends io.dropwizard.cli.Command {
 
         if (VERBOSE) {
             System.out.println("Request HEX String: " + bytesToHex(msg.toByteArray()));
+            System.out.println("Request Message ID: " + bytesToHex(messageID));
         }
 
         System.out.println("Sending ID: " + snum);
