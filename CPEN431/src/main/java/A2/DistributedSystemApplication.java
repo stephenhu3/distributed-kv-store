@@ -1,7 +1,7 @@
 package A2;
 
 import A2.cli.ProtocolBufferRequestCommand;
-import A2.cli.UDPRequestCommand;
+import A2.cli.RawBytesRequestCommand;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -20,7 +20,7 @@ public class DistributedSystemApplication extends Application<DistributedSystemC
 
     @Override
     public void initialize(final Bootstrap<DistributedSystemConfiguration> bootstrap) {
-        bootstrap.addCommand(new UDPRequestCommand());
+        bootstrap.addCommand(new RawBytesRequestCommand());
         bootstrap.addCommand(new ProtocolBufferRequestCommand());
     }
 

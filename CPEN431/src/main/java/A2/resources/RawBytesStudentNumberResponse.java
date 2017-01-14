@@ -7,7 +7,7 @@ import java.util.Arrays;
 import static A2.DistributedSystemConfiguration.UNIQUE_ID_UDP_SIZE;
 import static A2.utils.ByteRepresentation.bytesToHex;
 
-public class StudentNumberResponse {
+public class RawBytesStudentNumberResponse {
     private static final int SECRET_CODE_LEN_SIZE = 4;
 
     /*
@@ -16,7 +16,7 @@ public class StudentNumberResponse {
     Payload has format: Secret code length (integer, 4 bytes, big-endian),
     Secret code (byte array), Possible padding (to be ignored)
     */
-    public static void parseResponse(byte[] res, byte[] uniqueID) throws Exception {
+    public static void parseResponse(byte[] res) throws Exception {
         // order response in big-endian format
         ByteBuffer byteBuffer = ByteBuffer.allocate(res.length);
         byteBuffer.limit(res.length);

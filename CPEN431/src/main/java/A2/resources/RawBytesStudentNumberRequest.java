@@ -3,12 +3,10 @@ package A2.resources;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 
-import static A2.DistributedSystemConfiguration.UNIQUE_ID_UDP_SIZE;
 import static A2.DistributedSystemConfiguration.VERBOSE;
 
-public class StudentNumberRequest {
+public class RawBytesStudentNumberRequest {
     // request size is 20 bytes
     public static final int REQ_UDP_SIZE = 20;
 
@@ -31,11 +29,5 @@ public class StudentNumberRequest {
             System.out.println("Remaining: " + byteBuffer.remaining());
         }
         return byteBuffer.array();
-    }
-
-    public static byte[] generateUniqueID() throws NoSuchAlgorithmException {
-        byte[] uniqueID = new byte[UNIQUE_ID_UDP_SIZE];
-        SecureRandom.getInstanceStrong().nextBytes(uniqueID);
-        return uniqueID;
     }
 }

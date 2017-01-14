@@ -4,16 +4,16 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 import A2.client.UDPClient;
-import A2.resources.StudentNumberResponse;
+import A2.resources.RawBytesStudentNumberResponse;
 import io.dropwizard.setup.Bootstrap;
 
 import static A2.DistributedSystemConfiguration.VERBOSE;
-import static A2.resources.StudentNumberRequest.generateRequest;
-import static A2.resources.StudentNumberRequest.generateUniqueID;
+import static A2.resources.RawBytesStudentNumberRequest.generateRequest;
 import static A2.utils.ByteRepresentation.bytesToHex;
+import static A2.utils.UniqueIdentifier.generateUniqueID;
 
-public class UDPRequestCommand extends io.dropwizard.cli.Command {
-    public UDPRequestCommand() {
+public class RawBytesRequestCommand extends io.dropwizard.cli.Command {
+    public RawBytesRequestCommand() {
         super("request", "Send student number UDP request");
     }
 
@@ -60,7 +60,7 @@ public class UDPRequestCommand extends io.dropwizard.cli.Command {
 
         System.out.println("Sending ID: " + snum);
 
-        byte[] res = UDPClient.sendRequest(req, ip, port, uniqueID);
-        StudentNumberResponse.parseResponse(res, uniqueID);
+        byte[] res = UDPClient.sendRawBytesRequest(req, ip, port, uniqueID);
+        RawBytesStudentNumberResponse.parseResponse(res);
     }
 }
