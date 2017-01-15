@@ -16,8 +16,7 @@ public class ProtocolBufferStudentNumberResponse {
             e.printStackTrace();
         }
 
-        String secretCodeHexString = bytesToHex(resPayload.getSecretKey().toByteArray());
-        System.out.println("Secret code length: " + secretCodeHexString.length());
-        System.out.println("Secret: " + secretCodeHexString);
+        System.out.println("Secret code length: " + resPayload.getSecretKey().size());
+        System.out.println("Secret: " + bytesToHex(resPayload.getSecretKey().toByteArray()));
     }
 }
