@@ -1,10 +1,9 @@
 package A2.resources;
 
-import com.google.protobuf.InvalidProtocolBufferException;
+import static A2.utils.ByteRepresentation.bytesToHex;
 
 import A2.proto.ResponsePayload.ResPayload;
-
-import static A2.utils.ByteRepresentation.bytesToHex;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 public class ProtocolBufferStudentNumberResponse {
     public static void parseResponse(byte[] response) {

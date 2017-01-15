@@ -1,16 +1,16 @@
 package A2.client;
 
+import static A2.DistributedSystemConfiguration.UNIQUE_ID_UDP_SIZE;
+import static A2.DistributedSystemConfiguration.VERBOSE;
+import static A2.utils.ByteRepresentation.bytesToHex;
+import static A2.utils.Checksum.calculateProtocolBufferChecksum;
+
+import A2.proto.Message.Msg;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
-
-import A2.proto.Message.Msg;
-
-import static A2.DistributedSystemConfiguration.UNIQUE_ID_UDP_SIZE;
-import static A2.DistributedSystemConfiguration.VERBOSE;
-import static A2.utils.ByteRepresentation.bytesToHex;
 
 public class UDPClient {
     private static final int TIMEOUT = 100; // default timeout of 100ms
@@ -66,8 +66,8 @@ public class UDPClient {
         throw new Exception("Failed to receive message after max retries attempted.");
     }
 
-    public static byte[] sendProtocolBufferRequest(Msg msg, String ip, int port, byte[] messageID,
-                                                   long checksum) throws Exception {
+    public static byte[] sendProtocolBufferRequest(Msg msg, String ip, int port, byte[] messageID)
+            throws Exception {
         DatagramSocket socket = new DatagramSocket(port);
         InetAddress address = InetAddress.getByName(ip);
 
@@ -77,7 +77,6 @@ public class UDPClient {
 
         DatagramPacket reqPacket = new DatagramPacket(req, req.length, address, port);
         DatagramPacket resPacket = new DatagramPacket(res, res.length, address, port);
-        Msg responseMsg = null;
 
         for (int i = 0, timeoutMs = TIMEOUT; i <= MAX_RETRIES; i++, timeoutMs*=2) {
             socket.setSoTimeout(timeoutMs);
@@ -98,29 +97,33 @@ public class UDPClient {
 
             res = resPacket.getData();
             // deserialize from response byte array exactly as large as number of bytes received
-            responseMsg = Msg.parseFrom(Arrays.copyOf(res, resPacket.getLength()));
+            Msg responseMsg = Msg.parseFrom(Arrays.copyOf(res, resPacket.getLength()));
 
             if (VERBOSE) {
-                System.out.println("Received packet: " + bytesToHex(Arrays.copyOf(res, resPacket.getLength())));
-                System.out.println("Received MessageID: " + bytesToHex(responseMsg.getMessageID().toByteArray()));
-                System.out.println("Received Payload: " + bytesToHex(responseMsg.getPayload().toByteArray()));
+                System.out.println("Received packet: "
+                        + bytesToHex(Arrays.copyOf(res, resPacket.getLength())));
+                System.out.println("Received MessageID: "
+                        + bytesToHex(responseMsg.getMessageID().toByteArray()));
+                System.out.println("Received Payload: "
+                        + bytesToHex(responseMsg.getPayload().toByteArray()));
                 System.out.println("Received Checksum: " + responseMsg.getCheckSum());
             }
 
             // check matching messageID
             if (!Arrays.equals(responseMsg.getMessageID().toByteArray(), messageID)) {
                 if (VERBOSE) {
-                    System.out.format("Mismatched messageID detected between request and response," +
-                            "retrying...\n");
+                    System.out.format("Mismatched messageID detected between request and response,"
+                            + "retrying...\n");
                 }
                 continue;
             }
 
             // verify checksum
-            if (responseMsg.getCheckSum() != checksum) {
+            if (responseMsg.getCheckSum() != calculateProtocolBufferChecksum(
+                    responseMsg.getMessageID().toByteArray(),
+                    responseMsg.getPayload().toByteArray())) {
                 if (VERBOSE) {
-                    System.out.format("Mismatched checksum detected between request and response," +
-                            "retrying...\n");
+                    System.out.format("Invalid checksum detected in the response, retrying...\n");
                 }
                 continue;
             }

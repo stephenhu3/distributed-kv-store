@@ -1,19 +1,16 @@
 package A2.cli;
 
-import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
-
-import A2.client.ProtocolBufferClient;
-import A2.client.UDPClient;
-import A2.proto.Message.Msg;
-import A2.proto.RequestPayload.ReqPayload;
-import A2.resources.ProtocolBufferStudentNumberResponse;
-import io.dropwizard.setup.Bootstrap;
-
 import static A2.DistributedSystemConfiguration.VERBOSE;
 import static A2.resources.ProtocolBufferStudentNumberRequest.generateRequest;
 import static A2.utils.ByteRepresentation.bytesToHex;
 import static A2.utils.UniqueIdentifier.generateUniqueID;
+
+import A2.client.UDPClient;
+import A2.proto.Message.Msg;
+import A2.resources.ProtocolBufferStudentNumberResponse;
+import io.dropwizard.setup.Bootstrap;
+import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 
 public class ProtocolBufferRequestCommand extends io.dropwizard.cli.Command {
@@ -55,14 +52,8 @@ public class ProtocolBufferRequestCommand extends io.dropwizard.cli.Command {
             System.out.println("Student Number: " + snum);
         }
 
-        // sample test
-        byte[] serialized = ProtocolBufferClient.serializeRequestPayload(snum);
-        ReqPayload deserialized = ProtocolBufferClient.deserializeRequestPayload(serialized);
-
-
         byte[] messageID = generateUniqueID();
         Msg msg = generateRequest(snum, messageID);
-        long checksum = msg.getCheckSum();
 
         if (VERBOSE) {
             System.out.println("Request HEX String: " + bytesToHex(msg.toByteArray()));
@@ -73,7 +64,7 @@ public class ProtocolBufferRequestCommand extends io.dropwizard.cli.Command {
 
         System.out.println("Sending ID: " + snum);
 
-        byte[] res = UDPClient.sendProtocolBufferRequest(msg, ip, port, messageID, checksum);
+        byte[] res = UDPClient.sendProtocolBufferRequest(msg, ip, port, messageID);
         ProtocolBufferStudentNumberResponse.parseResponse(res);
     }
 }
