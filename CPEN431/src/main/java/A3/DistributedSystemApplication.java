@@ -1,7 +1,7 @@
 package A3;
 
-import A3.cli.ProtocolBufferRequestCommand;
-import A3.cli.RawBytesRequestCommand;
+import A3.cli.ProtocolBufferStudentNumberRequestCommand;
+import A3.cli.RawBytesStudentNumberRequestCommand;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -18,8 +18,8 @@ public class DistributedSystemApplication extends Application<DistributedSystemC
 
     @Override
     public void initialize(final Bootstrap<DistributedSystemConfiguration> bootstrap) {
-        bootstrap.addCommand(new RawBytesRequestCommand());
-        bootstrap.addCommand(new ProtocolBufferRequestCommand());
+        bootstrap.addCommand(new RawBytesStudentNumberRequestCommand());
+        bootstrap.addCommand(new ProtocolBufferStudentNumberRequestCommand());
     }
 
     @Override

@@ -2,8 +2,7 @@ package A3.core;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class KeyValueStore {
-    ConcurrentHashMap map = new ConcurrentHashMap();
+public class KeyValueStoreSingleton {
     /*
     1. put(key, value): Puts some value into the store.
        The value can be later retrieved using the key.
@@ -19,4 +18,20 @@ public class KeyValueStore {
 
     4. Plus a number of management messages defined below.
     */
+
+    // eagerly created thread-safe instance to improve performance of multithreaded getInstance
+    private static KeyValueStoreSingleton instance = new KeyValueStoreSingleton();
+    ConcurrentHashMap<byte[], byte[]> map;
+
+    private KeyValueStoreSingleton(){
+        map = new ConcurrentHashMap<>();
+    }
+
+    public static KeyValueStoreSingleton getInstance() {
+        return instance;
+    }
+
+    public ConcurrentHashMap<byte[], byte[]> getMap() {
+        return map;
+    }
 }

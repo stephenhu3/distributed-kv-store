@@ -1,20 +1,19 @@
 package A3.cli;
 
 import static A3.DistributedSystemConfiguration.VERBOSE;
-import static A3.resources.ProtocolBufferStudentNumberRequest.generateRequest;
+import static A3.resources.RawBytesStudentNumberRequest.generateRequest;
 import static A3.utils.ByteRepresentation.bytesToHex;
 import static A3.utils.UniqueIdentifier.generateUniqueID;
 
 import A3.client.UDPClient;
-import A3.proto.Message.Msg;
-import A3.resources.ProtocolBufferStudentNumberResponse;
+import A3.resources.RawBytesStudentNumberResponse;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
-public class ProtocolBufferRequestCommand extends io.dropwizard.cli.Command {
-    public ProtocolBufferRequestCommand() {
-        super("protoc", "Send student number protocol buffer request");
+public class RawBytesStudentNumberRequestCommand extends io.dropwizard.cli.Command {
+    public RawBytesStudentNumberRequestCommand() {
+        super("request", "Send student number UDP request");
     }
 
     @Override
@@ -51,19 +50,16 @@ public class ProtocolBufferRequestCommand extends io.dropwizard.cli.Command {
             System.out.println("Student Number: " + snum);
         }
 
-        byte[] messageID = generateUniqueID();
-        Msg msg = generateRequest(snum, messageID);
+        byte[] uniqueID = generateUniqueID();
+        byte[] req = generateRequest(snum, uniqueID);
 
         if (VERBOSE) {
-            System.out.println("Request HEX String: " + bytesToHex(msg.toByteArray()));
-            System.out.println("Request Message ID: " + bytesToHex(messageID));
-            System.out.println("Request Payload: " + bytesToHex(msg.getPayload().toByteArray()));
-            System.out.println("Request Checksum: " + msg.getCheckSum());
+            System.out.println("Request HEX String: " + bytesToHex(req));
         }
 
         System.out.println("Sending ID: " + snum);
 
-        byte[] res = UDPClient.sendProtocolBufferRequest(msg, ip, port, messageID);
-        ProtocolBufferStudentNumberResponse.parseResponse(res);
+        byte[] res = UDPClient.sendRawBytesRequest(req, ip, port, uniqueID);
+        RawBytesStudentNumberResponse.parseResponse(res);
     }
 }
