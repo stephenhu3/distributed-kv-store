@@ -39,6 +39,9 @@ public class ProtocolBufferKeyValueStoreResponse {
         codes.put("invalid value length", 7);
     }
 
+    // TODO: probably move some of the KV mutating functions into UDPServerThread
+    // on second thought, most of the operations are just simple calls to ConcurrentHashMap, which is exposed by the singleton's getInstance
+
     public static byte[] generateGetResponse(byte[] key, byte[] messageID) {
         byte[] value = KeyValueStoreSingleton.getInstance().getMap().get(key);
         kvReply resPayload;
@@ -75,6 +78,8 @@ public class ProtocolBufferKeyValueStoreResponse {
         Msg msg = wrapMessage(messageID, resPayload.toByteArray());
         return msg.toByteArray();
     }
+
+    // TODO: operations for deleteAll, remove, etc.
 
     private static kvReply generateKvReply(int err, byte[] val, int pid) {
         kvReply.Builder resPayload = kvReply.newBuilder();

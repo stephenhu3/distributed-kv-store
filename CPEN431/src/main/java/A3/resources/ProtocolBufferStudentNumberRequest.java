@@ -9,7 +9,7 @@ import A3.proto.RequestPayload.ReqPayload;
 import A3.utils.Checksum;
 
 public class ProtocolBufferStudentNumberRequest {
-    public static Msg generateRequest(int snum, byte[] messageID) throws NoSuchAlgorithmException {
+    public static byte[] generateRequest(int snum, byte[] messageID) throws NoSuchAlgorithmException {
         ReqPayload.Builder reqPayload = ReqPayload.newBuilder();
         reqPayload.setStudentID(snum);
 
@@ -21,6 +21,6 @@ public class ProtocolBufferStudentNumberRequest {
         msg.setPayload(ByteString.copyFrom(payload));
         msg.setCheckSum(Checksum.calculateProtocolBufferChecksum(messageID, payload));
 
-        return msg.build();
+        return msg.build().toByteArray();
     }
 }

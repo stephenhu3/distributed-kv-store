@@ -66,16 +66,15 @@ public class UDPClient {
         throw new Exception("Failed to receive message after max retries attempted.");
     }
 
-    public static byte[] sendProtocolBufferRequest(Msg msg, String ip, int port, byte[] messageID)
+    public static byte[] sendProtocolBufferRequest(byte[] msg, String ip, int port, byte[] messageID)
             throws Exception {
         DatagramSocket socket = new DatagramSocket(port);
         InetAddress address = InetAddress.getByName(ip);
 
-        byte[] req = msg.toByteArray();
         // allocate response with 1kB, truncate when number of byte received is known
         byte[] res = new byte[1024];
 
-        DatagramPacket reqPacket = new DatagramPacket(req, req.length, address, port);
+        DatagramPacket reqPacket = new DatagramPacket(msg, msg.length, address, port);
         DatagramPacket resPacket = new DatagramPacket(res, res.length, address, port);
 
         for (int i = 0, timeoutMs = TIMEOUT; i <= MAX_RETRIES; i++, timeoutMs*=2) {

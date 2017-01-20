@@ -52,10 +52,11 @@ public class ProtocolBufferStudentNumberRequestCommand extends io.dropwizard.cli
         }
 
         byte[] messageID = generateUniqueID();
-        Msg msg = generateRequest(snum, messageID);
+        byte[] msgBytes = generateRequest(snum, messageID);
 
         if (VERBOSE) {
-            System.out.println("Request HEX String: " + bytesToHex(msg.toByteArray()));
+            Msg msg = Msg.parseFrom(msgBytes);
+            System.out.println("Request HEX String: " + bytesToHex(msgBytes));
             System.out.println("Request Message ID: " + bytesToHex(messageID));
             System.out.println("Request Payload: " + bytesToHex(msg.getPayload().toByteArray()));
             System.out.println("Request Checksum: " + msg.getCheckSum());
@@ -63,7 +64,7 @@ public class ProtocolBufferStudentNumberRequestCommand extends io.dropwizard.cli
 
         System.out.println("Sending ID: " + snum);
 
-        byte[] res = UDPClient.sendProtocolBufferRequest(msg, ip, port, messageID);
+        byte[] res = UDPClient.sendProtocolBufferRequest(msgBytes, ip, port, messageID);
         ProtocolBufferStudentNumberResponse.parseResponse(res);
     }
 }
