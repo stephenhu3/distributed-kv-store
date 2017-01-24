@@ -46,13 +46,13 @@ public class ProtocolBufferKeyValueStoreResponse {
     // on second thought, most of the operations are just simple calls to ConcurrentHashMap, which is exposed by the singleton's getInstance
 
     public static byte[] generateGetResponse(byte[] key, byte[] messageID) {
-        byte[] value = KeyValueStoreSingleton.getInstance().getMap().get(
-            ByteString.copyFrom(key)).toByteArray();
+        ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(
+            ByteString.copyFrom(key));
         kvReply resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
         if (value != null) {
-            resPayload = generateKvReply(codes.get("success"), value, pid);
+            resPayload = generateKvReply(codes.get("success"), value.toByteArray(), pid);
         } else {
             resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
         }
