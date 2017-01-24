@@ -8,6 +8,7 @@ import static A3.utils.UniqueIdentifier.generateUniqueID;
 import A3.client.UDPClient;
 import A3.proto.Message.Msg;
 import A3.resources.ProtocolBufferKeyValueStoreRequest;
+import A3.resources.ProtocolBufferKeyValueStoreResponse;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
@@ -62,7 +63,7 @@ public class ProtocolBufferKeyValueStoreRequestCommand extends io.dropwizard.cli
             .help("Key to send");
 
         subparser.addArgument("-value")
-            .dest("key")
+            .dest("value")
             .type(String.class)
             .required(false)
             .help("Value to send");
@@ -129,7 +130,6 @@ public class ProtocolBufferKeyValueStoreRequestCommand extends io.dropwizard.cli
 
         // client sends request, res is the response
         byte[] res = UDPClient.sendProtocolBufferRequest(msg, ip, port, messageID);
-//        // TODO parse response, print results to client
-//        ProtocolBufferKeyValueStoreResponse.parseResponse(res);
+        ProtocolBufferKeyValueStoreResponse.parseResponse(res);
     }
 }

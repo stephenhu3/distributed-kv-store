@@ -1,12 +1,15 @@
 package A3.resources;
 
+import static A3.DistributedSystemConfiguration.VERBOSE;
+import static A3.utils.ByteRepresentation.bytesToHex;
 import static A3.utils.ProtocolBuffers.wrapMessage;
 
 import A3.core.KeyValueStoreSingleton;
 import A3.proto.KeyValueReply.kvReply;
-import A3.utils.UniqueIdentifier;
 import A3.proto.Message.Msg;
+import A3.utils.UniqueIdentifier;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.HashMap;
 
 public class ProtocolBufferKeyValueStoreResponse {
@@ -43,7 +46,7 @@ public class ProtocolBufferKeyValueStoreResponse {
     // on second thought, most of the operations are just simple calls to ConcurrentHashMap, which is exposed by the singleton's getInstance
 
     public static byte[] generateGetResponse(byte[] key, byte[] messageID) {
-        byte[] value = KeyValueStoreSingleton.getInstance().getMap().get(key);
+        byte[] value = KeyValueStoreSingleton.getInstance().getMap().get(key).toByteArray();
         kvReply resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
@@ -65,7 +68,8 @@ public class ProtocolBufferKeyValueStoreResponse {
             resPayload = generateKvReply(codes.get("KVStore failure"), null, pid);
         } else {
             try {
-                KeyValueStoreSingleton.getInstance().getMap().put(key, value);
+                KeyValueStoreSingleton.getInstance().getMap().put(ByteString.copyFrom(key),
+                    ByteString.copyFrom(value));
             } catch(OutOfMemoryError e) {
                 // return out of space error response, clear map
                 KeyValueStoreSingleton.getInstance().getMap().clear();
@@ -94,5 +98,23 @@ public class ProtocolBufferKeyValueStoreResponse {
         }
 
         return resPayload.build();
+    }
+
+    public static void parseResponse(byte[] response) {
+        kvReply reply = null;
+
+        // deserialize response payload
+        try {
+            reply = kvReply.parseFrom(response);
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
+
+        if (VERBOSE) {
+            System.out.println("Error Code: " + reply.getErrCode());
+            System.out.println("Value: " + bytesToHex(reply.getValue().toByteArray()));
+            System.out.println("PID: " + reply.getPid());
+            System.out.println("Version: " + reply.getVersion());
+        }
     }
 }
