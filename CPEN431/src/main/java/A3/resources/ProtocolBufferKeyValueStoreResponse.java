@@ -77,7 +77,6 @@ public class ProtocolBufferKeyValueStoreResponse {
         int pid = UniqueIdentifier.getCurrentPID();
 
         if (value != null) {
-            KeyValueStoreSingleton.getInstance().getMap().remove(value);
             resPayload = generateKvReply(codes.get("success"), value.toByteArray(), pid);
         } else {
             resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
@@ -95,6 +94,7 @@ public class ProtocolBufferKeyValueStoreResponse {
 
         if (value != null) {
             resPayload = generateKvReply(codes.get("success"), value.toByteArray(), pid);
+            KeyValueStoreSingleton.getInstance().getMap().remove(value);
         } else {
             resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
         }
@@ -102,7 +102,6 @@ public class ProtocolBufferKeyValueStoreResponse {
         return msg.toByteArray();
     }
 
-    // TODO: test this
     public static byte[] generateShutdownResponse(byte[] messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
         kvReply resPayload = generateKvReply(codes.get("success"), null, pid);
@@ -121,12 +120,10 @@ public class ProtocolBufferKeyValueStoreResponse {
         return msg.toByteArray();
     }
 
-    // TODO: test this
     public static byte[] generateIsAlive(byte[] messageID) {
         return generateGetPIDResponse(messageID);
     }
 
-    // TODO: test this
     public static byte[] generateGetPIDResponse(byte[] messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
         kvReply resPayload = generateKvReply(codes.get("success"), null, pid);
