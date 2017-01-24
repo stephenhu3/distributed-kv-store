@@ -10,7 +10,10 @@ import io.dropwizard.setup.Environment;
 
 public class DistributedSystemApplication extends Application<DistributedSystemConfiguration> {
     public static void main(final String[] args) throws Exception {
-        new DistributedSystemApplication().run(args);
+        // keep server running after each request TODO: maybe find more elegant method
+        while(true) {
+            new DistributedSystemApplication().run(args);
+        }
     }
 
     @Override

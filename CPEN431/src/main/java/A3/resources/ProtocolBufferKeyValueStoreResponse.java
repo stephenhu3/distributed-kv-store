@@ -46,7 +46,8 @@ public class ProtocolBufferKeyValueStoreResponse {
     // on second thought, most of the operations are just simple calls to ConcurrentHashMap, which is exposed by the singleton's getInstance
 
     public static byte[] generateGetResponse(byte[] key, byte[] messageID) {
-        byte[] value = KeyValueStoreSingleton.getInstance().getMap().get(key).toByteArray();
+        byte[] value = KeyValueStoreSingleton.getInstance().getMap().get(
+            ByteString.copyFrom(key)).toByteArray();
         kvReply resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
