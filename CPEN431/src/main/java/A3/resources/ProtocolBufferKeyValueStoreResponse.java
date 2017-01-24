@@ -1,5 +1,6 @@
 package A3.resources;
 
+import static A3.DistributedSystemConfiguration.SHUTDOWN_NODE;
 import static A3.DistributedSystemConfiguration.VERBOSE;
 import static A3.utils.ByteRepresentation.bytesToHex;
 import static A3.utils.ProtocolBuffers.wrapMessage;
@@ -45,21 +46,6 @@ public class ProtocolBufferKeyValueStoreResponse {
     // TODO: probably move some of the KV mutating functions into UDPServerThread
     // on second thought, most of the operations are just simple calls to ConcurrentHashMap, which is exposed by the singleton's getInstance
 
-    public static byte[] generateGetResponse(byte[] key, byte[] messageID) {
-        ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(
-            ByteString.copyFrom(key));
-        kvReply resPayload;
-        int pid = UniqueIdentifier.getCurrentPID();
-
-        if (value != null) {
-            resPayload = generateKvReply(codes.get("success"), value.toByteArray(), pid);
-        } else {
-            resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
-        }
-        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
-        return msg.toByteArray();
-    }
-
     // note, ConcurrentHashMap throws NullPointerException if specified key or value is null
     public static byte[] generatePutResponse(byte[] key, byte[] value, byte[] messageID) {
         kvReply resPayload;
@@ -84,7 +70,77 @@ public class ProtocolBufferKeyValueStoreResponse {
         return msg.toByteArray();
     }
 
-    // TODO: operations for deleteAll, remove, etc.
+    public static byte[] generateGetResponse(byte[] key, byte[] messageID) {
+        ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(
+            ByteString.copyFrom(key));
+        kvReply resPayload;
+        int pid = UniqueIdentifier.getCurrentPID();
+
+        if (value != null) {
+            KeyValueStoreSingleton.getInstance().getMap().remove(value);
+            resPayload = generateKvReply(codes.get("success"), value.toByteArray(), pid);
+        } else {
+            resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
+        }
+        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
+        return msg.toByteArray();
+    }
+
+    // TODO: test this
+    public static byte[] generateRemoveResponse(byte[] key, byte[] messageID) {
+        ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(
+            ByteString.copyFrom(key));
+        kvReply resPayload;
+        int pid = UniqueIdentifier.getCurrentPID();
+
+        if (value != null) {
+            resPayload = generateKvReply(codes.get("success"), value.toByteArray(), pid);
+        } else {
+            resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
+        }
+        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
+        return msg.toByteArray();
+    }
+
+    // TODO: test this
+    public static byte[] generateShutdownResponse(byte[] messageID) {
+        int pid = UniqueIdentifier.getCurrentPID();
+        kvReply resPayload = generateKvReply(codes.get("success"), null, pid);
+        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
+        // requirement states sending success response on shutdown
+        SHUTDOWN_NODE = true;
+        return msg.toByteArray();
+    }
+
+    // TODO: test this
+    public static byte[] generateDeleteAllResponse(byte[] messageID) {
+        KeyValueStoreSingleton.getInstance().getMap().clear();
+        int pid = UniqueIdentifier.getCurrentPID();
+        kvReply resPayload = generateKvReply(codes.get("success"), null, pid);
+        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
+        return msg.toByteArray();
+    }
+
+    // TODO: test this
+    public static byte[] generateIsAlive(byte[] messageID) {
+        return generateGetPIDResponse(messageID);
+    }
+
+    // TODO: test this
+    public static byte[] generateGetPIDResponse(byte[] messageID) {
+        int pid = UniqueIdentifier.getCurrentPID();
+        kvReply resPayload = generateKvReply(codes.get("success"), null, pid);
+        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
+        return msg.toByteArray();
+    }
+
+    // TODO: test this
+    public static byte[] generateUnrecognizedCommandResponse(byte[] messageID) {
+        int pid = UniqueIdentifier.getCurrentPID();
+        kvReply resPayload = generateKvReply(codes.get("unrecognized command"), null, pid);
+        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
+        return msg.toByteArray();
+    }
 
     private static kvReply generateKvReply(int err, byte[] val, int pid) {
         kvReply.Builder resPayload = kvReply.newBuilder();

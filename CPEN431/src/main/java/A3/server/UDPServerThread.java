@@ -1,7 +1,14 @@
 package A3.server;
 
+import static A3.DistributedSystemConfiguration.SHUTDOWN_NODE;
+import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateDeleteAllResponse;
+import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateGetPIDResponse;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateGetResponse;
+import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateIsAlive;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generatePutResponse;
+import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateRemoveResponse;
+import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateShutdownResponse;
+import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateUnrecognizedCommandResponse;
 import static A3.utils.Checksum.calculateProtocolBufferChecksum;
 
 import A3.proto.KeyValueRequest.kvRequest;
@@ -85,23 +92,23 @@ public class UDPServerThread extends Thread {
                 reply = generateGetResponse(key, messageID);
                 break;
             case 3:
-                // TODO
+                reply = generateRemoveResponse(key, messageID);
                 break;
             case 4:
-                // TODO
+                reply = generateShutdownResponse(messageID);
                 break;
             case 5:
-                // TODO
+                reply = generateDeleteAllResponse(messageID);
                 break;
             case 6:
-                // TODO
+                reply = generateIsAlive(messageID);
                 break;
             case 7:
-                // TODO
+                reply = generateGetPIDResponse(messageID);
                 break;
             default:
-                // TODO
-                // return some error
+                // return error code 5, unrecognized command
+                reply = generateUnrecognizedCommandResponse(messageID);
         }
 
         // send response back to client
@@ -115,5 +122,8 @@ public class UDPServerThread extends Thread {
             e.printStackTrace();
         }
         socket.close();
+        if (SHUTDOWN_NODE) {
+            System.exit(0);
+        }
     }
 }

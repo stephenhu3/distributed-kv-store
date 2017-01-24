@@ -13,7 +13,7 @@ public class ProtocolBufferKeyValueStoreRequest {
        0x01 - Put: This is a put operation.
        0x02 - Get: This is a get operation.
        0x03 - Remove: This is a remove operation.
-       0x04 - Shutdown: shuts-down the (used for testing and management)
+       0x04 - Shutdown: shuts-down the node (used for testing and management)
        0x05 - DeleteAll: deletes all keys stored in the node (used for testing)
        0x06 - IsAlive: does nothing but replies with success if the node is alive.
        0x07 - GetPID: the node is expected to reply with the processID of the Java process

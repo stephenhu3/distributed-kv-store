@@ -32,7 +32,6 @@ public class KeyValueStoreSingleton {
         return instance;
     }
 
-    // TODO: Cannot use byte array as key, since uses reference equality
     // TODO: Furthermore, cache needs to exist to respond to same requests - map unique requests as keys
     public ConcurrentHashMap<ByteString, ByteString> getMap() {
         return map;
