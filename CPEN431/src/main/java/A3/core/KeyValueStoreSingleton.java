@@ -1,6 +1,5 @@
 package A3.core;
 
-import com.google.protobuf.ByteString;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class KeyValueStoreSingleton {
@@ -22,7 +21,7 @@ public class KeyValueStoreSingleton {
 
     // eagerly created thread-safe instance to improve performance of multithreaded getInstance
     private static KeyValueStoreSingleton instance = new KeyValueStoreSingleton();
-    ConcurrentHashMap<ByteString, byte[]> map;
+    ConcurrentHashMap<String, String> map;
 
     private KeyValueStoreSingleton(){
         map = new ConcurrentHashMap<>();
@@ -33,7 +32,7 @@ public class KeyValueStoreSingleton {
     }
 
     // TODO: Furthermore, cache needs to exist to respond to same requests - map unique requests as keys
-    public ConcurrentHashMap<ByteString, byte[]> getMap() {
+    public ConcurrentHashMap<String, String> getMap() {
         return map;
     }
 

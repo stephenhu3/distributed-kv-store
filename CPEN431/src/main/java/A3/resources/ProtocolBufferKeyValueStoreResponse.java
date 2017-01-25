@@ -3,6 +3,7 @@ package A3.resources;
 import static A3.DistributedSystemConfiguration.SHUTDOWN_NODE;
 import static A3.DistributedSystemConfiguration.VERBOSE;
 import static A3.utils.ByteRepresentation.bytesToHex;
+import static A3.utils.ByteRepresentation.hexToBytes;
 import static A3.utils.ProtocolBuffers.wrapMessage;
 
 import A3.core.KeyValueStoreSingleton;
@@ -53,7 +54,7 @@ public class ProtocolBufferKeyValueStoreResponse {
         } else {
             try {
                 // TODO: Issue with getting value back is not exactly same (maybe ByteString.copyFrom of byte array yields different)
-                KeyValueStoreSingleton.getInstance().getMap().put(ByteString.copyFrom(key), value);
+                KeyValueStoreSingleton.getInstance().getMap().put(bytesToHex(key), bytesToHex(value));
             } catch(OutOfMemoryError e) {
                 // return out of space error response, clear map
                 KeyValueStoreSingleton.getInstance().getMap().clear();
@@ -68,12 +69,12 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
 
     public static byte[] generateGetResponse(byte[] key, byte[] messageID) {
-        byte[] value = KeyValueStoreSingleton.getInstance().getMap().get(ByteString.copyFrom(key));
+        String value = KeyValueStoreSingleton.getInstance().getMap().get(bytesToHex(key));
         kvReply resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
         if (value != null) {
-            resPayload = generateKvReply(codes.get("success"), value, pid);
+            resPayload = generateKvReply(codes.get("success"), hexToBytes(value), pid);
         } else {
             resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
         }
@@ -82,13 +83,13 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
 
     public static byte[] generateRemoveResponse(byte[] key, byte[] messageID) {
-        byte[] value = KeyValueStoreSingleton.getInstance().getMap().get(ByteString.copyFrom(key));
+        String value = KeyValueStoreSingleton.getInstance().getMap().get(bytesToHex(key));
         kvReply resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
         if (value != null) {
-            resPayload = generateKvReply(codes.get("success"), value, pid);
-            KeyValueStoreSingleton.getInstance().getMap().remove(ByteString.copyFrom(value));
+            resPayload = generateKvReply(codes.get("success"), hexToBytes(value), pid);
+            KeyValueStoreSingleton.getInstance().getMap().remove(hexToBytes(value));
         } else {
             resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
         }
