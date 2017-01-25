@@ -22,7 +22,7 @@ public class KeyValueStoreSingleton {
 
     // eagerly created thread-safe instance to improve performance of multithreaded getInstance
     private static KeyValueStoreSingleton instance = new KeyValueStoreSingleton();
-    ConcurrentHashMap<ByteString, ByteString> map;
+    ConcurrentHashMap<ByteString, byte[]> map;
 
     private KeyValueStoreSingleton(){
         map = new ConcurrentHashMap<>();
@@ -33,7 +33,7 @@ public class KeyValueStoreSingleton {
     }
 
     // TODO: Furthermore, cache needs to exist to respond to same requests - map unique requests as keys
-    public ConcurrentHashMap<ByteString, ByteString> getMap() {
+    public ConcurrentHashMap<ByteString, byte[]> getMap() {
         return map;
     }
 

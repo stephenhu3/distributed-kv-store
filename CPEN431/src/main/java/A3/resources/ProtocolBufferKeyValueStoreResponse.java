@@ -43,9 +43,6 @@ public class ProtocolBufferKeyValueStoreResponse {
         codes.put("invalid value length", 7);
     }
 
-    // TODO: probably move some of the KV mutating functions into UDPServerThread
-    // on second thought, most of the operations are just simple calls to ConcurrentHashMap, which is exposed by the singleton's getInstance
-
     // note, ConcurrentHashMap throws NullPointerException if specified key or value is null
     public static byte[] generatePutResponse(byte[] key, byte[] value, byte[] messageID) {
         kvReply resPayload;
@@ -55,8 +52,8 @@ public class ProtocolBufferKeyValueStoreResponse {
             resPayload = generateKvReply(codes.get("KVStore failure"), null, pid);
         } else {
             try {
-                KeyValueStoreSingleton.getInstance().getMap().put(ByteString.copyFrom(key),
-                    ByteString.copyFrom(value));
+                // TODO: Issue with getting value back is not exactly same (maybe ByteString.copyFrom of byte array yields different)
+                KeyValueStoreSingleton.getInstance().getMap().put(ByteString.copyFrom(key), value);
             } catch(OutOfMemoryError e) {
                 // return out of space error response, clear map
                 KeyValueStoreSingleton.getInstance().getMap().clear();
@@ -71,13 +68,12 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
 
     public static byte[] generateGetResponse(byte[] key, byte[] messageID) {
-        ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(
-            ByteString.copyFrom(key));
+        byte[] value = KeyValueStoreSingleton.getInstance().getMap().get(ByteString.copyFrom(key));
         kvReply resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
         if (value != null) {
-            resPayload = generateKvReply(codes.get("success"), value.toByteArray(), pid);
+            resPayload = generateKvReply(codes.get("success"), value, pid);
         } else {
             resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
         }
@@ -86,14 +82,13 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
 
     public static byte[] generateRemoveResponse(byte[] key, byte[] messageID) {
-        ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(
-            ByteString.copyFrom(key));
+        byte[] value = KeyValueStoreSingleton.getInstance().getMap().get(ByteString.copyFrom(key));
         kvReply resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
         if (value != null) {
-            resPayload = generateKvReply(codes.get("success"), value.toByteArray(), pid);
-            KeyValueStoreSingleton.getInstance().getMap().remove(value);
+            resPayload = generateKvReply(codes.get("success"), value, pid);
+            KeyValueStoreSingleton.getInstance().getMap().remove(ByteString.copyFrom(value));
         } else {
             resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
         }
@@ -110,7 +105,6 @@ public class ProtocolBufferKeyValueStoreResponse {
         return msg.toByteArray();
     }
 
-    // TODO: deleteAll shuts down server for some reason
     public static byte[] generateDeleteAllResponse(byte[] messageID) {
         KeyValueStoreSingleton.getInstance().getMap().clear();
         int pid = UniqueIdentifier.getCurrentPID();

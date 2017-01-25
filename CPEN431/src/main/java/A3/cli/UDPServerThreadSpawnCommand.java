@@ -30,6 +30,7 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
 
     @Override
     public void run(Bootstrap<?> bootstrap, Namespace namespace) throws Exception {
+
         String name = namespace.getString("name");
         int port = namespace.getInt("port");
 
