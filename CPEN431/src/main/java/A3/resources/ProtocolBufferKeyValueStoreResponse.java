@@ -85,7 +85,6 @@ public class ProtocolBufferKeyValueStoreResponse {
         return msg.toByteArray();
     }
 
-    // TODO: test this
     public static byte[] generateRemoveResponse(byte[] key, byte[] messageID) {
         ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(
             ByteString.copyFrom(key));
@@ -111,7 +110,7 @@ public class ProtocolBufferKeyValueStoreResponse {
         return msg.toByteArray();
     }
 
-    // TODO: test this
+    // TODO: deleteAll shuts down server for some reason
     public static byte[] generateDeleteAllResponse(byte[] messageID) {
         KeyValueStoreSingleton.getInstance().getMap().clear();
         int pid = UniqueIdentifier.getCurrentPID();

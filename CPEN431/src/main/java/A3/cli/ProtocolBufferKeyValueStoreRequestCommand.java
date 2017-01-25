@@ -106,7 +106,7 @@ public class ProtocolBufferKeyValueStoreRequestCommand extends io.dropwizard.cli
                 msg = ProtocolBufferKeyValueStoreRequest.generateShutdownRequest(messageID);
                 break;
             case "deleteAll":
-                msg = ProtocolBufferKeyValueStoreRequest.generateShutdownRequest(messageID);
+                msg = ProtocolBufferKeyValueStoreRequest.generateDeleteAllRequest(messageID);
                 break;
             case "isAlive":
                 msg = ProtocolBufferKeyValueStoreRequest.generateIsAliveRequest(messageID);
