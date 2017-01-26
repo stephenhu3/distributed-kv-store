@@ -45,6 +45,7 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
 
     // note, ConcurrentHashMap throws NullPointerException if specified key or value is null
+    // TODO: my system is doing a PUT on a value that supposedly isn't the same as the one sent in request
     public static byte[] generatePutResponse(byte[] key, byte[] value, byte[] messageID) {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
@@ -96,6 +97,9 @@ public class ProtocolBufferKeyValueStoreResponse {
         if (value != null) {
             resPayload = generateKvReply(codes.get("success"), value.toByteArray(), pid);
             KeyValueStoreSingleton.getInstance().getMap().remove(value);
+            if (VERBOSE) {
+                System.out.println("Removed Value: " + bytesToHex(value.toByteArray()));
+            }
         } else {
             resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
         }
@@ -131,7 +135,6 @@ public class ProtocolBufferKeyValueStoreResponse {
         return msg.toByteArray();
     }
 
-    // TODO: test this
     public static byte[] generateUnrecognizedCommandResponse(byte[] messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
         KVResponse resPayload = generateKvReply(codes.get("unrecognized command"), null, pid);
