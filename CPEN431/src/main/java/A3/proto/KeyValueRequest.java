@@ -13,8 +13,8 @@ public final class KeyValueRequest {
     registerAllExtensions(
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
-  public interface kvRequestOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:kvRequest)
+  public interface KVRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:KVRequest)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -54,17 +54,17 @@ public final class KeyValueRequest {
     int getVersion();
   }
   /**
-   * Protobuf type {@code kvRequest}
+   * Protobuf type {@code KVRequest}
    */
-  public  static final class kvRequest extends
+  public  static final class KVRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:kvRequest)
-      kvRequestOrBuilder {
-    // Use kvRequest.newBuilder() to construct.
-    private kvRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:KVRequest)
+      KVRequestOrBuilder {
+    // Use KVRequest.newBuilder() to construct.
+    private KVRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private kvRequest() {
+    private KVRequest() {
       command_ = 0;
       key_ = com.google.protobuf.ByteString.EMPTY;
       value_ = com.google.protobuf.ByteString.EMPTY;
@@ -76,7 +76,7 @@ public final class KeyValueRequest {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private kvRequest(
+    private KVRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -133,14 +133,14 @@ public final class KeyValueRequest {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return KeyValueRequest.internal_static_kvRequest_descriptor;
+      return KeyValueRequest.internal_static_KVRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return KeyValueRequest.internal_static_kvRequest_fieldAccessorTable
+      return KeyValueRequest.internal_static_KVRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              KeyValueRequest.kvRequest.class, KeyValueRequest.kvRequest.Builder.class);
+              KeyValueRequest.KVRequest.class, KeyValueRequest.KVRequest.Builder.class);
     }
 
     private int bitField0_;
@@ -267,10 +267,10 @@ public final class KeyValueRequest {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof KeyValueRequest.kvRequest)) {
+      if (!(obj instanceof KeyValueRequest.KVRequest)) {
         return super.equals(obj);
       }
-      KeyValueRequest.kvRequest other = (KeyValueRequest.kvRequest) obj;
+      KeyValueRequest.KVRequest other = (KeyValueRequest.KVRequest) obj;
 
       boolean result = true;
       result = result && (hasCommand() == other.hasCommand());
@@ -325,58 +325,58 @@ public final class KeyValueRequest {
       return hash;
     }
 
-    public static KeyValueRequest.kvRequest parseFrom(
+    public static KeyValueRequest.KVRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static KeyValueRequest.kvRequest parseFrom(
+    public static KeyValueRequest.KVRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static KeyValueRequest.kvRequest parseFrom(byte[] data)
+    public static KeyValueRequest.KVRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static KeyValueRequest.kvRequest parseFrom(
+    public static KeyValueRequest.KVRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static KeyValueRequest.kvRequest parseFrom(java.io.InputStream input)
+    public static KeyValueRequest.KVRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static KeyValueRequest.kvRequest parseFrom(
+    public static KeyValueRequest.KVRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static KeyValueRequest.kvRequest parseDelimitedFrom(java.io.InputStream input)
+    public static KeyValueRequest.KVRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static KeyValueRequest.kvRequest parseDelimitedFrom(
+    public static KeyValueRequest.KVRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static KeyValueRequest.kvRequest parseFrom(
+    public static KeyValueRequest.KVRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static KeyValueRequest.kvRequest parseFrom(
+    public static KeyValueRequest.KVRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -388,7 +388,7 @@ public final class KeyValueRequest {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(KeyValueRequest.kvRequest prototype) {
+    public static Builder newBuilder(KeyValueRequest.KVRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -403,25 +403,25 @@ public final class KeyValueRequest {
       return builder;
     }
     /**
-     * Protobuf type {@code kvRequest}
+     * Protobuf type {@code KVRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:kvRequest)
-        KeyValueRequest.kvRequestOrBuilder {
+        // @@protoc_insertion_point(builder_implements:KVRequest)
+        KeyValueRequest.KVRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return KeyValueRequest.internal_static_kvRequest_descriptor;
+        return KeyValueRequest.internal_static_KVRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return KeyValueRequest.internal_static_kvRequest_fieldAccessorTable
+        return KeyValueRequest.internal_static_KVRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                KeyValueRequest.kvRequest.class, KeyValueRequest.kvRequest.Builder.class);
+                KeyValueRequest.KVRequest.class, KeyValueRequest.KVRequest.Builder.class);
       }
 
-      // Construct using KeyValueRequest.kvRequest.newBuilder()
+      // Construct using KeyValueRequest.KVRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -451,23 +451,23 @@ public final class KeyValueRequest {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return KeyValueRequest.internal_static_kvRequest_descriptor;
+        return KeyValueRequest.internal_static_KVRequest_descriptor;
       }
 
-      public KeyValueRequest.kvRequest getDefaultInstanceForType() {
-        return KeyValueRequest.kvRequest.getDefaultInstance();
+      public KeyValueRequest.KVRequest getDefaultInstanceForType() {
+        return KeyValueRequest.KVRequest.getDefaultInstance();
       }
 
-      public KeyValueRequest.kvRequest build() {
-        KeyValueRequest.kvRequest result = buildPartial();
+      public KeyValueRequest.KVRequest build() {
+        KeyValueRequest.KVRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public KeyValueRequest.kvRequest buildPartial() {
-        KeyValueRequest.kvRequest result = new KeyValueRequest.kvRequest(this);
+      public KeyValueRequest.KVRequest buildPartial() {
+        KeyValueRequest.KVRequest result = new KeyValueRequest.KVRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -518,16 +518,16 @@ public final class KeyValueRequest {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof KeyValueRequest.kvRequest) {
-          return mergeFrom((KeyValueRequest.kvRequest)other);
+        if (other instanceof KeyValueRequest.KVRequest) {
+          return mergeFrom((KeyValueRequest.KVRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(KeyValueRequest.kvRequest other) {
-        if (other == KeyValueRequest.kvRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(KeyValueRequest.KVRequest other) {
+        if (other == KeyValueRequest.KVRequest.getDefaultInstance()) return this;
         if (other.hasCommand()) {
           setCommand(other.getCommand());
         }
@@ -556,11 +556,11 @@ public final class KeyValueRequest {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        KeyValueRequest.kvRequest parsedMessage = null;
+        KeyValueRequest.KVRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (KeyValueRequest.kvRequest) e.getUnfinishedMessage();
+          parsedMessage = (KeyValueRequest.KVRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -715,49 +715,49 @@ public final class KeyValueRequest {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:kvRequest)
+      // @@protoc_insertion_point(builder_scope:KVRequest)
     }
 
-    // @@protoc_insertion_point(class_scope:kvRequest)
-    private static final KeyValueRequest.kvRequest DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:KVRequest)
+    private static final KeyValueRequest.KVRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new KeyValueRequest.kvRequest();
+      DEFAULT_INSTANCE = new KeyValueRequest.KVRequest();
     }
 
-    public static KeyValueRequest.kvRequest getDefaultInstance() {
+    public static KeyValueRequest.KVRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    @java.lang.Deprecated public static final com.google.protobuf.Parser<kvRequest>
-        PARSER = new com.google.protobuf.AbstractParser<kvRequest>() {
-      public kvRequest parsePartialFrom(
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<KVRequest>
+        PARSER = new com.google.protobuf.AbstractParser<KVRequest>() {
+      public KVRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new kvRequest(input, extensionRegistry);
+          return new KVRequest(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<kvRequest> parser() {
+    public static com.google.protobuf.Parser<KVRequest> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<kvRequest> getParserForType() {
+    public com.google.protobuf.Parser<KVRequest> getParserForType() {
       return PARSER;
     }
 
-    public KeyValueRequest.kvRequest getDefaultInstanceForType() {
+    public KeyValueRequest.KVRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_kvRequest_descriptor;
+    internal_static_KVRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_kvRequest_fieldAccessorTable;
+      internal_static_KVRequest_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -767,7 +767,7 @@ public final class KeyValueRequest {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\025KeyValueRequest.proto\"I\n\tkvRequest\022\017\n\007" +
+      "\n\025KeyValueRequest.proto\"I\n\tKVRequest\022\017\n\007" +
       "command\030\001 \002(\r\022\013\n\003key\030\002 \001(\014\022\r\n\005value\030\003 \001(" +
       "\014\022\017\n\007version\030\004 \001(\005B\021B\017KeyValueRequest"
     };
@@ -783,11 +783,11 @@ public final class KeyValueRequest {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         }, assigner);
-    internal_static_kvRequest_descriptor =
+    internal_static_KVRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_kvRequest_fieldAccessorTable = new
+    internal_static_KVRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_kvRequest_descriptor,
+        internal_static_KVRequest_descriptor,
         new java.lang.String[] { "Command", "Key", "Value", "Version", });
   }
 

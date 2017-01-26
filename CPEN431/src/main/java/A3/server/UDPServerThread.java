@@ -11,7 +11,7 @@ import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateShutdownR
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateUnrecognizedCommandResponse;
 import static A3.utils.Checksum.calculateProtocolBufferChecksum;
 
-import A3.proto.KeyValueRequest.kvRequest;
+import A3.proto.KeyValueRequest.KVRequest;
 import A3.proto.Message.Msg;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
@@ -67,10 +67,10 @@ public class UDPServerThread extends Thread {
         }
 
         // deserialize payload into kvRequest
-        kvRequest kvReq = null;
+        KVRequest kvReq = null;
 
         try {
-            kvReq = kvRequest.parseFrom(responseMsg.getPayload());
+            kvReq = KVRequest.parseFrom(responseMsg.getPayload());
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
         }

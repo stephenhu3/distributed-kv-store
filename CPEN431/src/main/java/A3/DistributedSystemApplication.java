@@ -1,7 +1,5 @@
 package A3;
 
-import static A3.DistributedSystemConfiguration.SERVER_MODE;
-
 import A3.cli.ProtocolBufferKeyValueStoreRequestCommand;
 import A3.cli.ProtocolBufferStudentNumberRequestCommand;
 import A3.cli.RawBytesStudentNumberRequestCommand;
@@ -12,10 +10,7 @@ import io.dropwizard.setup.Environment;
 
 public class DistributedSystemApplication extends Application<DistributedSystemConfiguration> {
     public static void main(final String[] args) throws Exception {
-        // if in server mode, keep server running after each served request
-        do {
-            new DistributedSystemApplication().run(args);
-        } while(SERVER_MODE);
+        new DistributedSystemApplication().run(args);
     }
 
     @Override
