@@ -2,7 +2,7 @@ package A3.resources;
 
 import static A3.utils.ProtocolBuffers.wrapMessage;
 
-import A3.proto.KeyValueRequest.kvRequest;
+import A3.proto.KeyValueRequest.KVRequest;
 import A3.proto.Message.Msg;
 import com.google.protobuf.ByteString;
 import java.util.HashMap;
@@ -39,49 +39,49 @@ public class ProtocolBufferKeyValueStoreRequest {
     }
 
     public static byte[] generatePutRequest(byte[] key, byte[] val, byte[] messageID) {
-        kvRequest reqPayload = generateKvRequest(commands.get("put"), key, val);
+        KVRequest reqPayload = generateKvRequest(commands.get("put"), key, val);
         Msg msg = wrapMessage(messageID, reqPayload.toByteArray());
         return msg.toByteArray();
     }
 
     public static byte[] generateGetRequest(byte[] key, byte[] messageID) {
-        kvRequest reqPayload = generateKvRequest(commands.get("get"), key, null);
+        KVRequest reqPayload = generateKvRequest(commands.get("get"), key, null);
         Msg msg = wrapMessage(messageID, reqPayload.toByteArray());
         return msg.toByteArray();
     }
 
     public static byte[] generateRemoveRequest(byte[] key, byte[] messageID) {
-        kvRequest reqPayload = generateKvRequest(commands.get("remove"), key, null);
+        KVRequest reqPayload = generateKvRequest(commands.get("remove"), key, null);
         Msg msg = wrapMessage(messageID, reqPayload.toByteArray());
         return msg.toByteArray();
     }
 
     public static byte[] generateShutdownRequest(byte[] messageID) {
-        kvRequest reqPayload = generateKvRequest(commands.get("shutdown"), null, null);
+        KVRequest reqPayload = generateKvRequest(commands.get("shutdown"), null, null);
         Msg msg = wrapMessage(messageID, reqPayload.toByteArray());
         return msg.toByteArray();
     }
 
     public static byte[] generateDeleteAllRequest(byte[] messageID) {
-        kvRequest reqPayload = generateKvRequest(commands.get("deleteAll"), null, null);
+        KVRequest reqPayload = generateKvRequest(commands.get("deleteAll"), null, null);
         Msg msg = wrapMessage(messageID, reqPayload.toByteArray());
         return msg.toByteArray();
     }
 
     public static byte[] generateIsAliveRequest(byte[] messageID) {
-        kvRequest reqPayload = generateKvRequest(commands.get("isAlive"), null, null);
+        KVRequest reqPayload = generateKvRequest(commands.get("isAlive"), null, null);
         Msg msg = wrapMessage(messageID, reqPayload.toByteArray());
         return msg.toByteArray();
     }
 
     public static byte[] generateGetPIDRequest(byte[] messageID) {
-        kvRequest reqPayload = generateKvRequest(commands.get("getPID"), null, null);
+        KVRequest reqPayload = generateKvRequest(commands.get("getPID"), null, null);
         Msg msg = wrapMessage(messageID, reqPayload.toByteArray());
         return msg.toByteArray();
     }
 
-    private static kvRequest generateKvRequest(int cmd, byte[] key, byte[] val) {
-        kvRequest.Builder reqPayload = kvRequest.newBuilder();
+    private static KVRequest generateKvRequest(int cmd, byte[] key, byte[] val) {
+        KVRequest.Builder reqPayload = KVRequest.newBuilder();
         reqPayload.setCommand(cmd);
         if (key != null) {
             reqPayload.setKey(ByteString.copyFrom(key));

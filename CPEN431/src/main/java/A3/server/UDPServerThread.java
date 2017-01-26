@@ -11,7 +11,6 @@ import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateShutdownR
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateUnrecognizedCommandResponse;
 import static A3.utils.Checksum.calculateProtocolBufferChecksum;
 
-import A3.proto.KeyValueRequest.kvRequest;
 import A3.proto.Message.Msg;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
@@ -19,6 +18,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 public class UDPServerThread extends Thread {
     private static final int DEFAULT_UDP_SERVER_PORT = 10129;
@@ -31,6 +31,38 @@ public class UDPServerThread extends Thread {
     public UDPServerThread(String name, int port) throws IOException {
         super(name);
         socket = new DatagramSocket(port);
+    }
+
+    public static byte[] generateResponse(int cmd, byte[] key, byte[] value, byte[] messageID) {
+        byte[] reply = null;
+
+        switch(cmd) {
+            case 1:
+                reply = generatePutResponse(key, value, messageID);
+                break;
+            case 2:
+                reply = generateGetResponse(key, messageID);
+                break;
+            case 3:
+                reply = generateRemoveResponse(key, messageID);
+                break;
+            case 4:
+                reply = generateShutdownResponse(messageID);
+                break;
+            case 5:
+                reply = generateDeleteAllResponse(messageID);
+                break;
+            case 6:
+                reply = generateIsAlive(messageID);
+                break;
+            case 7:
+                reply = generateGetPIDResponse(messageID);
+                break;
+            default:
+                // return error code 5, unrecognized command
+                reply = generateUnrecognizedCommandResponse(messageID);
+        }
+        return reply;
     }
 
     public void run() {
@@ -66,50 +98,15 @@ public class UDPServerThread extends Thread {
             }
         }
 
-        // deserialize payload into kvRequest
-        kvRequest kvReq = null;
-
+        // TODO: Use request cache, define exception
+        Msg msgRes = null;
         try {
-            kvReq = kvRequest.parseFrom(responseMsg.getPayload());
-        } catch (InvalidProtocolBufferException e) {
+            msgRes = RequestCache.getInstance().getCache().get(responseMsg);
+        } catch (ExecutionException e) {
             e.printStackTrace();
         }
 
-        byte[] key = kvReq.getKey().toByteArray();
-        byte[] value = kvReq.getKey().toByteArray();
-
-
-        // figure out what response to send based on command given
-        int cmd = kvReq.getCommand();
-
-        byte[] reply = null;
-        // note: request is not sent if not valid command, but enforce on server-side as well
-        switch(cmd) {
-            case 1:
-                reply = generatePutResponse(key, value, messageID);
-                break;
-            case 2:
-                reply = generateGetResponse(key, messageID);
-                break;
-            case 3:
-                reply = generateRemoveResponse(key, messageID);
-                break;
-            case 4:
-                reply = generateShutdownResponse(messageID);
-                break;
-            case 5:
-                reply = generateDeleteAllResponse(messageID);
-                break;
-            case 6:
-                reply = generateIsAlive(messageID);
-                break;
-            case 7:
-                reply = generateGetPIDResponse(messageID);
-                break;
-            default:
-                // return error code 5, unrecognized command
-                reply = generateUnrecognizedCommandResponse(messageID);
-        }
+        byte[] reply = msgRes.toByteArray();
 
         // send response back to client
         InetAddress clientAddress = resPacket.getAddress();

@@ -32,10 +32,7 @@ public class KeyValueStoreSingleton {
         return instance;
     }
 
-    // TODO: Furthermore, cache needs to exist to respond to same requests - map unique requests as keys
     public ConcurrentHashMap<ByteString, ByteString> getMap() {
         return map;
     }
-
-
 }

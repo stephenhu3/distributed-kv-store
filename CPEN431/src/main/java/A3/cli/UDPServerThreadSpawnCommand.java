@@ -1,5 +1,6 @@
 package A3.cli;
 
+import static A3.DistributedSystemConfiguration.SERVER_MODE;
 import static A3.DistributedSystemConfiguration.VERBOSE;
 
 import A3.server.UDPServerThread;
@@ -30,6 +31,7 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
 
     @Override
     public void run(Bootstrap<?> bootstrap, Namespace namespace) throws Exception {
+
         String name = namespace.getString("name");
         int port = namespace.getInt("port");
 
@@ -38,6 +40,9 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
             System.out.println("Port: " + port);
         }
 
-        new UDPServerThread(name, port).run();
+        // if in server mode, keep server running after each served request
+        do {
+            new UDPServerThread(name, port).run();
+        } while (SERVER_MODE);
     }
 }
