@@ -73,35 +73,43 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
 
     public static byte[] generateGetResponse(byte[] key, byte[] messageID) {
-        ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(new ByteArrayWrapper(key));
+        ByteArrayWrapper keyWrapper = new ByteArrayWrapper(key);
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
-        if (value != null) {
+        if (KeyValueStoreSingleton.getInstance().getMap().containsKey(keyWrapper)) {
+            ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(keyWrapper);
             resPayload = generateKvReply(codes.get("success"), value.toByteArray(), pid);
             if (VERBOSE) {
                 System.out.println("Get Value: " + bytesToHex(value.toByteArray()));
             }
         } else {
             resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
+            if (VERBOSE) {
+                System.out.println("Attempted Get Key: " + bytesToHex(key) + " does not exist");
+            }
         }
         Msg msg = wrapMessage(messageID, resPayload.toByteArray());
         return msg.toByteArray();
     }
 
     public static byte[] generateRemoveResponse(byte[] key, byte[] messageID) {
-        ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(new ByteArrayWrapper(key));
+        ByteArrayWrapper keyWrapper = new ByteArrayWrapper(key);
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
-        if (value != null) {
-            resPayload = generateKvReply(codes.get("success"), value.toByteArray(), pid);
-            KeyValueStoreSingleton.getInstance().getMap().remove(value);
+        if (KeyValueStoreSingleton.getInstance().getMap().containsKey(keyWrapper)) {
+            KeyValueStoreSingleton.getInstance().getMap().remove(keyWrapper);
+            resPayload = generateKvReply(codes.get("success"), null, pid);
             if (VERBOSE) {
-                System.out.println("Removed Value: " + bytesToHex(value.toByteArray()));
+                System.out.println("Removed Key: " + bytesToHex(key));
             }
         } else {
             resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
+            if (VERBOSE) {
+                System.out.println("Failed attempted to remove key: " + bytesToHex(key)
+                    + " does not exist");
+            }
         }
         Msg msg = wrapMessage(messageID, resPayload.toByteArray());
         return msg.toByteArray();
