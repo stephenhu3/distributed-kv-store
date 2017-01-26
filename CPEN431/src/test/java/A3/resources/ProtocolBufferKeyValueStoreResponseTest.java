@@ -3,7 +3,6 @@ package A3.resources;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generatePutResponse;
 
 import A3.core.KeyValueStoreSingleton;
-import A3.utils.ByteArrayWrapper;
 import A3.utils.UniqueIdentifier;
 import com.google.protobuf.ByteString;
 import java.security.NoSuchAlgorithmException;
@@ -22,7 +21,8 @@ public class ProtocolBufferKeyValueStoreResponseTest {
         SecureRandom.getInstanceStrong().nextBytes(value);
 
         byte[] res = generatePutResponse(key, value, messageID);
-        ByteString retrieved = KeyValueStoreSingleton.getInstance().getMap().get(new ByteArrayWrapper(key));
+        ByteString retrieved = KeyValueStoreSingleton.getInstance().getMap().get(
+            ByteString.copyFrom(key));
         Arrays.equals(value, retrieved.toByteArray());
     }
 }

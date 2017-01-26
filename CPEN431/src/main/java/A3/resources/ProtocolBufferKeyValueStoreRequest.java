@@ -37,7 +37,7 @@ public class ProtocolBufferKeyValueStoreRequest {
         commands.put("isAlive", 6);
         commands.put("getPID", 7);
     }
-    // TODO: my system is doing a PUT on a value that supposedly isnt the same as the one sent in request
+
     public static byte[] generatePutRequest(byte[] key, byte[] val, byte[] messageID) {
         KVRequest reqPayload = generateKvRequest(commands.get("put"), key, val);
         Msg msg = wrapMessage(messageID, reqPayload.toByteArray());

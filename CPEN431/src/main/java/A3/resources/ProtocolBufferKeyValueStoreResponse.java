@@ -8,7 +8,6 @@ import static A3.utils.ProtocolBuffers.wrapMessage;
 import A3.core.KeyValueStoreSingleton;
 import A3.proto.KeyValueResponse.KVResponse;
 import A3.proto.Message.Msg;
-import A3.utils.ByteArrayWrapper;
 import A3.utils.UniqueIdentifier;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -45,7 +44,6 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
 
     // note, ConcurrentHashMap throws NullPointerException if specified key or value is null
-    // TODO: my system is doing a PUT on a value that supposedly isn't the same as the one sent in request
     public static byte[] generatePutResponse(byte[] key, byte[] value, byte[] messageID) {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
@@ -54,8 +52,8 @@ public class ProtocolBufferKeyValueStoreResponse {
             resPayload = generateKvReply(codes.get("KVStore failure"), null, pid);
         } else {
             try {
-                // TODO: Issue with getting value back is not exactly same (maybe ByteString.copyFrom of byte array yields different)
-                KeyValueStoreSingleton.getInstance().getMap().put(new ByteArrayWrapper(key), ByteString.copyFrom(value));
+                KeyValueStoreSingleton.getInstance().getMap().put(
+                    ByteString.copyFrom(key), ByteString.copyFrom(value));
                 if (VERBOSE) {
                     System.out.println("Put Value: " + bytesToHex(value));
                 }
@@ -73,12 +71,12 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
 
     public static byte[] generateGetResponse(byte[] key, byte[] messageID) {
-        ByteArrayWrapper keyWrapper = new ByteArrayWrapper(key);
+        ByteString keyString = ByteString.copyFrom(key);
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
-        if (KeyValueStoreSingleton.getInstance().getMap().containsKey(keyWrapper)) {
-            ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(keyWrapper);
+        if (KeyValueStoreSingleton.getInstance().getMap().containsKey(keyString)) {
+            ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(keyString);
             resPayload = generateKvReply(codes.get("success"), value.toByteArray(), pid);
             if (VERBOSE) {
                 System.out.println("Get Value: " + bytesToHex(value.toByteArray()));
@@ -94,12 +92,12 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
 
     public static byte[] generateRemoveResponse(byte[] key, byte[] messageID) {
-        ByteArrayWrapper keyWrapper = new ByteArrayWrapper(key);
+        ByteString keyString = ByteString.copyFrom(key);
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
-        if (KeyValueStoreSingleton.getInstance().getMap().containsKey(keyWrapper)) {
-            KeyValueStoreSingleton.getInstance().getMap().remove(keyWrapper);
+        if (KeyValueStoreSingleton.getInstance().getMap().containsKey(keyString)) {
+            KeyValueStoreSingleton.getInstance().getMap().remove(keyString);
             resPayload = generateKvReply(codes.get("success"), null, pid);
             if (VERBOSE) {
                 System.out.println("Removed Key: " + bytesToHex(key));

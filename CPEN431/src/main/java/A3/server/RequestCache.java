@@ -11,8 +11,8 @@ public class RequestCache {
     private static RequestCache instance = new RequestCache();
     LoadingCache<Msg, Msg> requestCache;
 
+    // TODO: Implement cache exceptions, size limits
     private RequestCache() {
-        // TODO: Implement request cache https://github.com/google/guava/wiki/CachesExplained
         requestCache = CacheBuilder.newBuilder()
             .maximumSize(1000)
             .expireAfterWrite(60, TimeUnit.SECONDS)
@@ -37,7 +37,6 @@ public class RequestCache {
         return instance;
     }
 
-    // TODO: Furthermore, cache needs to exist to respond to same requests - map unique requests as keys
     public LoadingCache<Msg, Msg> getCache() {
         return requestCache;
     }
