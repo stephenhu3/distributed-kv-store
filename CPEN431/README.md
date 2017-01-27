@@ -15,7 +15,9 @@ Argument:
 'spawn': Run server that listens, performs operation, and responds to KV requests
 
 Required Flags:
+
 '-name': Name of host server
+
 '-port': Port number to host server
 
 # Sending client KV request
@@ -30,17 +32,29 @@ Argument:
 
 Required Flags:
 '-ip': Destination IP address of request
+
 '-port': Destination port of request
+
 '-cmd': Student number to send
+
 available commands include the following:
+
 "put"
+
 "get"
+
 "remove"
+
 "shutdown"
+
 "deleteAll"
+
 "isAlive"
-"getPID
+
+"getPID"
+
 '-key': Key to send (as a HEX string)
+
 '-value': Value to send (as a HEX string)
 
 # Building package:
