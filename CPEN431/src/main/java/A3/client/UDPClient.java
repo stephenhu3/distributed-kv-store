@@ -1,5 +1,6 @@
 package A3.client;
 
+import static A3.DistributedSystemConfiguration.MAX_MSG_SIZE;
 import static A3.DistributedSystemConfiguration.UNIQUE_ID_UDP_SIZE;
 import static A3.DistributedSystemConfiguration.VERBOSE;
 import static A3.utils.ByteRepresentation.bytesToHex;
@@ -71,8 +72,8 @@ public class UDPClient {
         DatagramSocket socket = new DatagramSocket(port);
         InetAddress address = InetAddress.getByName(ip);
 
-        // allocate response with 1kB, truncate when number of byte received is known
-        byte[] res = new byte[1024];
+        // allocate response with max size of 16kB, truncate when number of byte received is known
+        byte[] res = new byte[MAX_MSG_SIZE];
 
         DatagramPacket reqPacket = new DatagramPacket(msg, msg.length, address, port);
         DatagramPacket resPacket = new DatagramPacket(res, res.length, address, port);

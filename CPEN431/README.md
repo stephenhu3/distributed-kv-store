@@ -4,29 +4,44 @@ Stephen Hu
 Student Number:
 31580129
 
-Secret Code:
-6F0331421A70DFF04D896A12E042D066
+Verification Code:
+BCFB628
 
-# Running the code with sample student number:
-`java -jar A3.jar protoc -ip 137.82.252.191 -port 5628 -snum 1381632`
-
-# Running the code with my student number:
-`java -jar A3.jar protoc -ip 137.82.252.191 -port 5628 -snum 31580129`
-
-Output:
-Sending ID: 31580129
-Secret code length: 16
-Secret: 6F0331421A70DFF04D896A12E042D066
+# Starting the KV store server
+`java -jar -Xmx64m target/CPEN431-1.0.jar spawn -name test -port 10129`
 
 # Usage
 Argument:
-'protoc': Send student number protocol buffer request
+'spawn': Run server that listens, performs operation, and responds to KV requests
+
+Required Flags:
+'-name': Name of host server
+'-port': Port number to host server
+
+# Sending client KV request
+`java -jar target/CPEN431-1.0.jar kv -ip 127.0.0.1 -port 10129 -cmd put -key 270F -value 270F`
+
+* Note, this application's specific client and server need to be run on separate machines, as they share same ports since they are a single Dropwizard application
+* Evaluation tests can be run locally with no issues
+
+# Usage
+Argument:
+'kv': Send key value store protocol buffer request
 
 Required Flags:
 '-ip': Destination IP address of request
 '-port': Destination port of request
-'-snum': Student number to send
+'-cmd': Student number to send
+available commands include the following:
+"put"
+"get"
+"remove"
+"shutdown"
+"deleteAll"
+"isAlive"
+"getPID
+'-key': Key to send (as a HEX string)
+'-value': Value to send (as a HEX string)
 
 # Building package:
-1. `mvn package`
-2. `java -jar target/CPEN431-1.0.jar protoc -ip 137.82.252.191 -port 5628 -snum 1381632`
+`mvn package`

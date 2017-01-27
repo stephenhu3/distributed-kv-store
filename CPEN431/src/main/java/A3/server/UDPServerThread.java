@@ -1,6 +1,8 @@
 package A3.server;
 
+import static A3.DistributedSystemConfiguration.MAX_MSG_SIZE;
 import static A3.DistributedSystemConfiguration.SHUTDOWN_NODE;
+import static A3.DistributedSystemConfiguration.VERBOSE;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateDeleteAllResponse;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateGetPIDResponse;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateGetResponse;
@@ -67,54 +69,62 @@ public class UDPServerThread extends Thread {
 
     public void run() {
         // TODO: break this monolithic run function into smaller functions
-        byte[] buf = new byte[1024];
+        byte[] buf = new byte[MAX_MSG_SIZE];
 
         // receive request
-        DatagramPacket resPacket = new DatagramPacket(buf, buf.length);
+        DatagramPacket reqPacket = new DatagramPacket(buf, buf.length);
         try {
-            socket.receive(resPacket);
+            socket.receive(reqPacket);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         // deserialize request into Msg
-        Msg responseMsg = null;
+        Msg requestMsg = null;
         try {
-            responseMsg = Msg.parseFrom(
-                Arrays.copyOf(resPacket.getData(), resPacket.getLength()));
+            requestMsg = Msg.parseFrom(
+                Arrays.copyOf(reqPacket.getData(), reqPacket.getLength()));
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
         }
 
-        byte[] messageID = responseMsg.getMessageID().toByteArray();
-        byte[] payload = responseMsg.getPayload().toByteArray();
+        byte[] reply = null;
+        byte[] messageID = requestMsg.getMessageID().toByteArray();
+
+        if (VERBOSE) {
+            System.out.println("Available Memory (bytes): " + Runtime.getRuntime().freeMemory());
+        }
+
+        // TODO: This approach is flawed, as it will no longer respond to any messages (should only state out of memory on put request)
+        byte[] payload = requestMsg.getPayload().toByteArray();
 
         // verify checksum
-        if (responseMsg != null) {
-            if (responseMsg.getCheckSum() != calculateProtocolBufferChecksum(messageID, payload)) {
+        if (requestMsg != null) {
+            if (requestMsg.getCheckSum() != calculateProtocolBufferChecksum(messageID, payload)) {
                 System.out.format("Invalid checksum detected in the response, retrying...\n");
                 // TODO: Return self-defined error code
                 return;
             }
         }
 
-        // TODO: Use request cache, define exception
+        // TODO: Use request cache, expand self-defined exceptions
         Msg msgRes = null;
         try {
-            msgRes = RequestCache.getInstance().getCache().get(responseMsg);
+            msgRes = RequestCache.getInstance().getCache().get(requestMsg);
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
 
-        byte[] reply = msgRes.toByteArray();
+
+        reply = msgRes.toByteArray();
 
         // send response back to client
-        InetAddress clientAddress = resPacket.getAddress();
-        int clientPort = resPacket.getPort();
-        DatagramPacket reqPacket = new DatagramPacket(
+        InetAddress clientAddress = reqPacket.getAddress();
+        int clientPort = reqPacket.getPort();
+        DatagramPacket resPacket = new DatagramPacket(
             reply, reply.length, clientAddress, clientPort);
         try {
-            socket.send(reqPacket);
+            socket.send(resPacket);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,5 +1,7 @@
 package A3.resources;
 
+import static A3.DistributedSystemConfiguration.JVM_HEAP_SIZE_KB;
+import static A3.DistributedSystemConfiguration.OUT_OF_MEMORY_THRESHOLD;
 import static A3.DistributedSystemConfiguration.SHUTDOWN_NODE;
 import static A3.DistributedSystemConfiguration.VERBOSE;
 import static A3.utils.ByteRepresentation.bytesToHex;
@@ -51,20 +53,21 @@ public class ProtocolBufferKeyValueStoreResponse {
         if (key == null || value == null) {
             resPayload = generateKvReply(codes.get("KVStore failure"), null, pid);
         } else {
-            try {
+            if (Runtime.getRuntime().freeMemory() >
+                (JVM_HEAP_SIZE_KB * OUT_OF_MEMORY_THRESHOLD) * 1024) {
                 KeyValueStoreSingleton.getInstance().getMap().put(
                     ByteString.copyFrom(key), ByteString.copyFrom(value));
                 if (VERBOSE) {
                     System.out.println("Put Value: " + bytesToHex(value));
                 }
-            } catch(OutOfMemoryError e) {
-                // return out of space error response, clear map
-                KeyValueStoreSingleton.getInstance().getMap().clear();
-                resPayload = generateKvReply(codes.get("out of memory"), null, pid);
-                Msg msg = wrapMessage(messageID, resPayload.toByteArray());
-                return msg.toByteArray();
+                resPayload = generateKvReply(codes.get("success"), value, pid);
+            } else {
+                if (VERBOSE) {
+                    System.out.println("Out of memory, remaining: " + Runtime.getRuntime().freeMemory());
+                }
+                // return out of memory response if GC limit about to be exceeded
+                return generateOutOfMemoryResponse(messageID);
             }
-            resPayload = generateKvReply(codes.get("success"), value, pid);
         }
         Msg msg = wrapMessage(messageID, resPayload.toByteArray());
         return msg.toByteArray();
@@ -148,6 +151,13 @@ public class ProtocolBufferKeyValueStoreResponse {
         return msg.toByteArray();
     }
 
+    public static byte[] generateOutOfMemoryResponse(byte[] messageID) {
+        int pid = UniqueIdentifier.getCurrentPID();
+        KVResponse resPayload = generateKvReply(codes.get("out of memory"), null, pid);
+        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
+        return msg.toByteArray();
+    }
+
     private static KVResponse generateKvReply(int err, byte[] val, int pid) {
         KVResponse.Builder resPayload = KVResponse.newBuilder();
         resPayload.setErrCode(err);
@@ -177,7 +187,8 @@ public class ProtocolBufferKeyValueStoreResponse {
             System.out.println("Error Code: " + reply.getErrCode());
             System.out.println("Value: " + bytesToHex(reply.getValue().toByteArray()));
             System.out.println("PID: " + reply.getPid());
-//            System.out.println("Version: " + reply.getVersion());
+            // Latest protocol buffer definitions removed version field, uncomment once reintroduced
+            // System.out.println("Version: " + reply.getVersion());
         }
     }
 }
