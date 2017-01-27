@@ -5,6 +5,7 @@ Student Number:
 31580129
 
 Verification Code:
+BCFB628
 
 # Starting the KV store server
 `java -jar -Xmx64m target/CPEN431-1.0.jar spawn -name test -port 10129`

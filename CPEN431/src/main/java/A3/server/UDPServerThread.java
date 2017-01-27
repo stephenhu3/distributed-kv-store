@@ -2,11 +2,11 @@ package A3.server;
 
 import static A3.DistributedSystemConfiguration.MAX_MSG_SIZE;
 import static A3.DistributedSystemConfiguration.SHUTDOWN_NODE;
+import static A3.DistributedSystemConfiguration.VERBOSE;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateDeleteAllResponse;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateGetPIDResponse;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateGetResponse;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateIsAlive;
-import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateOutOfMemoryResponse;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generatePutResponse;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateRemoveResponse;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateShutdownResponse;
@@ -88,38 +88,35 @@ public class UDPServerThread extends Thread {
             e.printStackTrace();
         }
 
-        // return out of space error if GC overhead limit exceeded
-        byte[] messageID = null;
-        byte[] payload = null;
         byte[] reply = null;
+        byte[] messageID = requestMsg.getMessageID().toByteArray();
 
-        try {
-            messageID = requestMsg.getMessageID().toByteArray();
-            payload = requestMsg.getPayload().toByteArray();
-
-            // verify checksum
-            if (requestMsg != null) {
-                if (requestMsg.getCheckSum() != calculateProtocolBufferChecksum(messageID, payload)) {
-                    System.out.format("Invalid checksum detected in the response, retrying...\n");
-                    // TODO: Return self-defined error code
-                    return;
-                }
-            }
-
-            // TODO: Use request cache, expand self-defined exceptions
-            Msg msgRes = null;
-            try {
-                msgRes = RequestCache.getInstance().getCache().get(requestMsg);
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-
-            reply = msgRes.toByteArray();
-        } catch (OutOfMemoryError e) {
-            messageID = null;
-            payload = null;
-            reply = generateOutOfMemoryResponse(requestMsg.getMessageID().toByteArray());
+        if (VERBOSE) {
+            System.out.println("Available Memory (bytes): " + Runtime.getRuntime().freeMemory());
         }
+
+        // TODO: This approach is flawed, as it will no longer respond to any messages (should only state out of memory on put request)
+        byte[] payload = requestMsg.getPayload().toByteArray();
+
+        // verify checksum
+        if (requestMsg != null) {
+            if (requestMsg.getCheckSum() != calculateProtocolBufferChecksum(messageID, payload)) {
+                System.out.format("Invalid checksum detected in the response, retrying...\n");
+                // TODO: Return self-defined error code
+                return;
+            }
+        }
+
+        // TODO: Use request cache, expand self-defined exceptions
+        Msg msgRes = null;
+        try {
+            msgRes = RequestCache.getInstance().getCache().get(requestMsg);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+
+        reply = msgRes.toByteArray();
 
         // send response back to client
         InetAddress clientAddress = reqPacket.getAddress();
