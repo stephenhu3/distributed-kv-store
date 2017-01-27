@@ -10,4 +10,6 @@ public class DistributedSystemConfiguration extends Configuration {
     // Used for marking node for shutdown after sending success response
     public static boolean SHUTDOWN_NODE = false;
     public static final int UNIQUE_ID_UDP_SIZE = 16;
+    // Max protobuf message size is 16kB
+    public static final int MAX_MSG_SIZE = 16384;
 }

@@ -60,9 +60,7 @@ public class ProtocolBufferKeyValueStoreResponse {
             } catch(OutOfMemoryError e) {
                 // return out of space error response, clear map
                 KeyValueStoreSingleton.getInstance().getMap().clear();
-                resPayload = generateKvReply(codes.get("out of memory"), null, pid);
-                Msg msg = wrapMessage(messageID, resPayload.toByteArray());
-                return msg.toByteArray();
+                return generateOutOfMemoryResponse(messageID);
             }
             resPayload = generateKvReply(codes.get("success"), value, pid);
         }
@@ -148,6 +146,13 @@ public class ProtocolBufferKeyValueStoreResponse {
         return msg.toByteArray();
     }
 
+    public static byte[] generateOutOfMemoryResponse(byte[] messageID) {
+        int pid = UniqueIdentifier.getCurrentPID();
+        KVResponse resPayload = generateKvReply(codes.get("out of memory"), null, pid);
+        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
+        return msg.toByteArray();
+    }
+
     private static KVResponse generateKvReply(int err, byte[] val, int pid) {
         KVResponse.Builder resPayload = KVResponse.newBuilder();
         resPayload.setErrCode(err);
@@ -177,7 +182,8 @@ public class ProtocolBufferKeyValueStoreResponse {
             System.out.println("Error Code: " + reply.getErrCode());
             System.out.println("Value: " + bytesToHex(reply.getValue().toByteArray()));
             System.out.println("PID: " + reply.getPid());
-//            System.out.println("Version: " + reply.getVersion());
+            // Latest protocol buffer definitions removed version field, uncomment once reintroduced
+            // System.out.println("Version: " + reply.getVersion());
         }
     }
 }

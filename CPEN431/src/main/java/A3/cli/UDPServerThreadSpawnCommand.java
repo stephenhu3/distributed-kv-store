@@ -10,7 +10,8 @@ import net.sourceforge.argparse4j.inf.Subparser;
 
 public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
     public UDPServerThreadSpawnCommand() {
-        super("spawn", "Spawn a UDP server thread");
+        super("spawn",
+            "Run server that listens, performs operation, and responds to KV requests");
     }
 
     @Override
