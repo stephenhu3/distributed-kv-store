@@ -19,7 +19,7 @@ Required Flags:
 '-port': Port number to host server
 
 # Sending client KV request
-`java -jar target/CPEN431-1.0.jar kv -ip 127.0.0.1 -port 10128 -cmd put -key 270F -value 270F`
+`java -jar target/CPEN431-1.0.jar kv -ip 127.0.0.1 -port 10129 -cmd put -key 270F -value 270F`
 
 * Note, this application's specific client and server need to be run on separate machines, as they share same ports since they are a single Dropwizard application
 * Evaluation tests can be run locally with no issues
