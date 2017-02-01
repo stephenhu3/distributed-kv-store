@@ -20,7 +20,8 @@ public class RequestCache {
                 new CacheLoader<Msg, Msg>() {
                     public Msg load(Msg key) throws Exception {
                         KVRequest kvReq = KVRequest.parseFrom(key.getPayload());
-                        byte[] res = UDPServerThread.generateResponse(
+                        KVOperationThread thread = new KVOperationThread();
+                        byte[] res = thread.generateResponse(
                             kvReq.getCommand(),
                             kvReq.getKey().toByteArray(),
                             kvReq.getValue().toByteArray(),
