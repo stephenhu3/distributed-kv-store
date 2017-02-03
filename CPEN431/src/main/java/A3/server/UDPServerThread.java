@@ -66,7 +66,6 @@ public class UDPServerThread extends Thread {
         }
 
         // TODO: Break search cache, add to cache, assemble reply as separate thread
-        // TODO: Use request cache, expand self-defined exceptions
         RequestQueue.getInstance().getQueue().add(
             new MsgWrapper(requestMsg, reqPacket.getAddress(), reqPacket.getPort()));
 //        RequestHandlerThread thread = new RequestHandlerThread();

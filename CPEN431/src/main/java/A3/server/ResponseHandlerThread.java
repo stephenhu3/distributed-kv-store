@@ -14,17 +14,19 @@ public class ResponseHandlerThread extends Thread {
     }
 
     public void run() {
-        while(!ResponseQueue.getInstance().getQueue().isEmpty()) {
-            MsgWrapper wrappedMsg = ResponseQueue.getInstance().getQueue().poll();
-            byte[] reply = wrappedMsg.getMessage().toByteArray();
-            DatagramPacket resPacket = new DatagramPacket(reply, reply.length,
-                wrappedMsg.getAddress(), wrappedMsg.getPort());
-            try {
-                socket.send(resPacket);
-            } catch (IOException e) {
-                e.printStackTrace();
+        while (true) {
+            while (!ResponseQueue.getInstance().getQueue().isEmpty()) {
+                MsgWrapper wrappedMsg = ResponseQueue.getInstance().getQueue().poll();
+                byte[] reply = wrappedMsg.getMessage().toByteArray();
+                DatagramPacket resPacket = new DatagramPacket(reply, reply.length,
+                    wrappedMsg.getAddress(), wrappedMsg.getPort());
+                try {
+                    socket.send(resPacket);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                socket.close();
             }
-            socket.close();
         }
     }
 }

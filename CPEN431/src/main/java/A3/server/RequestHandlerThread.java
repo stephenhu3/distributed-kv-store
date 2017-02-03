@@ -11,18 +11,20 @@ public class RequestHandlerThread extends Thread {
     }
 
     public void run() {
-        while(!RequestQueue.getInstance().getQueue().isEmpty()) {
-            MsgWrapper wrappedMsg = RequestQueue.getInstance().getQueue().poll();
-            Msg requestMsg = wrappedMsg.getMessage();
-            Msg msgRes = null;
-            try {
-                msgRes = RequestCache.getInstance().getCache().get(requestMsg);
-            } catch (ExecutionException e) {
-                e.printStackTrace();
+        while (true) {
+            while (!RequestQueue.getInstance().getQueue().isEmpty()) {
+                MsgWrapper wrappedMsg = RequestQueue.getInstance().getQueue().poll();
+                Msg requestMsg = wrappedMsg.getMessage();
+                Msg msgRes = null;
+                try {
+                    msgRes = RequestCache.getInstance().getCache().get(requestMsg);
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+                // Add processes response to ResponseQueue
+                ResponseQueue.getInstance().getQueue().add(
+                    new MsgWrapper(msgRes, wrappedMsg.getAddress(), wrappedMsg.getPort()));
             }
-            // Add processes response to ResponseQueue
-            ResponseQueue.getInstance().getQueue().add(
-                new MsgWrapper(msgRes, wrappedMsg.getAddress(), wrappedMsg.getPort()));
         }
     }
 }

@@ -1,86 +1,20 @@
 CPEN 431 Test Client
-Build Date: Thu Jan 26 22:47:54 PST 2017
-Java process ID: 43122
+Build Date: Tue Jan 31 10:00:18 PST 2017
+Java process ID: 25931
 
 [A3 BASIC Tests]
 
 [Test isAlive]
-TEST_PASSED
-Server is up.
-
-[ TEST Basic PUT/GET (PUT -> GET). Value Length = 32 Bytes. Pausing 10 between PUT & GET. ]
-TEST_PASSED
-
-[ TEST Basic REMOVE (PUT -> GET -> REM -> GET). Value Length = 32 Bytes. ]
-TEST_PASSED
-
-[ TEST Basic REMOVE (PUT -> PUT -> GET). Value Length = 32 Bytes. ]
-TEST_PASSED
-
-[ TEST Basic REMOVE (PUT -> REM -> REM). Value Length = 32 Bytes. ]
-TEST_PASSED
-
-[ TEST Invalid Command. ]
-TEST_PASSED
-
-[ TEST Multi Client Performance (1 clients, 100 closed loops per client): PUT -> GET (closed loop) ]
-[Test isAlive]
-Test Passed. Server is ok.
-
-TEST_PASSED
-Test Status: TEST_PASSED
-Clients: 1
-Total Requests (without replies): 200
-Total Requests (including replies): 201
-Successful Responses: 200
-Timeout Responses: 0
-Total Failed Responses: 0
-% Success: 100.0
-% Timeout: 0.0
-% Failed: 0.0
-Response Time (Successful requests):
-[max] 4ms, [min] 0ms
-[avg] 0.71 ms, [stdev] 0.5965735495309863ms
-Throughput: 322.061191626409 requests per second
-Goodput: 322.061191626409 requests per second
-Retry Rate (Successful requests): 1.005
-
-Completed A3 Tests.
-
-Extra Evaluation Tests
-
-[ TEST Basic PUT/GET (PUT -> GET). Value Length = 8 Bytes ]
-TEST_PASSED
-[ TEST Basic PUT/GET (PUT -> GET). Value Length = 32 Bytes ]
-TEST_PASSED
-[ TEST Basic PUT/GET (PUT -> GET). Value Length = 2048 Bytes ]
-TEST_PASSED
-[ TEST Basic PUT/GET (PUT -> GET). Value Length = 10000 Bytes ]
-TEST_PASSED
-
-[ TEST At-Most-Once Client Policy (PUT -> REM -> REM) ]
-TEST_PASSED
-
-[ TEST Multi Client Crash: PUT -> GET (closed loop) + REM -> WIPEOUT (closed loop) ]
-[Test isAlive]
-Test Passed. Server is ok.
-TEST_PASSED
-
-[ TEST Single Client Capacity (Value Size = 7500 bytes, Limit = 9786 PUTs, ~69.99492645263672 MiB) : PUT -> GET (closed loop) ]
-ERROR_OUT_OF_SPACE
-Received error code after 3582 closed loops (~25.620460510253906 MiB).
-PUTs sent = 3582(~25.620460510253906 MiB) , Limit = 9786
-[Test isAlive]
-Test Passed. Server is ok.
-TEST_PASSED
-
-[ TEST Single Client Capacity (Value Size = 10000 bytes, Limit = 7340 PUTs, ~69.99969482421875 MiB) : PUT -> GET (closed loop) ]
-ERROR_OUT_OF_SPACE
-Received error code after 1 closed loops (~0.0095367431640625 MiB).
-PUTs sent = 1(~0.0095367431640625 MiB) , Limit = 7340
-[Test isAlive]
-Test Passed. Server is ok.
-TEST_PASSED
-
-Completed A3 Evaluation Tests.
-Testing completed in 70.05s
+Request Timeout.
+Request Timeout.
+Request Timeout.
+Request Timeout.
+Request Timeout.
+Request Timeout.
+Request Timeout.
+Request Timeout.
+Request Timeout.
+Request Timeout.
+TEST_UNDECIDED
+Server is down. Aborting!
+Testing completed in 38.169s
