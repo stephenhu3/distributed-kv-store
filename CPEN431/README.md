@@ -4,11 +4,16 @@ Stephen Hu
 Student Number:
 31580129
 
-Verification Code:
-BCFB628
+A4 Verification Code: A13A3FE
+
+Refactored single threaded model into thread pool + queues, reduced unneeded ByteString and Msg type conversions
 
 # Starting the KV store server
 `java -jar -Xmx64m target/CPEN431-1.0.jar spawn -name test -port 10129`
+
+or use pre-packaged JAR:
+
+`java -jar -Xmx64m a4.jar spawn -name test -port 10129`
 
 # Usage
 Argument:
