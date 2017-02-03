@@ -1,6 +1,5 @@
 package A3.cli;
 
-import static A3.DistributedSystemConfiguration.SERVER_MODE;
 import static A3.DistributedSystemConfiguration.VERBOSE;
 
 import A3.server.RequestHandlerThread;
@@ -45,13 +44,16 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
         }
 
         // if in server mode, keep server running after each served request
-        do {
-            // TODO: UDPServerThread and RequestHandlerThread should be swapped
-            // TODO: Could implement set of ports used, to avoid conflicts
-            new UDPServerThread(name + "-server-thread", port).run();
-            new RequestHandlerThread(name + "-request-handler").run();
-            new ResponseHandlerThread(name + "-response-handler",
-                port + new Random().nextInt(1000)).run();
-        } while (SERVER_MODE);
+        new RequestHandlerThread(name + "-request-handler").start();
+        new ResponseHandlerThread(name + "-response-handler",
+            port + new Random().nextInt(10000)).start();
+        new UDPServerThread(name + "-server-thread", port).start();
+//        do {
+//            // TODO: UDPServerThread and RequestHandlerThread should be swapped
+//            // TODO: Could implement set of ports used, to avoid conflicts
+//            // TODO: Implement shutdown command on these threads
+//            // TODO: Issue, on second run, conflicting port IP with response handler's thread
+//
+//        } while (SERVER_MODE);
     }
 }
