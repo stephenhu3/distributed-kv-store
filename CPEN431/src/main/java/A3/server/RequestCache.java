@@ -22,16 +22,6 @@ public class RequestCache {
                         // wait until KVResponseQueue has processed
                         while (KVResponseQueue.getInstance().getQueue().isEmpty());
                         return  KVResponseQueue.getInstance().getQueue().poll();
-//                        KVRequest kvReq = KVRequest.parseFrom(key.getPayload());
-//                        KVOperationThread thread = new KVOperationThread();
-//                        byte[] res = thread.generateResponse(
-//                            kvReq.getCommand(),
-//                            kvReq.getKey().toByteArray(),
-//                            kvReq.getValue().toByteArray(),
-//                            key.getMessageID().toByteArray()
-//                        );
-//                        Msg resMsg = Msg.parseFrom(res);
-//                        return resMsg;
                     }
                 }
             );

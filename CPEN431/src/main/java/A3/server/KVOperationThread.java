@@ -12,6 +12,7 @@ import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateUnrecogni
 
 import A3.proto.KeyValueRequest.KVRequest;
 import A3.proto.Message.Msg;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
 
@@ -36,26 +37,20 @@ public class KVOperationThread extends Thread {
                     e.printStackTrace();
                 }
 
-                byte[] res = generateResponse(
+                Msg res = generateResponse(
                     kvReq.getCommand(),
-                    kvReq.getKey().toByteArray(),
-                    kvReq.getValue().toByteArray(),
-                    req.getMessageID().toByteArray()
+                    kvReq.getKey(),
+                    kvReq.getValue(),
+                    req.getMessageID()
                 );
 
-                Msg resMsg = null;
-                try {
-                    resMsg = Msg.parseFrom(res);
-                } catch (InvalidProtocolBufferException e) {
-                    e.printStackTrace();
-                }
-                KVResponseQueue.getInstance().getQueue().add(resMsg);
+                KVResponseQueue.getInstance().getQueue().add(res);
             }
         }
     }
 
-    private byte[] generateResponse(int cmd, byte[] key, byte[] value, byte[] messageID) {
-        byte[] reply = null;
+    private Msg generateResponse(int cmd, ByteString key, ByteString value, ByteString messageID) {
+        Msg reply = null;
 
         switch (cmd) {
             case 1:

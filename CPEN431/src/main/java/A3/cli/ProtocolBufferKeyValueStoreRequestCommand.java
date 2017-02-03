@@ -9,6 +9,7 @@ import A3.client.UDPClient;
 import A3.proto.Message.Msg;
 import A3.resources.ProtocolBufferKeyValueStoreRequest;
 import A3.resources.ProtocolBufferKeyValueStoreResponse;
+import com.google.protobuf.ByteString;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
@@ -86,33 +87,40 @@ public class ProtocolBufferKeyValueStoreRequestCommand extends io.dropwizard.cli
         }
 
         byte[] messageID = generateUniqueID();
-        byte[] msg;
+        Msg msg;
 
         // map command to respective operation
         switch(cmd) {
             case "put":
                 msg = ProtocolBufferKeyValueStoreRequest.generatePutRequest(
-                    hexToBytes(key), hexToBytes(value), messageID);
+                    ByteString.copyFrom(hexToBytes(key)),
+                    ByteString.copyFrom(hexToBytes(value)),
+                    ByteString.copyFrom(messageID)
+                );
                 break;
             case "get":
                 msg = ProtocolBufferKeyValueStoreRequest.generateGetRequest(
-                    hexToBytes(key), messageID);
+                    ByteString.copyFrom(hexToBytes(key)), ByteString.copyFrom(messageID));
                 break;
             case "remove":
                 msg = ProtocolBufferKeyValueStoreRequest.generateRemoveRequest(
-                    hexToBytes(key), messageID);
+                    ByteString.copyFrom(hexToBytes(key)), ByteString.copyFrom(messageID));
                 break;
             case "shutdown":
-                msg = ProtocolBufferKeyValueStoreRequest.generateShutdownRequest(messageID);
+                msg = ProtocolBufferKeyValueStoreRequest.generateShutdownRequest(
+                    ByteString.copyFrom(messageID));
                 break;
             case "deleteAll":
-                msg = ProtocolBufferKeyValueStoreRequest.generateDeleteAllRequest(messageID);
+                msg = ProtocolBufferKeyValueStoreRequest.generateDeleteAllRequest(
+                    ByteString.copyFrom(messageID));
                 break;
             case "isAlive":
-                msg = ProtocolBufferKeyValueStoreRequest.generateIsAliveRequest(messageID);
+                msg = ProtocolBufferKeyValueStoreRequest.generateIsAliveRequest(
+                    ByteString.copyFrom(messageID));
                 break;
             case "getPID":
-                msg = ProtocolBufferKeyValueStoreRequest.generateGetPIDRequest(messageID);
+                msg = ProtocolBufferKeyValueStoreRequest.generateGetPIDRequest(
+                    ByteString.copyFrom(messageID));
                 break;
             default :
                 System.out.println("Invalid command entered. Please try again");
@@ -120,16 +128,15 @@ public class ProtocolBufferKeyValueStoreRequestCommand extends io.dropwizard.cli
         }
 
         if (VERBOSE) {
-            Msg msgProto = Msg.parseFrom(msg);
-            System.out.println("Request HEX String: " + bytesToHex(msg));
+            System.out.println("Request HEX String: " + bytesToHex(msg.toByteArray()));
             System.out.println("Request Message ID: " + bytesToHex(messageID));
-            System.out.println("Request Payload: " + bytesToHex(msgProto .getPayload().toByteArray()));
-            System.out.println("Request Checksum: " + msgProto .getCheckSum());
+            System.out.println("Request Payload: " + bytesToHex(msg .getPayload().toByteArray()));
+            System.out.println("Request Checksum: " + msg .getCheckSum());
         }
 
 
         // client sends request, res is the response
-        byte[] res = UDPClient.sendProtocolBufferRequest(msg, ip, port, messageID);
-        ProtocolBufferKeyValueStoreResponse.parseResponse(res);
+        byte[] res = UDPClient.sendProtocolBufferRequest(msg.toByteArray(), ip, port, messageID);
+        ProtocolBufferKeyValueStoreResponse.parseResponse(ByteString.copyFrom(res));
     }
 }

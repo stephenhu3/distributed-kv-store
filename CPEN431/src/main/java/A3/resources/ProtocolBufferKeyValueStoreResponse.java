@@ -46,7 +46,7 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
 
     // note, ConcurrentHashMap throws NullPointerException if specified key or value is null
-    public static byte[] generatePutResponse(byte[] key, byte[] value, byte[] messageID) {
+    public static Msg generatePutResponse(ByteString key, ByteString value, ByteString messageID) {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
@@ -55,10 +55,9 @@ public class ProtocolBufferKeyValueStoreResponse {
         } else {
             if (Runtime.getRuntime().freeMemory() >
                 (JVM_HEAP_SIZE_KB * OUT_OF_MEMORY_THRESHOLD) * 1024) {
-                KeyValueStoreSingleton.getInstance().getMap().put(
-                    ByteString.copyFrom(key), ByteString.copyFrom(value));
+                KeyValueStoreSingleton.getInstance().getMap().put(key, value);
                 if (VERBOSE) {
-                    System.out.println("Put Value: " + bytesToHex(value));
+                    System.out.println("Put Value: " + bytesToHex(value.toByteArray()));
                 }
                 resPayload = generateKvReply(codes.get("success"), value, pid);
             } else {
@@ -69,101 +68,100 @@ public class ProtocolBufferKeyValueStoreResponse {
                 return generateOutOfMemoryResponse(messageID);
             }
         }
-        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
-        return msg.toByteArray();
+        Msg msg = wrapMessage(messageID, resPayload.toByteString());
+        return msg;
     }
 
-    public static byte[] generateGetResponse(byte[] key, byte[] messageID) {
-        ByteString keyString = ByteString.copyFrom(key);
+    public static Msg generateGetResponse(ByteString key, ByteString messageID) {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
-        if (KeyValueStoreSingleton.getInstance().getMap().containsKey(keyString)) {
-            ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(keyString);
-            resPayload = generateKvReply(codes.get("success"), value.toByteArray(), pid);
+        if (KeyValueStoreSingleton.getInstance().getMap().containsKey(key)) {
+            ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(key);
+            resPayload = generateKvReply(codes.get("success"), value, pid);
             if (VERBOSE) {
                 System.out.println("Get Value: " + bytesToHex(value.toByteArray()));
             }
         } else {
             resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
             if (VERBOSE) {
-                System.out.println("Attempted Get Key: " + bytesToHex(key) + " does not exist");
+                System.out.println("Attempted Get Key: " + bytesToHex(key.toByteArray())
+                    + " does not exist");
             }
         }
-        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
-        return msg.toByteArray();
+        Msg msg = wrapMessage(messageID, resPayload.toByteString());
+        return msg;
     }
 
-    public static byte[] generateRemoveResponse(byte[] key, byte[] messageID) {
-        ByteString keyString = ByteString.copyFrom(key);
+    public static Msg generateRemoveResponse(ByteString key, ByteString messageID) {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
-        if (KeyValueStoreSingleton.getInstance().getMap().containsKey(keyString)) {
-            KeyValueStoreSingleton.getInstance().getMap().remove(keyString);
+        if (KeyValueStoreSingleton.getInstance().getMap().containsKey(key)) {
+            KeyValueStoreSingleton.getInstance().getMap().remove(key);
             resPayload = generateKvReply(codes.get("success"), null, pid);
             if (VERBOSE) {
-                System.out.println("Removed Key: " + bytesToHex(key));
+                System.out.println("Removed Key: " + bytesToHex(key.toByteArray()));
             }
         } else {
             resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
             if (VERBOSE) {
-                System.out.println("Failed attempted to remove key: " + bytesToHex(key)
-                    + " does not exist");
+                System.out.println("Failed attempted to remove key: "
+                    + bytesToHex(key.toByteArray()) + " does not exist");
             }
         }
-        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
-        return msg.toByteArray();
+        Msg msg = wrapMessage(messageID, resPayload.toByteString());
+        return msg;
     }
 
-    public static byte[] generateShutdownResponse(byte[] messageID) {
+    public static Msg generateShutdownResponse(ByteString messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
         KVResponse resPayload = generateKvReply(codes.get("success"), null, pid);
-        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
+        Msg msg = wrapMessage(messageID, resPayload.toByteString());
         // requirement states sending success response on shutdown
         SHUTDOWN_NODE = true;
-        return msg.toByteArray();
+        return msg;
     }
 
-    public static byte[] generateDeleteAllResponse(byte[] messageID) {
+    public static Msg generateDeleteAllResponse(ByteString messageID) {
         KeyValueStoreSingleton.getInstance().getMap().clear();
         int pid = UniqueIdentifier.getCurrentPID();
         KVResponse resPayload = generateKvReply(codes.get("success"), null, pid);
-        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
-        return msg.toByteArray();
+        Msg msg = wrapMessage(messageID, resPayload.toByteString());
+        return msg;
     }
 
-    public static byte[] generateIsAlive(byte[] messageID) {
+    public static Msg generateIsAlive(ByteString messageID) {
         return generateGetPIDResponse(messageID);
     }
 
-    public static byte[] generateGetPIDResponse(byte[] messageID) {
+    public static Msg generateGetPIDResponse(ByteString messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
         KVResponse resPayload = generateKvReply(codes.get("success"), null, pid);
-        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
-        return msg.toByteArray();
+        Msg msg = wrapMessage(messageID, resPayload.toByteString());
+        return msg;
     }
 
-    public static byte[] generateUnrecognizedCommandResponse(byte[] messageID) {
+    public static Msg generateUnrecognizedCommandResponse(ByteString messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
         KVResponse resPayload = generateKvReply(codes.get("unrecognized command"), null, pid);
-        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
-        return msg.toByteArray();
+        Msg msg = wrapMessage(messageID, resPayload.toByteString());
+        return msg;
     }
 
-    public static byte[] generateOutOfMemoryResponse(byte[] messageID) {
+    public static Msg generateOutOfMemoryResponse(ByteString messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
         KVResponse resPayload = generateKvReply(codes.get("out of memory"), null, pid);
-        Msg msg = wrapMessage(messageID, resPayload.toByteArray());
-        return msg.toByteArray();
+        Msg msg = wrapMessage(messageID, resPayload.toByteString());
+        return msg;
     }
 
-    private static KVResponse generateKvReply(int err, byte[] val, int pid) {
+    private static KVResponse generateKvReply(int err, ByteString val, int pid) {
         KVResponse.Builder resPayload = KVResponse.newBuilder();
         resPayload.setErrCode(err);
 
         if (val != null) {
-            resPayload.setValue(ByteString.copyFrom(val));
+            resPayload.setValue(val);
         }
 
         if (pid != -1) {
@@ -173,7 +171,7 @@ public class ProtocolBufferKeyValueStoreResponse {
         return resPayload.build();
     }
 
-    public static void parseResponse(byte[] response) {
+    public static void parseResponse(ByteString response) {
         KVResponse reply = null;
 
         // deserialize response payload

@@ -50,9 +50,5 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
         new KVOperationThread(name + "-kv-operation-thread").start();
         new ResponseHandlerThread(name + "-response-handler",
             port + new Random().nextInt(10000)).start();
-        // TODO: UDPServerThread and RequestHandlerThread should be swapped
-        // TODO: Could implement set of ports used, to avoid conflicts
-        // TODO: Implement shutdown command on these threads
-        // TODO: Issue, on second run, conflicting port IP with response handler's thread
     }
 }

@@ -28,12 +28,12 @@ public class KeyValueStoreIntegrationTest {
         SecureRandom.getInstanceStrong().nextBytes(key);
         SecureRandom.getInstanceStrong().nextBytes(value);
 
-        byte[] res = generatePutResponse(key, value, messageID);
+        Msg res = generatePutResponse(ByteString.copyFrom(key), ByteString.copyFrom(value),
+            ByteString.copyFrom(messageID));
 
         byte[] getReqMessageID = UniqueIdentifier.generateUniqueID();
-        byte[] getReqRes = generateGetResponse(key, messageID);
+        Msg msg = generateGetResponse(ByteString.copyFrom(key), ByteString.copyFrom(messageID));
 
-        Msg msg = Msg.parseFrom(getReqRes);
         KVResponse resp = KVResponse.parseFrom(msg.getPayload());
 
         ByteString retrieved = resp.getValue();

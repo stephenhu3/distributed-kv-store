@@ -1,5 +1,6 @@
 package A3.utils;
 
+import com.google.protobuf.ByteString;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.zip.CRC32;
@@ -14,5 +15,9 @@ public class Checksum {
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
         crc32.update(byteBuffer.array());
         return crc32.getValue();
+    }
+
+    public static long calculateProtocolBufferChecksum(ByteString messageID, ByteString payload) {
+        return calculateProtocolBufferChecksum(messageID.toByteArray(), payload.toByteArray());
     }
 }

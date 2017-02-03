@@ -15,6 +15,6 @@ public class DistributedSystemConfiguration extends Configuration {
     // Heapsize set as 64mb
     public static final int JVM_HEAP_SIZE_KB = 64000;
     // Out of memory threshold triggers at 3.75% free memory remaining in verbose mode
-    // set as 4.5% when VERBOSE is false
-    public static final double OUT_OF_MEMORY_THRESHOLD = 0.045;
+    // set as 6.25% when VERBOSE is false
+    public static final double OUT_OF_MEMORY_THRESHOLD = 0.09;
 }

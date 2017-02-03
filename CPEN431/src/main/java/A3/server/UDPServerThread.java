@@ -60,7 +60,6 @@ public class UDPServerThread extends Thread {
                     .println("Available Memory (bytes): " + Runtime.getRuntime().freeMemory());
             }
 
-            // TODO: This approach is flawed, as it will no longer respond to any messages (should only state out of memory on put request)
             byte[] payload = requestMsg.getPayload().toByteArray();
 
             // verify checksum
@@ -73,7 +72,6 @@ public class UDPServerThread extends Thread {
                 }
             }
 
-        // TODO: Break search cache, add to cache, assemble reply as separate thread
         RequestQueue.getInstance().getQueue().add(
             new MsgWrapper(requestMsg, reqPacket.getAddress(), reqPacket.getPort()));
         }
