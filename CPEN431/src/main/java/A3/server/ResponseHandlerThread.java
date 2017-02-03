@@ -1,5 +1,7 @@
 package A3.server;
 
+import static A3.DistributedSystemConfiguration.SHUTDOWN_NODE;
+
 import A3.utils.MsgWrapper;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -14,17 +16,22 @@ public class ResponseHandlerThread extends Thread {
     }
 
     public void run() {
-        while(!ResponseQueue.getInstance().getQueue().isEmpty()) {
-            MsgWrapper wrappedMsg = ResponseQueue.getInstance().getQueue().poll();
-            byte[] reply = wrappedMsg.getMessage().toByteArray();
-            DatagramPacket resPacket = new DatagramPacket(reply, reply.length,
-                wrappedMsg.getAddress(), wrappedMsg.getPort());
-            try {
-                socket.send(resPacket);
-            } catch (IOException e) {
-                e.printStackTrace();
+        while (true) {
+            if (SHUTDOWN_NODE) {
+                socket.close();
+                System.exit(0);
             }
-            socket.close();
+            while (!ResponseQueue.getInstance().getQueue().isEmpty()) {
+                MsgWrapper wrappedMsg = ResponseQueue.getInstance().getQueue().poll();
+                byte[] reply = wrappedMsg.getMessage().toByteArray();
+                DatagramPacket resPacket = new DatagramPacket(reply, reply.length,
+                    wrappedMsg.getAddress(), wrappedMsg.getPort());
+                try {
+                    socket.send(resPacket);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }
