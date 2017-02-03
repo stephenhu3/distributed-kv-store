@@ -1,5 +1,6 @@
 package A3.server;
 
+import static A3.DistributedSystemConfiguration.SHUTDOWN_NODE;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateDeleteAllResponse;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateGetPIDResponse;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateGetResponse;
@@ -9,11 +10,54 @@ import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateRemoveRes
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateShutdownResponse;
 import static A3.resources.ProtocolBufferKeyValueStoreResponse.generateUnrecognizedCommandResponse;
 
+import A3.proto.KeyValueRequest.KVRequest;
+import A3.proto.Message.Msg;
+import com.google.protobuf.InvalidProtocolBufferException;
+import java.io.IOException;
+
 public class KVOperationThread extends Thread {
-    public byte[] generateResponse(int cmd, byte[] key, byte[] value, byte[] messageID) {
+
+    public KVOperationThread(String name) throws IOException {
+        super(name);
+    }
+
+    public void run() {
+        while (true) {
+            if (SHUTDOWN_NODE) {
+                System.exit(0);
+            }
+            while (!KVRequestQueue.getInstance().getQueue().isEmpty()) {
+                Msg req = KVRequestQueue.getInstance().getQueue().poll();
+                KVRequest kvReq = null;
+
+                try {
+                    kvReq = KVRequest.parseFrom(req.getPayload());
+                } catch (InvalidProtocolBufferException e) {
+                    e.printStackTrace();
+                }
+
+                byte[] res = generateResponse(
+                    kvReq.getCommand(),
+                    kvReq.getKey().toByteArray(),
+                    kvReq.getValue().toByteArray(),
+                    req.getMessageID().toByteArray()
+                );
+
+                Msg resMsg = null;
+                try {
+                    resMsg = Msg.parseFrom(res);
+                } catch (InvalidProtocolBufferException e) {
+                    e.printStackTrace();
+                }
+                KVResponseQueue.getInstance().getQueue().add(resMsg);
+            }
+        }
+    }
+
+    private byte[] generateResponse(int cmd, byte[] key, byte[] value, byte[] messageID) {
         byte[] reply = null;
 
-        switch(cmd) {
+        switch (cmd) {
             case 1:
                 reply = generatePutResponse(key, value, messageID);
                 break;

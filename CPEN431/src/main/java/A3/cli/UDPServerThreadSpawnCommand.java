@@ -2,6 +2,7 @@ package A3.cli;
 
 import static A3.DistributedSystemConfiguration.VERBOSE;
 
+import A3.server.KVOperationThread;
 import A3.server.RequestHandlerThread;
 import A3.server.ResponseHandlerThread;
 import A3.server.UDPServerThread;
@@ -44,10 +45,11 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
         }
 
         // if in server mode, keep server running after each served request
+        new UDPServerThread(name + "-server-thread", port).start();
         new RequestHandlerThread(name + "-request-handler").start();
+        new KVOperationThread(name + "-kv-operation-thread").start();
         new ResponseHandlerThread(name + "-response-handler",
             port + new Random().nextInt(10000)).start();
-        new UDPServerThread(name + "-server-thread", port).start();
         // TODO: UDPServerThread and RequestHandlerThread should be swapped
         // TODO: Could implement set of ports used, to avoid conflicts
         // TODO: Implement shutdown command on these threads

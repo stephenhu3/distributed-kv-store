@@ -1,6 +1,5 @@
 package A3.server;
 
-import A3.proto.KeyValueRequest.KVRequest;
 import A3.proto.Message.Msg;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -14,21 +13,25 @@ public class RequestCache {
     // TODO: Implement cache exceptions, size limits
     private RequestCache() {
         requestCache = CacheBuilder.newBuilder()
-            .maximumSize(1000)
+            .maximumSize(500)
             .expireAfterWrite(60, TimeUnit.SECONDS)
             .build(
                 new CacheLoader<Msg, Msg>() {
                     public Msg load(Msg key) throws Exception {
-                        KVRequest kvReq = KVRequest.parseFrom(key.getPayload());
-                        KVOperationThread thread = new KVOperationThread();
-                        byte[] res = thread.generateResponse(
-                            kvReq.getCommand(),
-                            kvReq.getKey().toByteArray(),
-                            kvReq.getValue().toByteArray(),
-                            key.getMessageID().toByteArray()
-                        );
-                        Msg resMsg = Msg.parseFrom(res);
-                        return resMsg;
+                        KVRequestQueue.getInstance().getQueue().add(key);
+                        // wait until KVResponseQueue has processed
+                        while (KVResponseQueue.getInstance().getQueue().isEmpty());
+                        return  KVResponseQueue.getInstance().getQueue().poll();
+//                        KVRequest kvReq = KVRequest.parseFrom(key.getPayload());
+//                        KVOperationThread thread = new KVOperationThread();
+//                        byte[] res = thread.generateResponse(
+//                            kvReq.getCommand(),
+//                            kvReq.getKey().toByteArray(),
+//                            kvReq.getValue().toByteArray(),
+//                            key.getMessageID().toByteArray()
+//                        );
+//                        Msg resMsg = Msg.parseFrom(res);
+//                        return resMsg;
                     }
                 }
             );
