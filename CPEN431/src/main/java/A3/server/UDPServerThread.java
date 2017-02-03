@@ -73,35 +73,9 @@ public class UDPServerThread extends Thread {
                 }
             }
 
-            // TODO: Break search cache, add to cache, assemble reply as separate thread
-            RequestQueue.getInstance().getQueue().add(
-                new MsgWrapper(requestMsg, reqPacket.getAddress(), reqPacket.getPort()));
-//        RequestHandlerThread thread = new RequestHandlerThread();
-//        reply = thread.processRequest(requestMsg).toByteArray();
-
-//        Msg msgRes = null;
-//        try {
-//            msgRes = RequestCache.getInstance().getCache().get(requestMsg);
-//        } catch (ExecutionException e) {
-//            e.printStackTrace();
-//        }
-
-//        reply = msgRes.toByteArray();
-
-            // send response back to client
-//        InetAddress clientAddress = reqPacket.getAddress();
-//        int clientPort = reqPacket.getPort();
-//        DatagramPacket resPacket = new DatagramPacket(
-//            reply, reply.length, clientAddress, clientPort);
-//        try {
-//            socket.send(resPacket);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        socket.close();
-//        if (SHUTDOWN_NODE) {
-//            System.exit(0);
-//        }
+        // TODO: Break search cache, add to cache, assemble reply as separate thread
+        RequestQueue.getInstance().getQueue().add(
+            new MsgWrapper(requestMsg, reqPacket.getAddress(), reqPacket.getPort()));
         }
     }
 }
