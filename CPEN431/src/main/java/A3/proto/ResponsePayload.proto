@@ -1,6 +1,0 @@
-syntax = "proto2";
-option java_outer_classname = "ResponsePayload";
-
-message ResPayload {
-    required bytes secretKey = 1;
-}
