@@ -49,4 +49,5 @@ available commands include the following:
 `mvn package`
 
 * Evaluation tests can be run locally
-`java -jar test_client.jar.jar servers.txt`
+
+`java -jar test_client.jar servers.txt`
