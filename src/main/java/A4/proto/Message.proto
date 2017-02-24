@@ -1,0 +1,8 @@
+syntax = "proto2";
+option java_outer_classname = "Message";
+
+message Msg {
+    required bytes messageID = 1;
+    required bytes payload = 2;
+    required fixed64 checkSum = 3;
+}
