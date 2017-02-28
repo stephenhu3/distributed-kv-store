@@ -12,9 +12,13 @@ import static A4.resources.ProtocolBufferKeyValueStoreResponse.generateUnrecogni
 
 import A4.proto.KeyValueRequest.KVRequest;
 import A4.proto.Message.Msg;
+import A4.utils.MsgWrapper;
+
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class KVOperationThread extends Thread {
 
@@ -36,14 +40,30 @@ public class KVOperationThread extends Thread {
                 } catch (InvalidProtocolBufferException e) {
                     e.printStackTrace();
                 }
-
-                Msg res = generateResponse(
-                    kvReq.getCommand(),
-                    kvReq.getKey(),
-                    kvReq.getValue(),
-                    req.getMessageID()
-                );
-
+                
+                MsgWrapper fwdWrapper = DistributedServerHash.getInstance().getNode(kvReq.getKey());
+                
+                Msg res;
+                // currentNode is correct node, find a response, set correct receiver
+		        if(fwdWrapper == null){
+		        	if(req.hasFwdPort() && req.hasFwdAddress()){
+		        		try {
+							fwdWrapper.setAddress(InetAddress.getByAddress(req.getFwdAddress().toByteArray()));
+							fwdWrapper.setPort(req.getFwdPort());
+		        		} catch (UnknownHostException e) {
+							e.printStackTrace();
+						}
+		        	}
+		        	res = generateResponse(
+	                    kvReq.getCommand(),
+	                    kvReq.getKey(),
+	                    kvReq.getValue(),
+	                    req.getMessageID()
+	                );
+		        } else {
+		        	res = req;
+		        }
+		        ForwardingQueue.getInstance().getQueue().add(fwdWrapper);
                 KVResponseQueue.getInstance().getQueue().add(res);
             }
         }
@@ -80,4 +100,5 @@ public class KVOperationThread extends Thread {
         }
         return reply;
     }
+
 }

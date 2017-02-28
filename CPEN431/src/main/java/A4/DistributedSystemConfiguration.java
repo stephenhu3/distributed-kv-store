@@ -1,5 +1,7 @@
 package A4;
 
+import java.net.InetAddress;
+
 import io.dropwizard.Configuration;
 
 public class DistributedSystemConfiguration extends Configuration {
@@ -17,4 +19,10 @@ public class DistributedSystemConfiguration extends Configuration {
     // Out of memory threshold triggers at 3.75% free memory remaining in verbose mode
     // set as 6.25% when VERBOSE is false
     public static final double OUT_OF_MEMORY_THRESHOLD = 0.09;
+    
+    // Used for marking node for shutdown after sending success response
+    public static InetAddress CURRENT_HOST_ADDRESS;
+    // Used for marking node for shutdown after sending success response
+    public static int CURRENT_HOST_PORT;
+    
 }

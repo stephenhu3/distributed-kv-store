@@ -43,6 +43,24 @@ public final class Message {
      * <code>required fixed64 checkSum = 3;</code>
      */
     long getCheckSum();
+
+    /**
+     * <code>optional bytes fwdAddress = 4;</code>
+     */
+    boolean hasFwdAddress();
+    /**
+     * <code>optional bytes fwdAddress = 4;</code>
+     */
+    com.google.protobuf.ByteString getFwdAddress();
+
+    /**
+     * <code>optional int32 fwdPort = 5;</code>
+     */
+    boolean hasFwdPort();
+    /**
+     * <code>optional int32 fwdPort = 5;</code>
+     */
+    int getFwdPort();
   }
   /**
    * Protobuf type {@code Msg}
@@ -59,6 +77,8 @@ public final class Message {
       messageID_ = com.google.protobuf.ByteString.EMPTY;
       payload_ = com.google.protobuf.ByteString.EMPTY;
       checkSum_ = 0L;
+      fwdAddress_ = com.google.protobuf.ByteString.EMPTY;
+      fwdPort_ = 0;
     }
 
     @java.lang.Override
@@ -102,6 +122,16 @@ public final class Message {
             case 25: {
               bitField0_ |= 0x00000004;
               checkSum_ = input.readFixed64();
+              break;
+            }
+            case 34: {
+              bitField0_ |= 0x00000008;
+              fwdAddress_ = input.readBytes();
+              break;
+            }
+            case 40: {
+              bitField0_ |= 0x00000010;
+              fwdPort_ = input.readInt32();
               break;
             }
           }
@@ -174,6 +204,36 @@ public final class Message {
       return checkSum_;
     }
 
+    public static final int FWDADDRESS_FIELD_NUMBER = 4;
+    private com.google.protobuf.ByteString fwdAddress_;
+    /**
+     * <code>optional bytes fwdAddress = 4;</code>
+     */
+    public boolean hasFwdAddress() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional bytes fwdAddress = 4;</code>
+     */
+    public com.google.protobuf.ByteString getFwdAddress() {
+      return fwdAddress_;
+    }
+
+    public static final int FWDPORT_FIELD_NUMBER = 5;
+    private int fwdPort_;
+    /**
+     * <code>optional int32 fwdPort = 5;</code>
+     */
+    public boolean hasFwdPort() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional int32 fwdPort = 5;</code>
+     */
+    public int getFwdPort() {
+      return fwdPort_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -207,6 +267,12 @@ public final class Message {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeFixed64(3, checkSum_);
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(4, fwdAddress_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeInt32(5, fwdPort_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -226,6 +292,14 @@ public final class Message {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeFixed64Size(3, checkSum_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, fwdAddress_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(5, fwdPort_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -259,6 +333,16 @@ public final class Message {
         result = result && (getCheckSum()
             == other.getCheckSum());
       }
+      result = result && (hasFwdAddress() == other.hasFwdAddress());
+      if (hasFwdAddress()) {
+        result = result && getFwdAddress()
+            .equals(other.getFwdAddress());
+      }
+      result = result && (hasFwdPort() == other.hasFwdPort());
+      if (hasFwdPort()) {
+        result = result && (getFwdPort()
+            == other.getFwdPort());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -282,6 +366,14 @@ public final class Message {
         hash = (37 * hash) + CHECKSUM_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
             getCheckSum());
+      }
+      if (hasFwdAddress()) {
+        hash = (37 * hash) + FWDADDRESS_FIELD_NUMBER;
+        hash = (53 * hash) + getFwdAddress().hashCode();
+      }
+      if (hasFwdPort()) {
+        hash = (37 * hash) + FWDPORT_FIELD_NUMBER;
+        hash = (53 * hash) + getFwdPort();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -407,6 +499,10 @@ public final class Message {
         bitField0_ = (bitField0_ & ~0x00000002);
         checkSum_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000004);
+        fwdAddress_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        fwdPort_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -443,6 +539,14 @@ public final class Message {
           to_bitField0_ |= 0x00000004;
         }
         result.checkSum_ = checkSum_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.fwdAddress_ = fwdAddress_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.fwdPort_ = fwdPort_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -493,6 +597,12 @@ public final class Message {
         }
         if (other.hasCheckSum()) {
           setCheckSum(other.getCheckSum());
+        }
+        if (other.hasFwdAddress()) {
+          setFwdAddress(other.getFwdAddress());
+        }
+        if (other.hasFwdPort()) {
+          setFwdPort(other.getFwdPort());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -632,6 +742,73 @@ public final class Message {
         onChanged();
         return this;
       }
+
+      private com.google.protobuf.ByteString fwdAddress_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>optional bytes fwdAddress = 4;</code>
+       */
+      public boolean hasFwdAddress() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional bytes fwdAddress = 4;</code>
+       */
+      public com.google.protobuf.ByteString getFwdAddress() {
+        return fwdAddress_;
+      }
+      /**
+       * <code>optional bytes fwdAddress = 4;</code>
+       */
+      public Builder setFwdAddress(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        fwdAddress_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bytes fwdAddress = 4;</code>
+       */
+      public Builder clearFwdAddress() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        fwdAddress_ = getDefaultInstance().getFwdAddress();
+        onChanged();
+        return this;
+      }
+
+      private int fwdPort_ ;
+      /**
+       * <code>optional int32 fwdPort = 5;</code>
+       */
+      public boolean hasFwdPort() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional int32 fwdPort = 5;</code>
+       */
+      public int getFwdPort() {
+        return fwdPort_;
+      }
+      /**
+       * <code>optional int32 fwdPort = 5;</code>
+       */
+      public Builder setFwdPort(int value) {
+        bitField0_ |= 0x00000010;
+        fwdPort_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 fwdPort = 5;</code>
+       */
+      public Builder clearFwdPort() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        fwdPort_ = 0;
+        onChanged();
+        return this;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
@@ -695,9 +872,10 @@ public final class Message {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\rMessage.proto\";\n\003Msg\022\021\n\tmessageID\030\001 \002(" +
-      "\014\022\017\n\007payload\030\002 \002(\014\022\020\n\010checkSum\030\003 \002(\006B\tB\007" +
-      "Message"
+      "\n\rMessage.proto\"`\n\003Msg\022\021\n\tmessageID\030\001 \002(" +
+      "\014\022\017\n\007payload\030\002 \002(\014\022\020\n\010checkSum\030\003 \002(\006\022\022\n\n" +
+      "fwdAddress\030\004 \001(\014\022\017\n\007fwdPort\030\005 \001(\005B\tB\007Mes" +
+      "sage"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -716,7 +894,7 @@ public final class Message {
     internal_static_Msg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Msg_descriptor,
-        new java.lang.String[] { "MessageID", "Payload", "CheckSum", });
+        new java.lang.String[] { "MessageID", "Payload", "CheckSum", "FwdAddress", "FwdPort", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

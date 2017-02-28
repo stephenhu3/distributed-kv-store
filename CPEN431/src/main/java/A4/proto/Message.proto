@@ -5,4 +5,6 @@ message Msg {
     required bytes messageID = 1;
     required bytes payload = 2;
     required fixed64 checkSum = 3;
+    optional bytes fwdAddress = 4;
+    optional int32 fwdPort = 5;
 }

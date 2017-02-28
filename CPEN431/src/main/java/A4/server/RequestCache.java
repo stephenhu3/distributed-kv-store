@@ -1,6 +1,8 @@
 package A4.server;
 
 import A4.proto.Message.Msg;
+import A4.utils.MsgWrapper;
+
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -8,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 public class RequestCache {
     private static RequestCache instance = new RequestCache();
-    LoadingCache<Msg, Msg> requestCache;
+    LoadingCache<Msg, MsgWrapper> requestCache;
 
     // TODO: Implement cache exceptions, size limits
     private RequestCache() {
@@ -16,12 +18,14 @@ public class RequestCache {
             .maximumSize(500)
             .expireAfterWrite(60, TimeUnit.SECONDS)
             .build(
-                new CacheLoader<Msg, Msg>() {
-                    public Msg load(Msg key) throws Exception {
+                new CacheLoader<Msg, MsgWrapper>() {
+                    public MsgWrapper load(Msg key) throws Exception {
                         KVRequestQueue.getInstance().getQueue().add(key);
                         // wait until KVResponseQueue has processed
                         while (KVResponseQueue.getInstance().getQueue().isEmpty());
-                        return  KVResponseQueue.getInstance().getQueue().poll();
+                        MsgWrapper msgWrapper = ForwardingQueue.getInstance().getQueue().poll();
+                        msgWrapper.setMessage(KVResponseQueue.getInstance().getQueue().poll());
+                        return msgWrapper;
                     }
                 }
             );
@@ -31,7 +35,7 @@ public class RequestCache {
         return instance;
     }
 
-    public LoadingCache<Msg, Msg> getCache() {
+    public LoadingCache<Msg, MsgWrapper> getCache() {
         return requestCache;
     }
 }

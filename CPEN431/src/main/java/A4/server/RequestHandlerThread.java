@@ -20,15 +20,18 @@ public class RequestHandlerThread extends Thread {
             while (!RequestQueue.getInstance().getQueue().isEmpty()) {
                 MsgWrapper wrappedMsg = RequestQueue.getInstance().getQueue().poll();
                 Msg requestMsg = wrappedMsg.getMessage();
-                Msg msgRes = null;
+                MsgWrapper msgRes = null;
                 try {
                     msgRes = RequestCache.getInstance().getCache().get(requestMsg);
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 }
+                if(msgRes.getAddress() == null && msgRes.getPort() == 0){
+                	msgRes.setAddress(wrappedMsg.getAddress());
+                	msgRes.setPort(wrappedMsg.getPort());
+                }
                 // Add processes response to ResponseQueue
-                ResponseQueue.getInstance().getQueue().add(
-                    new MsgWrapper(msgRes, wrappedMsg.getAddress(), wrappedMsg.getPort()));
+                ResponseQueue.getInstance().getQueue().add(msgRes);
             }
         }
     }

@@ -2,6 +2,7 @@ package A4.utils;
 
 import A4.proto.Message.Msg;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class MsgWrapper {
     private Msg message;
@@ -13,7 +14,23 @@ public class MsgWrapper {
         this.port = port;
         this.address = address;
     }
-
+    
+    //Create MsgWrapper around messages forwarded
+    public MsgWrapper(Msg requestMessage) {
+    	this.message = null;
+        this.port = 0;
+        this.address = null;
+    	if(requestMessage.hasFwdAddress() && requestMessage.hasFwdPort() ){
+	        try {
+	        	this.message = null;
+		        this.port = requestMessage.getFwdPort();
+		        this.address = InetAddress.getByAddress(requestMessage.getFwdAddress().toByteArray());
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+    	}
+    }
+    
     public Msg getMessage() {
         return message;
     }
