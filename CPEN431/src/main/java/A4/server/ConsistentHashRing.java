@@ -6,7 +6,6 @@ import com.google.protobuf.ByteString;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
-import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 
@@ -24,6 +23,7 @@ public class ConsistentHashRing {
     }
     
     // Add a server and port to the hash ring
+    // TODO: Handle redistributing content on node addition
     public void addNode(String name, int port) throws NoSuchAlgorithmException{
     	String hashKey = UniqueIdentifier.MD5Hash(name);
 		try {
@@ -35,6 +35,7 @@ public class ConsistentHashRing {
     }
     
     // Remove a server and port from the hash ring
+    // TODO: Handle redistributing content on node removal
     public void removeNode(String nodeAddress) throws NoSuchAlgorithmException {
     	String key = UniqueIdentifier.MD5Hash(nodeAddress);
         hashRing.remove(key);
@@ -43,20 +44,22 @@ public class ConsistentHashRing {
     // Determines the node and port that the key resides on
     // Result passed into forwarding queue, dequeued in RequestsCache to build response
     public MsgWrapper getNode(ByteString key) throws NoSuchAlgorithmException {
-        String hashKey = UniqueIdentifier.MD5Hash(key.toString());
-
-        if (!hashRing.containsKey(hashKey)) {
-            SortedMap<String, MsgWrapper> tailMap = hashRing.tailMap(hashKey);
-            hashKey = tailMap.isEmpty() ? hashRing.firstKey() : tailMap.firstKey();
+        if (hashRing.isEmpty() || key == null) {
+            return null;
         }
 
-		// Command applies to current node
-    	if (hashRing.isEmpty() || key == null
-            || (hashRing.get(hashKey).getAddress().equals(UDPServerThread.localAddress)
-            && hashRing.get(hashKey).getPort() == UDPServerThread.localPort)) {
+        String hashKey = UniqueIdentifier.MD5Hash(key.toString());
+        // If key not contained in hash ring, use successor node (use first node if no successor)
+        if (!hashRing.containsKey(hashKey)) {
+            hashKey = hashRing.ceilingKey(hashKey);
+            if (hashKey == null) {
+                hashKey = hashRing.firstKey();
+            }
+        } else if (hashRing.get(hashKey).getAddress().equals(UDPServerThread.localAddress)
+            && hashRing.get(hashKey).getPort() == UDPServerThread.localPort) {
+            // Command applies to current node
         	return null;
         }
-
         return hashRing.get(hashKey);
   	}
 }

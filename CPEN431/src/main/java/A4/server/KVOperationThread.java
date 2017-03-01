@@ -42,20 +42,21 @@ public class KVOperationThread extends Thread {
                     e.printStackTrace();
                 }
 
-                MsgWrapper fwdWrapper = null;
+                MsgWrapper fwdReq = null;
                 try {
-                    fwdWrapper = ConsistentHashRing.getInstance().getNode(kvReq.getKey());
+                    fwdReq = ConsistentHashRing.getInstance().getNode(kvReq.getKey());
                 } catch (NoSuchAlgorithmException e) {
                     e.printStackTrace();
                 }
 
                 Msg res;
                 // currentNode is correct node, find a response, set correct receiver
-		        if(fwdWrapper == null){
-		        	if(req.hasFwdPort() && req.hasFwdAddress()){
+		        if (fwdReq == null) {
+		        	if (req.hasFwdPort() && req.hasFwdAddress()) {
 		        		try {
-							fwdWrapper.setAddress(InetAddress.getByAddress(req.getFwdAddress().toByteArray()));
-							fwdWrapper.setPort(req.getFwdPort());
+							fwdReq.setAddress(InetAddress.getByAddress(
+							    req.getFwdAddress().toByteArray()));
+							fwdReq.setPort(req.getFwdPort());
 		        		} catch (UnknownHostException e) {
 							e.printStackTrace();
 						}
@@ -66,11 +67,10 @@ public class KVOperationThread extends Thread {
 	                    kvReq.getValue(),
 	                    req.getMessageID()
 	                );
+                    KVResponseQueue.getInstance().getQueue().add(res);
 		        } else {
-		        	res = req;
+                    ForwardingQueue.getInstance().getQueue().add(fwdReq);
 		        }
-		        ForwardingQueue.getInstance().getQueue().add(fwdWrapper);
-                KVResponseQueue.getInstance().getQueue().add(res);
             }
         }
     }
@@ -106,5 +106,4 @@ public class KVOperationThread extends Thread {
         }
         return reply;
     }
-
 }

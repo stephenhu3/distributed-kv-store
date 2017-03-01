@@ -26,7 +26,7 @@ public class RequestHandlerThread extends Thread {
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 }
-                if(msgRes.getAddress() == null && msgRes.getPort() == 0){
+                if (msgRes.getAddress() == null && msgRes.getPort() == 0) {
                 	msgRes.setAddress(wrappedMsg.getAddress());
                 	msgRes.setPort(wrappedMsg.getPort());
                 }
