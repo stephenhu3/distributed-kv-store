@@ -11,9 +11,12 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.Arrays;
 
 public class UDPServerThread extends Thread {
+    public static InetAddress localAddress;
+    public static int localPort;
     private static final int DEFAULT_UDP_SERVER_PORT = 10129;
     private DatagramSocket socket;
 
@@ -24,6 +27,8 @@ public class UDPServerThread extends Thread {
     public UDPServerThread(String name, int port) throws IOException {
         super(name);
         socket = new DatagramSocket(port);
+        this.localAddress = socket.getLocalAddress();
+        this.localPort = port;
     }
 
     public void run() {

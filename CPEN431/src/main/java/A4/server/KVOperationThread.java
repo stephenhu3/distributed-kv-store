@@ -19,6 +19,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.NoSuchAlgorithmException;
 
 public class KVOperationThread extends Thread {
 
@@ -40,9 +41,14 @@ public class KVOperationThread extends Thread {
                 } catch (InvalidProtocolBufferException e) {
                     e.printStackTrace();
                 }
-                
-                MsgWrapper fwdWrapper = DistributedServerHash.getInstance().getNode(kvReq.getKey());
-                
+
+                MsgWrapper fwdWrapper = null;
+                try {
+                    fwdWrapper = ConsistentHashRing.getInstance().getNode(kvReq.getKey());
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
+
                 Msg res;
                 // currentNode is correct node, find a response, set correct receiver
 		        if(fwdWrapper == null){
