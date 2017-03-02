@@ -27,8 +27,9 @@ public class UDPServerThread extends Thread {
     public UDPServerThread(String name, int port) throws IOException {
         super(name);
         socket = new DatagramSocket(port);
-        this.localAddress = socket.getLocalAddress();
+        this.localAddress = InetAddress.getByName(name.split("-")[0]);
         this.localPort = port;
+        ConsistentHashRing.getInstance().initializeNodes();
     }
 
     public void run() {
@@ -39,7 +40,7 @@ public class UDPServerThread extends Thread {
             }
             // TODO: break this monolithic run function into smaller functions
             byte[] buf = new byte[MAX_MSG_SIZE];
-
+            
             // receive request
             DatagramPacket reqPacket = new DatagramPacket(buf, buf.length);
             try {

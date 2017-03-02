@@ -1,5 +1,6 @@
 package A4.server;
 
+import A4.proto.KeyValueResponse.KVResponse;
 import A4.proto.Message.Msg;
 import A4.utils.MsgWrapper;
 
@@ -23,8 +24,11 @@ public class RequestCache {
                         KVRequestQueue.getInstance().getQueue().add(key);
                         // wait until KVResponseQueue has processed
                         while (KVResponseQueue.getInstance().getQueue().isEmpty());
+                        while (ForwardingQueue.getInstance().getQueue().isEmpty());
                         MsgWrapper msgWrapper = ForwardingQueue.getInstance().getQueue().poll();
+                        Msg re = KVResponseQueue.getInstance().getQueue().poll();
                         msgWrapper.setMessage(KVResponseQueue.getInstance().getQueue().poll());
+                        
                         return msgWrapper;
                     }
                 }
