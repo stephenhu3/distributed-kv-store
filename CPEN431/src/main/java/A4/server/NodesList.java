@@ -30,18 +30,17 @@ public class NodesList {
         this.allNodes = allNodes;
     }
 
-    public void addLiveNode(InetAddress addr) {
-        liveNodes.put(addr, 0);
+    public void addLiveNode(InetAddress addr, int hops) {
+        liveNodes.put(addr, hops);
     }
 
     // Increment hops and clear old entries
     public void refreshLiveNodes() {
-        for (InetAddress addr : liveNodes.keySet()) {
-            int hops = liveNodes.get(addr);
-            if (hops > 9) {
-                liveNodes.remove(addr);
+        for (Map.Entry<InetAddress, Integer> node : liveNodes.entrySet()) {
+            if (node.getValue() > 9) {
+                liveNodes.remove(node.getKey());
             } else {
-                liveNodes.put(addr, hops + 1);
+                liveNodes.put(node.getKey(), node.getValue() + 1);
             }
         }
     }

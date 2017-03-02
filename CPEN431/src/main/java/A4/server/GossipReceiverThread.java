@@ -4,6 +4,7 @@ import static A4.DistributedSystemConfiguration.GOSSIP_RECEIVER_PORT;
 import static A4.DistributedSystemConfiguration.MAX_MSG_SIZE;
 
 import A4.proto.LiveHostsRequest.LiveHostsReq;
+import A4.utils.ByteRepresentation;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -11,13 +12,16 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.Arrays;
+import java.util.Map;
 
 public class GossipReceiverThread extends Thread {
+    NodesList nodesList;
     private DatagramSocket socket;
 
     public GossipReceiverThread(String name) throws SocketException {
         super(name);
         socket = new DatagramSocket(GOSSIP_RECEIVER_PORT);
+        nodesList = NodesList.getInstance();
     }
 
     public void run() {
@@ -42,8 +46,20 @@ public class GossipReceiverThread extends Thread {
                 e.printStackTrace();
             }
 
-            // TODO: add node to current liveHosts, age existing entries
+            Map<InetAddress, Integer> liveNodes = ByteRepresentation.bytesToMap(
+                liveHostsReq.getLiveHosts().toByteArray());
 
+            // Add node if it's new or its hops number is lower
+            if (liveNodes != null) {
+                for (Map.Entry<InetAddress, Integer> node : liveNodes.entrySet()) {
+                    if (!nodesList.getLiveNodes().containsKey(node.getKey())
+                        || nodesList.getLiveNodes().get(node.getKey()) > node.getValue()) {
+                        nodesList.addLiveNode(node.getKey(), node.getValue());
+                    }
+                }
+            }
+
+            NodesList.getInstance().refreshLiveNodes();
         }
     }
 }

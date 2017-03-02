@@ -23,7 +23,8 @@ public class GossipSenderThread extends Thread {
     NodesList nodesList = NodesList.getInstance();
     private DatagramSocket socket;
 
-    public GossipSenderThread(String name, String filename) throws FileNotFoundException, SocketException {
+    public GossipSenderThread(String name, String filename) throws FileNotFoundException,
+        SocketException {
         super(name);
         Map<InetAddress, Integer> liveNodes = new HashMap<>();
         List<String> allNodes = new ArrayList<String>();
@@ -31,15 +32,18 @@ public class GossipSenderThread extends Thread {
         File file = new File(filename);
         Scanner scanner = new Scanner(file);
 
-        // Populate server list
+        // Populate all nodes list (excluding itself)
         while (scanner.hasNext()) {
-            allNodes.add(scanner.nextLine());
+            String ip = scanner.nextLine();
+            if (!ip.equals(UDPServerThread.localAddress.getHostAddress())) {
+                allNodes.add(ip);
+            }
         }
 
         nodesList.setAllNodes(allNodes);
         // Add itself to live hosts list
         nodesList.setLiveNodes(liveNodes);
-        nodesList.addLiveNode(UDPServerThread.localAddress);
+        nodesList.addLiveNode(UDPServerThread.localAddress, 0);
 
         socket = new DatagramSocket(GOSSIP_SENDER_PORT);
     }
@@ -78,8 +82,6 @@ public class GossipSenderThread extends Thread {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            // TODO:
         }
     }
 }
