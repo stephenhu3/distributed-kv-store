@@ -1,1 +1,7 @@
 .DS_Store
+*/.idea/*
+*.iml
+.idea/*
+*/out/*
+*/target/*
+./CPEN431/dependency-reduced-pom.xml
