@@ -2,10 +2,7 @@ package A4.cli;
 
 import static A4.DistributedSystemConfiguration.VERBOSE;
 
-import A4.server.KVOperationThread;
-import A4.server.RequestHandlerThread;
-import A4.server.ResponseHandlerThread;
-import A4.server.UDPServerThread;
+import A4.server.*;
 import io.dropwizard.setup.Bootstrap;
 import java.util.Random;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -50,5 +47,6 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
         new KVOperationThread(name + "-kv-operation-thread").start();
         new ResponseHandlerThread(name + "-response-handler",
             port + new Random().nextInt(10000)).start();
+        new EpidemicDiscoveryThread().start();
     }
 }
