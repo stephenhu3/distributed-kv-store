@@ -28,9 +28,8 @@ public class UDPServerThread extends Thread {
     public UDPServerThread(String name) throws IOException {
         super();
         socket = new DatagramSocket(UDP_SERVER_THREAD_PORT);
-        localAddress = InetAddress.getLocalHost();
-        localPort = UDP_SERVER_THREAD_PORT;
-        ConsistentHashRing.getInstance().initializeNodes();
+        this.localAddress = InetAddress.getLocalHost();
+        this.localPort = UDP_SERVER_THREAD_PORT;
     }
 
     public void run() {
@@ -79,8 +78,8 @@ public class UDPServerThread extends Thread {
                 }
             }
 
-        RequestQueue.getInstance().getQueue().add(
-            new MsgWrapper(requestMsg, reqPacket.getAddress(), reqPacket.getPort()));
+            RequestQueue.getInstance().getQueue().add(
+                new MsgWrapper(requestMsg, reqPacket.getAddress(), reqPacket.getPort()));
         }
     }
 }

@@ -8,6 +8,7 @@ public class MsgWrapper {
     private Msg message;
     private int port;
     private InetAddress address;
+    private boolean forward = false;
 
     public MsgWrapper(Msg message, InetAddress address, int port) {
         this.message = message;
@@ -53,5 +54,13 @@ public class MsgWrapper {
 
     public void setAddress(InetAddress address) {
         this.address = address;
+    }
+
+    public boolean getForward() {
+        return forward;
+    }
+
+    public void setForward(boolean forward) {
+        this.forward = forward;
     }
 }
