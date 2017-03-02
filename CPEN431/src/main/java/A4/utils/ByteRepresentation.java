@@ -5,7 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
-import java.util.HashMap;
+import java.util.Map;
 import javax.xml.bind.DatatypeConverter;
 
 public class ByteRepresentation {
@@ -17,7 +17,7 @@ public class ByteRepresentation {
         return DatatypeConverter.parseHexBinary(hex);
     }
 
-    public static byte[] hashMapToBytes(HashMap<InetAddress, Integer> map) {
+    public static byte[] mapToBytes(Map<InetAddress, Integer> map) {
         ByteArrayOutputStream byteOut;
         ObjectOutputStream out;
         byte[] res;
@@ -33,14 +33,14 @@ public class ByteRepresentation {
         }
     }
 
-    public static HashMap<InetAddress, Integer> bytesToHashMap(byte[] bytes) {
+    public static Map<InetAddress, Integer> bytesToMap(byte[] bytes) {
         ByteArrayInputStream byteIn;
         ObjectInputStream in;
-        HashMap<InetAddress, Integer> res;
+        Map<InetAddress, Integer> res;
         try {
             byteIn = new ByteArrayInputStream(bytes);
             in = new ObjectInputStream(byteIn);
-            res = (HashMap<InetAddress, Integer>) in.readObject();
+            res = (Map<InetAddress, Integer>) in.readObject();
             return res;
         } catch (Exception e) {
             e.printStackTrace();

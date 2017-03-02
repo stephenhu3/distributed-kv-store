@@ -15,30 +15,31 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
 public class GossipSenderThread extends Thread {
+    NodesList nodesList = NodesList.getInstance();
     private DatagramSocket socket;
-    HostList hostList;
 
     public GossipSenderThread(String name, String filename) throws FileNotFoundException, SocketException {
         super(name);
-        HashMap<InetAddress, Integer> liveHosts = new HashMap<>();
-        ArrayList<String> allHosts = new ArrayList<String>();
+        Map<InetAddress, Integer> liveNodes = new HashMap<>();
+        List<String> allNodes = new ArrayList<String>();
 
         File file = new File(filename);
         Scanner scanner = new Scanner(file);
 
         // Populate server list
         while (scanner.hasNext()) {
-            allHosts.add(scanner.nextLine());
+            allNodes.add(scanner.nextLine());
         }
 
-        // Add itself to live hosts list and initialize UDP socket
-        liveHosts.put(UDPServerThread.localAddress, 0);
-        hostList = HostList.getInstance();
-        hostList.init(liveHosts, allHosts);
+        nodesList.setAllNodes(allNodes);
+        // Add itself to live hosts list
+        nodesList.setLiveNodes(liveNodes);
+        nodesList.addLiveNode(UDPServerThread.localAddress);
 
         socket = new DatagramSocket(GOSSIP_SENDER_PORT);
     }
@@ -47,16 +48,14 @@ public class GossipSenderThread extends Thread {
         while (true) {
             InetAddress firstAddress, secondAddress;
             Random rand = new Random();
-            ArrayList<String> allHosts;
-
-            allHosts = hostList.getAllHosts();
+            List<String> allNodes = NodesList.getInstance().getAllNodes();
 
             // Reach out to two random nodes
-            String firstHost = allHosts.get(rand.nextInt(allHosts.size()));
-            String secondHost = allHosts.get(rand.nextInt(allHosts.size()));
+            String firstHost = allNodes.get(rand.nextInt(allNodes.size()));
+            String secondHost = allNodes.get(rand.nextInt(allNodes.size()));
 
-            // Initialize protocol buffer
-            byte[] serverList = ByteRepresentation.hashMapToBytes(hostList.getLiveHosts());
+            // Build liveHostsReq protobuf
+            byte[] serverList = ByteRepresentation.mapToBytes(nodesList.getLiveNodes());
             LiveHostsReq liveHostsReq = LiveHostsReq.newBuilder()
                     .setLiveHosts(ByteString.copyFrom(serverList))
                     .build();

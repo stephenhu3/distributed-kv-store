@@ -1,8 +1,8 @@
 package A4.cli;
 
 import static A4.DistributedSystemConfiguration.VERBOSE;
+import static A4.DistributedSystemConfiguration.UDP_SERVER_THREAD_PORT;
 
-import A4.resources.ListOfServers;
 import A4.server.GossipReceiverThread;
 import A4.server.GossipSenderThread;
 import A4.server.KVOperationThread;
@@ -47,13 +47,10 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
 
         String name = namespace.getString("name");
         String nodes = namespace.getString("nodes");
-        int port = namespace.getInt("port");
         String servers = namespace.getString("servers");
-        //ListOfServers.initializeNodes(servers);
 
         if (VERBOSE) {
             System.out.println("Name: " + name);
-            System.out.println("Port: " + port);
             System.out.println("Nodes: " + nodes);
         }
 
@@ -64,6 +61,6 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
         new RequestHandlerThread(name + "-request-handler").start();
         new KVOperationThread(name + "-kv-operation-thread").start();
         new ResponseHandlerThread(name + "-response-handler",
-            port + new Random().nextInt(10000)).start();
+            UDP_SERVER_THREAD_PORT + new Random().nextInt(10000)).start();
     }
 }
