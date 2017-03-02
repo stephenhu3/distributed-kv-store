@@ -2,14 +2,14 @@ package A4.cli;
 
 import static A4.DistributedSystemConfiguration.VERBOSE;
 
-import A4.server.*;
 import A4.resources.ListOfServers;
+import A4.server.GossipReceiverThread;
+import A4.server.GossipSenderThread;
 import A4.server.KVOperationThread;
 import A4.server.RequestHandlerThread;
 import A4.server.ResponseHandlerThread;
 import A4.server.UDPServerThread;
 import io.dropwizard.setup.Bootstrap;
-import java.util.Iterator;
 import java.util.Random;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;

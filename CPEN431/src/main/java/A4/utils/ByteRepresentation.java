@@ -1,9 +1,12 @@
 package A4.utils;
 
-import javax.xml.bind.DatatypeConverter;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.util.HashMap;
+import javax.xml.bind.DatatypeConverter;
 
 public class ByteRepresentation {
     public static String bytesToHex(byte[] bytes) {
