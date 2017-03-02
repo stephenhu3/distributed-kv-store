@@ -49,27 +49,27 @@ public class KVOperationThread extends Thread {
 
                 Msg res;
                 // currentNode is correct node, find a response, set correct receiver
-                if (fwdReq == null) {
-		        	if (req.hasFwdPort() && req.hasFwdAddress()) {
-		        		try {
-		        			fwdReq = new MsgWrapper(null, InetAddress.getByAddress(
-		        					req.getFwdAddress().toByteArray()), req.getFwdPort());
-		        		} catch (UnknownHostException e) {
-							e.printStackTrace();
-						}
-		        	}
-		        	res = generateResponse(
-		                    kvReq.getCommand(),
-		                    kvReq.getKey(),
-		                    kvReq.getValue(),
-		                    req.getMessageID()
-		                );
+                if (fwdReq.getPort() == 0 || fwdReq.getAddress().equals(null)) {
+                    if (req.hasFwdPort() && req.hasFwdAddress()) {
+                        try {
+                            fwdReq = new MsgWrapper(null, InetAddress.getByName(
+                                    req.getFwdAddress().toStringUtf8()), req.getFwdPort());
+                        } catch (UnknownHostException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    res = generateResponse(
+                            kvReq.getCommand(),
+                            kvReq.getKey(),
+                            kvReq.getValue(),
+                            req.getMessageID()
+                        );
                     KVResponseQueue.getInstance().getQueue().add(res);
-		        } else {
-		        	KVResponseQueue.getInstance().getQueue().add(req);
-		        }
-
-		        ForwardingQueue.getInstance().getQueue().add(fwdReq);
+                } else {
+                    fwdReq.setForward(true);
+                    KVResponseQueue.getInstance().getQueue().add(req);
+                }
+                ForwardingQueue.getInstance().getQueue().add(fwdReq);
             }
         }
     }
