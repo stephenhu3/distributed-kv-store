@@ -49,7 +49,7 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
         String nodes = namespace.getString("nodes");
         int port = namespace.getInt("port");
         String servers = namespace.getString("servers");
-        ListOfServers.initializeNodes(servers);
+        //ListOfServers.initializeNodes(servers);
 
         if (VERBOSE) {
             System.out.println("Name: " + name);
@@ -58,7 +58,7 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
         }
 
         // if in server mode, keep server running after each served request
-        new UDPServerThread(name + "-server-thread", port).start();
+        new UDPServerThread(name + "-server-thread").start();
         new GossipSenderThread(name + "-gossip-sender-thread", nodes).start();
         new GossipReceiverThread(name + "-gossip-receiver-thread").start();
         new RequestHandlerThread(name + "-request-handler").start();

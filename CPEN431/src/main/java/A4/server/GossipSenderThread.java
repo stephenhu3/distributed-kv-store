@@ -20,13 +20,12 @@ import java.util.Scanner;
 
 public class GossipSenderThread extends Thread {
     private DatagramSocket socket;
-    private HashMap<InetAddress, Integer> liveHosts;
-    private List<String> allHosts;
+    HostList hostList;
 
     public GossipSenderThread(String name, String filename) throws FileNotFoundException, SocketException {
         super(name);
-        liveHosts = new HashMap<>();
-        allHosts = new ArrayList<>();
+        HashMap<InetAddress, Integer> liveHosts = new HashMap<>();
+        ArrayList<String> allHosts = new ArrayList<String>();
 
         File file = new File(filename);
         Scanner scanner = new Scanner(file);
@@ -38,6 +37,9 @@ public class GossipSenderThread extends Thread {
 
         // Add itself to live hosts list and initialize UDP socket
         liveHosts.put(UDPServerThread.localAddress, 0);
+        hostList = HostList.getInstance();
+        hostList.init(liveHosts, allHosts);
+
         socket = new DatagramSocket(GOSSIP_SENDER_PORT);
     }
 
@@ -45,13 +47,16 @@ public class GossipSenderThread extends Thread {
         while (true) {
             InetAddress firstAddress, secondAddress;
             Random rand = new Random();
+            ArrayList<String> allHosts;
+
+            allHosts = hostList.getAllHosts();
 
             // Reach out to two random nodes
             String firstHost = allHosts.get(rand.nextInt(allHosts.size()));
             String secondHost = allHosts.get(rand.nextInt(allHosts.size()));
 
             // Initialize protocol buffer
-            byte[] serverList = ByteRepresentation.hashMapToBytes(liveHosts);
+            byte[] serverList = ByteRepresentation.hashMapToBytes(hostList.getLiveHosts());
             LiveHostsReq liveHostsReq = LiveHostsReq.newBuilder()
                     .setLiveHosts(ByteString.copyFrom(serverList))
                     .build();

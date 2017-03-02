@@ -1,8 +1,6 @@
 package A4.server;
 
-import static A4.DistributedSystemConfiguration.MAX_MSG_SIZE;
-import static A4.DistributedSystemConfiguration.SHUTDOWN_NODE;
-import static A4.DistributedSystemConfiguration.VERBOSE;
+import static A4.DistributedSystemConfiguration.*;
 import static A4.utils.Checksum.calculateProtocolBufferChecksum;
 
 import A4.proto.Message.Msg;
@@ -21,14 +19,14 @@ public class UDPServerThread extends Thread {
     private DatagramSocket socket;
 
     public UDPServerThread() throws IOException {
-        this("UDPServerThread", DEFAULT_UDP_SERVER_PORT);
+        this("UDPServerThread");
     }
 
-    public UDPServerThread(String name, int port) throws IOException {
-        super(name);
-        socket = new DatagramSocket(port);
-        this.localAddress = InetAddress.getByName(name.split("-")[0]);
-        this.localPort = port;
+    public UDPServerThread(String name) throws IOException {
+        super();
+        socket = new DatagramSocket(UDP_SERVER_THREAD_PORT);
+        this.localAddress = InetAddress.getLocalHost();
+        this.localPort = UDP_SERVER_THREAD_PORT;
         ConsistentHashRing.getInstance().initializeNodes();
     }
 

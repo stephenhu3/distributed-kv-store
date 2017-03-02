@@ -8,6 +8,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.Arrays;
 
@@ -42,6 +43,7 @@ public class GossipReceiverThread extends Thread {
             }
 
             // TODO: add node to current liveHosts, age existing entries
+
         }
     }
 }
