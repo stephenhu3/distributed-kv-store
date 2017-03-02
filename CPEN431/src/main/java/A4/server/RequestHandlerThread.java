@@ -6,13 +6,12 @@ import A4.proto.KeyValueRequest.KVRequest;
 import A4.proto.KeyValueResponse.KVResponse;
 import A4.proto.Message.Msg;
 import A4.utils.MsgWrapper;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
 public class RequestHandlerThread extends Thread {
-    public RequestHandlerThread(String name) throws IOException {
+    public RequestHandlerThread(String name) {
         super(name);
     }
 

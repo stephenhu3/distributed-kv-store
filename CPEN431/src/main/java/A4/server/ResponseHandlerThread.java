@@ -6,11 +6,12 @@ import A4.utils.MsgWrapper;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.SocketException;
 
 public class ResponseHandlerThread extends Thread {
     private DatagramSocket socket;
 
-    public ResponseHandlerThread(String name, int port) throws IOException {
+    public ResponseHandlerThread(String name, int port) throws SocketException {
         super(name);
         socket = new DatagramSocket(port);
     }

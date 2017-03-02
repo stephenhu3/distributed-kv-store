@@ -14,17 +14,14 @@ import A4.proto.KeyValueRequest.KVRequest;
 import A4.proto.KeyValueResponse.KVResponse;
 import A4.proto.Message.Msg;
 import A4.utils.MsgWrapper;
-
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 
 public class KVOperationThread extends Thread {
-
-    public KVOperationThread(String name) throws IOException {
+    public KVOperationThread(String name) {
         super(name);
     }
 
