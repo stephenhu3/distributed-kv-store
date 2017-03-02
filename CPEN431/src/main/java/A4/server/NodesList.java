@@ -1,6 +1,7 @@
 package A4.server;
 
 import java.net.InetAddress;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -36,12 +37,15 @@ public class NodesList {
 
     // Increment hops and clear old entries
     public void refreshLiveNodes() {
-        for (Map.Entry<InetAddress, Integer> node : liveNodes.entrySet()) {
-            if (node.getValue() > 9) {
-                liveNodes.remove(node.getKey());
+        liveNodes.put(UDPServerThread.localAddress, 0);
+        for (Iterator<Map.Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<InetAddress, Integer> entry = it.next();
+            if (liveNodes.get(entry.getKey()) > 9) {
+                liveNodes.remove(entry.getKey());
             } else {
-                liveNodes.put(node.getKey(), node.getValue() + 1);
+                liveNodes.put(entry.getKey(), liveNodes.get(entry.getKey()) + 1);
             }
         }
     }
+
 }

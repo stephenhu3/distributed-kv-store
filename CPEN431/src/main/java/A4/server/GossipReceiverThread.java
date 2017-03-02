@@ -12,6 +12,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 
 public class GossipReceiverThread extends Thread {
@@ -51,15 +52,15 @@ public class GossipReceiverThread extends Thread {
 
             // Add node if it's new or its hops number is lower
             if (liveNodes != null) {
-                for (Map.Entry<InetAddress, Integer> node : liveNodes.entrySet()) {
-                    if (!nodesList.getLiveNodes().containsKey(node.getKey())
-                        || nodesList.getLiveNodes().get(node.getKey()) > node.getValue()) {
-                        nodesList.addLiveNode(node.getKey(), node.getValue());
+                for (Iterator<Map.Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator(); it.hasNext(); ) {
+                    Map.Entry<InetAddress, Integer> entry = it.next();
+                    if (!nodesList.getLiveNodes().containsKey(entry.getKey())
+                            || nodesList.getLiveNodes().get(entry.getKey()) > entry.getValue()) {
+                        nodesList.addLiveNode(entry.getKey(), entry.getValue());
                     }
                 }
             }
 
-            NodesList.getInstance().refreshLiveNodes();
         }
     }
 }

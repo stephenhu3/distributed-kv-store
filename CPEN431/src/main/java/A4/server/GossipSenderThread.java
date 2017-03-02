@@ -2,6 +2,7 @@ package A4.server;
 
 import static A4.DistributedSystemConfiguration.GOSSIP_RECEIVER_PORT;
 import static A4.DistributedSystemConfiguration.GOSSIP_SENDER_PORT;
+import static A4.DistributedSystemConfiguration.VERBOSE;
 
 import A4.proto.LiveHostsRequest.LiveHostsReq;
 import A4.utils.ByteRepresentation;
@@ -12,12 +13,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 public class GossipSenderThread extends Thread {
     NodesList nodesList = NodesList.getInstance();
@@ -50,6 +46,16 @@ public class GossipSenderThread extends Thread {
 
     public void run() {
         while (true) {
+            if (VERBOSE) {
+                Map<InetAddress, Integer> liveNodes = NodesList.getInstance().getLiveNodes();
+                System.out.println("NODES LIST");
+                System.out.println("==========");
+                for (Iterator<Map.Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator(); it.hasNext(); ) {
+                    Map.Entry<InetAddress, Integer> entry = it.next();
+                    System.out.println(entry.getKey() + ":" + liveNodes.get(entry.getKey()));
+                }
+            }
+
             InetAddress firstAddress, secondAddress;
             Random rand = new Random();
             List<String> allNodes = NodesList.getInstance().getAllNodes();
@@ -57,6 +63,9 @@ public class GossipSenderThread extends Thread {
             // Reach out to two random nodes
             String firstHost = allNodes.get(rand.nextInt(allNodes.size()));
             String secondHost = allNodes.get(rand.nextInt(allNodes.size()));
+
+            // Increment hops
+            NodesList.getInstance().refreshLiveNodes();
 
             // Build liveHostsReq protobuf
             byte[] serverList = ByteRepresentation.mapToBytes(nodesList.getLiveNodes());
