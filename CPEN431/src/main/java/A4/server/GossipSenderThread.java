@@ -1,6 +1,6 @@
 package A4.server;
 
-import static A4.DistributedSystemConfiguration.EPIDEMIC_PORT;
+import static A4.DistributedSystemConfiguration.GOSSIP_RECEIVER_PORT;
 
 import A4.proto.LiveHostsRequest.LiveHostsReq;
 import A4.utils.ByteRepresentation;
@@ -22,8 +22,8 @@ public class GossipSenderThread extends Thread {
     private HashMap<InetAddress, Integer> liveHosts;
     private List<String> allHosts;
 
-    public GossipSenderThread(String filename) throws FileNotFoundException, SocketException {
-        super(filename);
+    public GossipSenderThread(String name, String filename) throws FileNotFoundException, SocketException {
+        super(name);
         liveHosts = new HashMap<>();
         allHosts = new ArrayList<>();
 
@@ -63,9 +63,9 @@ public class GossipSenderThread extends Thread {
             }
 
             DatagramPacket firstPacket = new DatagramPacket(liveHostsReq.toByteArray(),
-                liveHostsReq.toByteArray().length, firstAddress, EPIDEMIC_PORT);
+                liveHostsReq.toByteArray().length, firstAddress, GOSSIP_RECEIVER_PORT);
             DatagramPacket secondPacket = new DatagramPacket(liveHostsReq.toByteArray(),
-                liveHostsReq.toByteArray().length, secondAddress, EPIDEMIC_PORT);
+                liveHostsReq.toByteArray().length, secondAddress, GOSSIP_RECEIVER_PORT);
 
             try {
                 socket.send(firstPacket);

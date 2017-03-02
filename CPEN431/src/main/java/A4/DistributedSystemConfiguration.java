@@ -18,7 +18,6 @@ public class DistributedSystemConfiguration extends Configuration {
     // set as 6.25% when VERBOSE is false
     public static final double OUT_OF_MEMORY_THRESHOLD = 0.09;
 
-    public static final int APP_PORT = 10696;
-    public static final int EPIDEMIC_PORT = 10697;
-    public static final int
+    public static final int UDP_SERVER_THREAD_PORT = 10696;
+    public static final int GOSSIP_RECEIVER_PORT = 10697;
 }
