@@ -11,6 +11,7 @@ import static A4.resources.ProtocolBufferKeyValueStoreResponse.generateShutdownR
 import static A4.resources.ProtocolBufferKeyValueStoreResponse.generateUnrecognizedCommandResponse;
 
 import A4.proto.KeyValueRequest.KVRequest;
+import A4.proto.KeyValueResponse.KVResponse;
 import A4.proto.Message.Msg;
 import A4.utils.MsgWrapper;
 
@@ -51,26 +52,27 @@ public class KVOperationThread extends Thread {
 
                 Msg res;
                 // currentNode is correct node, find a response, set correct receiver
-		        if (fwdReq == null) {
+                if (fwdReq == null) {
 		        	if (req.hasFwdPort() && req.hasFwdAddress()) {
 		        		try {
-							fwdReq.setAddress(InetAddress.getByAddress(
-							    req.getFwdAddress().toByteArray()));
-							fwdReq.setPort(req.getFwdPort());
+		        			fwdReq = new MsgWrapper(null, InetAddress.getByAddress(
+		        					req.getFwdAddress().toByteArray()), req.getFwdPort());
 		        		} catch (UnknownHostException e) {
 							e.printStackTrace();
 						}
 		        	}
 		        	res = generateResponse(
-	                    kvReq.getCommand(),
-	                    kvReq.getKey(),
-	                    kvReq.getValue(),
-	                    req.getMessageID()
-	                );
+		                    kvReq.getCommand(),
+		                    kvReq.getKey(),
+		                    kvReq.getValue(),
+		                    req.getMessageID()
+		                );
                     KVResponseQueue.getInstance().getQueue().add(res);
 		        } else {
-                    ForwardingQueue.getInstance().getQueue().add(fwdReq);
+		        	KVResponseQueue.getInstance().getQueue().add(req);
 		        }
+
+		        ForwardingQueue.getInstance().getQueue().add(fwdReq);
             }
         }
     }

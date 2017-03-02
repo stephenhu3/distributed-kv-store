@@ -2,10 +2,14 @@ package A4.server;
 
 import static A4.DistributedSystemConfiguration.SHUTDOWN_NODE;
 
+import A4.proto.KeyValueRequest.KVRequest;
+import A4.proto.KeyValueResponse.KVResponse;
 import A4.proto.Message.Msg;
 import A4.utils.MsgWrapper;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 public class RequestHandlerThread extends Thread {
     public RequestHandlerThread(String name) throws IOException {
@@ -26,12 +30,15 @@ public class RequestHandlerThread extends Thread {
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 }
-                if (msgRes.getAddress() == null && msgRes.getPort() == 0) {
-                	msgRes.setAddress(wrappedMsg.getAddress());
-                	msgRes.setPort(wrappedMsg.getPort());
-                }
+                
+                if (msgRes.getPort() == 0 || msgRes.getAddress().equals(null)) {
+                		msgRes.setAddress(wrappedMsg.getAddress());
+		        		msgRes.setPort(wrappedMsg.getPort());
+	        	}
                 // Add processes response to ResponseQueue
-                ResponseQueue.getInstance().getQueue().add(msgRes);
+                        if (msgRes.getPort() != 0 || !msgRes.getAddress().equals(null)) {
+                	ResponseQueue.getInstance().getQueue().add(msgRes);
+                }
             }
         }
     }

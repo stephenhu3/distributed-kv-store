@@ -2,11 +2,14 @@ package A4.cli;
 
 import static A4.DistributedSystemConfiguration.VERBOSE;
 
+import A4.resources.ListOfServers;
 import A4.server.KVOperationThread;
 import A4.server.RequestHandlerThread;
 import A4.server.ResponseHandlerThread;
 import A4.server.UDPServerThread;
 import io.dropwizard.setup.Bootstrap;
+
+import java.util.Iterator;
 import java.util.Random;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
@@ -31,6 +34,12 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
             .type(Integer.class)
             .required(true)
             .help("Port number to host server");
+        
+        subparser.addArgument("-servers")
+	        .dest("servers")
+	        .type(String.class)
+	        .required(true)
+	        .help("Path to list of line separated list of server ips and ports of system");
     }
 
     @Override
@@ -38,10 +47,13 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
 
         String name = namespace.getString("name");
         int port = namespace.getInt("port");
+        String servers = namespace.getString("servers");
+        ListOfServers.initializeNodes(servers);
 
         if (VERBOSE) {
             System.out.println("Name: " + name);
             System.out.println("Port: " + port);
+            System.out.println("Servers: " + servers);
         }
 
         // if in server mode, keep server running after each served request
