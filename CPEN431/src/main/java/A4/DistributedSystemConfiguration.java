@@ -20,4 +20,5 @@ public class DistributedSystemConfiguration extends Configuration {
 
     public static final int UDP_SERVER_THREAD_PORT = 10696;
     public static final int GOSSIP_RECEIVER_PORT = 10697;
+    public static final int GOSSIP_SENDER_PORT = 10698;
 }

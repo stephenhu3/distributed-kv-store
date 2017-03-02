@@ -1,6 +1,7 @@
 package A4.server;
 
 import static A4.DistributedSystemConfiguration.GOSSIP_RECEIVER_PORT;
+import static A4.DistributedSystemConfiguration.GOSSIP_SENDER_PORT;
 
 import A4.proto.LiveHostsRequest.LiveHostsReq;
 import A4.utils.ByteRepresentation;
@@ -37,7 +38,7 @@ public class GossipSenderThread extends Thread {
 
         // Add itself to live hosts list and initialize UDP socket
         liveHosts.put(UDPServerThread.localAddress, 0);
-        socket = new DatagramSocket();
+        socket = new DatagramSocket(GOSSIP_SENDER_PORT);
     }
 
     public void run() {
