@@ -28,25 +28,34 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
             .type(Integer.class)
             .required(true)
             .help("Port number to host server");
+
+        subparser.addArgument("-nodes")
+            .dest("nodes")
+            .type(String.class)
+            .required(true)
+            .help("File containing list of nodes to connect with");
     }
 
     @Override
     public void run(Bootstrap<?> bootstrap, Namespace namespace) throws Exception {
 
         String name = namespace.getString("name");
+        String nodes = namespace.getString("nodes");
         int port = namespace.getInt("port");
 
         if (VERBOSE) {
             System.out.println("Name: " + name);
             System.out.println("Port: " + port);
+            System.out.println("Nodes: " + nodes);
         }
 
         // if in server mode, keep server running after each served request
         new UDPServerThread(name + "-server-thread", port).start();
+        new GossipSenderThread(name + "-gossip-sender-thread", nodes).start();
+        new GossipReceiverThread(name + "-gossip-receiver-thread").start();
         new RequestHandlerThread(name + "-request-handler").start();
         new KVOperationThread(name + "-kv-operation-thread").start();
         new ResponseHandlerThread(name + "-response-handler",
             port + new Random().nextInt(10000)).start();
-        new EpidemicDiscoveryThread().start();
     }
 }

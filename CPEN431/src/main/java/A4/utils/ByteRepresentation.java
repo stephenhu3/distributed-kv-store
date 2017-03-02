@@ -1,11 +1,8 @@
 package A4.utils;
 
-import A4.server.EpidemicDiscoveryThread;
-
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ByteRepresentation {
