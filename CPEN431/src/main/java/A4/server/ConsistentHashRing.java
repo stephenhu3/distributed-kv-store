@@ -9,7 +9,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 public class ConsistentHashRing {
@@ -26,15 +25,15 @@ public class ConsistentHashRing {
         return instance;
     }
     
-    public void initializeNodes() {
-        for (Iterator<Map.Entry<InetAddress, Integer>> it = NodesList.getInstance().getLiveNodes()
-            .entrySet().iterator(); it.hasNext();) {
-            Map.Entry<InetAddress, Integer> entry = it.next();
-            try {
-                addNode(entry.getKey().getHostName(), UDP_SERVER_THREAD_PORT);
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
+    public void initializeNodes(){
+        try {
+            for(Iterator<String> i = NodesList.getInstance().getAllNodes().iterator();
+                i.hasNext();) {
+                String nodeAddress = i.next();
+                addNode(nodeAddress, UDP_SERVER_THREAD_PORT);
             }
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
         }
     }
 
