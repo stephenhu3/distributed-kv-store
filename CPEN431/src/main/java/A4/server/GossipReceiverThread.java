@@ -52,15 +52,15 @@ public class GossipReceiverThread extends Thread {
 
             // Add node if it's new or its hops number is lower
             if (liveNodes != null) {
-                for (Iterator<Map.Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator(); it.hasNext(); ) {
+                for (Iterator<Map.Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator();
+                    it.hasNext(); ) {
                     Map.Entry<InetAddress, Integer> entry = it.next();
                     if (!nodesList.getLiveNodes().containsKey(entry.getKey())
-                            || nodesList.getLiveNodes().get(entry.getKey()) > entry.getValue()) {
+                        || nodesList.getLiveNodes().get(entry.getKey()) > entry.getValue()) {
                         nodesList.addLiveNode(entry.getKey(), entry.getValue());
                     }
                 }
             }
-
         }
     }
 }
