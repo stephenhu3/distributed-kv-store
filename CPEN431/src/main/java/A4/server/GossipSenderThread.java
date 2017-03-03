@@ -1,9 +1,9 @@
 package A4.server;
 
+import static A4.DistributedSystemConfiguration.DEBUG;
 import static A4.DistributedSystemConfiguration.GOSSIP_RECEIVER_PORT;
 import static A4.DistributedSystemConfiguration.GOSSIP_SENDER_PORT;
 import static A4.DistributedSystemConfiguration.VERBOSE;
-import static A4.DistributedSystemConfiguration.DEBUG;
 
 import A4.proto.LiveHostsRequest.LiveHostsReq;
 import A4.utils.ByteRepresentation;
@@ -14,7 +14,14 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Scanner;
 
 public class GossipSenderThread extends Thread {
     NodesList nodesList = NodesList.getInstance();
@@ -51,7 +58,7 @@ public class GossipSenderThread extends Thread {
                 Map<InetAddress, Integer> liveNodes = NodesList.getInstance().getLiveNodes();
                 System.out.println("NODES LIST");
                 System.out.println("==========");
-                for (Iterator<Map.Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator(); it.hasNext(); ) {
+                for (Iterator<Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator(); it.hasNext(); ) {
                     Map.Entry<InetAddress, Integer> entry = it.next();
                     System.out.println(entry.getKey() + ":" + entry.getValue());
                 }
