@@ -4,11 +4,11 @@ Stephen Hu : 31580129
 
 Emmett Tan : 37087129
 
-Alan Hu : 31580111
+Alan Chang : 31580111
 
-GROUP ID: 4
+GROUP ID: 4a
 
-A4 Verification Code: A13A3FE
+A4 Verification Code: TBD {INSERT ACTUAL CODE HERE}
 #Deliverables
 Proof of Shutdown:
 Shutdown is triggered via the SHUTDOWN_NODE static variable located in the DistributedSystemConfiguration class. 
@@ -27,8 +27,26 @@ UDPServerThread.java Line 39: UDPServerThread is killed
 
 #Extra Notes
 
-Refactored single threaded model into thread pool + queues, reduced unneeded ByteString and Msg type conversions
+<b>GossipThreads
 
+This application uses an epidemic/gossip based protocol in order to keep an updated list 
+of which nodes are alive in the network. This list consists of entries that keep track of 
+hosts and how recent their entry has been refreshed. Every half a second, each node picks
+two random nodes from the full list of nodes and broadcasts its own list. The destination
+node compares its own list to the received list. If two entries have the same host, the 
+ one with the lower number of hops is taken.
+
+<b>ConsistentHashRing
+
+The ConsistentHashRing class uses a concurrent skip list in order to distribute keys and
+values evenly throughout several nodes. Nodes are added or removed based on the list of
+alive nodes which is inside of the NodesList java class. Whenever a request is made, the 
+key is hashed and used to find its next successor. This successor contains information 
+relating to the next node to search. If the successor is null, that means that the current
+node holds data necessary to serve that particular request. Basically, the hashring will
+continue iterating through successors until the address and port are null.
+
+On average, skip lists provide O(log n) time complexity for searching, insertion, and deletion and O(n) for space complexity.
 # Starting the KV store server
 `java -jar -Xmx64m target/CPEN431-1.0.jar spawn -name test -port 10129`
 
