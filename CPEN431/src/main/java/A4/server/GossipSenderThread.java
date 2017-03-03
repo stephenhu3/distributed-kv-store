@@ -3,6 +3,7 @@ package A4.server;
 import static A4.DistributedSystemConfiguration.GOSSIP_RECEIVER_PORT;
 import static A4.DistributedSystemConfiguration.GOSSIP_SENDER_PORT;
 import static A4.DistributedSystemConfiguration.VERBOSE;
+import static A4.DistributedSystemConfiguration.DEBUG;
 
 import A4.proto.LiveHostsRequest.LiveHostsReq;
 import A4.utils.ByteRepresentation;
@@ -46,7 +47,7 @@ public class GossipSenderThread extends Thread {
 
     public void run() {
         while (true) {
-            if (VERBOSE) {
+            if (VERBOSE && DEBUG) {
                 Map<InetAddress, Integer> liveNodes = NodesList.getInstance().getLiveNodes();
                 System.out.println("NODES LIST");
                 System.out.println("==========");
