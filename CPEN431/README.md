@@ -1,10 +1,31 @@
-Name:
-Stephen Hu
+Names and Student Numbers:
 
-Student Number:
-31580129
+Stephen Hu : 31580129
+
+Emmett Tan : 37087129
+
+Alan Hu : 31580111
+
+GROUP ID: 4
 
 A4 Verification Code: A13A3FE
+#Deliverables
+Proof of Shutdown:
+Shutdown is triggered via the SHUTDOWN_NODE static variable located in the DistributedSystemConfiguration class. 
+
+ProtocolBufferKeyValueStoreResponse.java Line 122: SHUTDOWN_NODE is set to true
+
+KVOperationThread.java Line 30: KVOperationThread is killed
+
+RequestHandlerThread.java Line 19: RequestHandlerThread is killed
+
+ResponseHandlerThread.java Line 23: ResponseHandlerThread is killed
+
+UDPServerThread.java Line 39: UDPServerThread is killed
+
+
+
+#Extra Notes
 
 Refactored single threaded model into thread pool + queues, reduced unneeded ByteString and Msg type conversions
 
