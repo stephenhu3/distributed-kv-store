@@ -52,7 +52,7 @@ public class KVOperationThread extends Thread {
                     if (req.hasFwdPort() && req.hasFwdAddress()) {
                         try {
                             fwdReq = new MsgWrapper(null, InetAddress.getByName(
-                                    req.getFwdAddress().toStringUtf8()), req.getFwdPort());
+                                req.getFwdAddress().toStringUtf8()), req.getFwdPort());
                         } catch (UnknownHostException e) {
                             e.printStackTrace();
                         }
