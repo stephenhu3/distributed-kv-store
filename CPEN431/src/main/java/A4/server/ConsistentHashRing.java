@@ -25,13 +25,15 @@ public class ConsistentHashRing {
         return instance;
     }
     
-    public void initializeNodes(){
+    public void initializeNodes() {
         try {
-            for(Iterator<String> i = NodesList.getInstance().getAllNodes().iterator();
+            for (Iterator<String> i = NodesList.getInstance().getAllNodes().iterator();
                 i.hasNext();) {
                 String nodeAddress = i.next();
                 addNode(nodeAddress, UDP_SERVER_THREAD_PORT);
             }
+            // add itself to ring
+            addNode(UDPServerThread.localAddress.getHostAddress(), UDP_SERVER_THREAD_PORT);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
