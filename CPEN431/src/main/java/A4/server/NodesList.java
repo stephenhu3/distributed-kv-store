@@ -38,9 +38,10 @@ public class NodesList {
     // Increment hops and clear old entries
     public void refreshLiveNodes() {
         liveNodes.put(UDPServerThread.localAddress, 0);
-        for (Iterator<Map.Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator(); it.hasNext(); ) {
+        for (Iterator<Map.Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator();
+            it.hasNext();) {
             Map.Entry<InetAddress, Integer> entry = it.next();
-            if (liveNodes.get(entry.getKey()) > 9) {
+            if (entry.getValue() > 9) {
                 it.remove();
             } else {
                 liveNodes.put(entry.getKey(), entry.getValue() + 1);

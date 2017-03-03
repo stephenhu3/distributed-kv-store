@@ -1,6 +1,7 @@
 package A4.server;
 
-import A4.DistributedSystemConfiguration;
+import static A4.DistributedSystemConfiguration.UDP_SERVER_THREAD_PORT;
+
 import A4.utils.MsgWrapper;
 import A4.utils.UniqueIdentifier;
 import com.google.protobuf.ByteString;
@@ -9,9 +10,6 @@ import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentSkipListMap;
-import static A4.DistributedSystemConfiguration.VERBOSE;
-
-
 
 public class ConsistentHashRing {
     private static ConsistentHashRing instance = new ConsistentHashRing();
@@ -29,18 +27,19 @@ public class ConsistentHashRing {
     
     public void initializeNodes(){
         try {
-            for(Iterator<String> i = NodesList.getInstance().getAllNodes().iterator(); i.hasNext(); ) {
+            for(Iterator<String> i = NodesList.getInstance().getAllNodes().iterator();
+                i.hasNext();) {
                 String nodeAddress = i.next();
-                    addNode(nodeAddress, DistributedSystemConfiguration.UDP_SERVER_THREAD_PORT);
+                addNode(nodeAddress, UDP_SERVER_THREAD_PORT);
             }
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
     }
-    
+
     // Add a server and port to the hash ring
     // TODO: Handle redistributing content on node addition
-    public void addNode(String name, int port) throws NoSuchAlgorithmException{
+    public void addNode(String name, int port) throws NoSuchAlgorithmException {
         String hashKey = UniqueIdentifier.MD5Hash(name);
         try {
             InetAddress address = InetAddress.getByName(name);
@@ -76,7 +75,7 @@ public class ConsistentHashRing {
                     hashKey = hashRing.firstKey();
                 }
                 target = hashRing.get(hashKey);
-                if (!NodesList.getInstance().getLiveNodes().containsKey(target.getAddress())){
+                if (!NodesList.getInstance().getLiveNodes().containsKey(target.getAddress())) {
                     hashRing.remove(hashKey);
                     target = null;
                 }
@@ -88,5 +87,5 @@ public class ConsistentHashRing {
             }
         }
         return hashRing.get(hashKey);
-      }
+    }
 }
