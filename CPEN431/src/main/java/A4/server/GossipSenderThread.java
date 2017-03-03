@@ -52,7 +52,7 @@ public class GossipSenderThread extends Thread {
                 System.out.println("==========");
                 for (Iterator<Map.Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator(); it.hasNext(); ) {
                     Map.Entry<InetAddress, Integer> entry = it.next();
-                    System.out.println(entry.getKey() + ":" + liveNodes.get(entry.getKey()));
+                    System.out.println(entry.getKey() + ":" + entry.getValue());
                 }
             }
 

@@ -43,9 +43,8 @@ public class NodesList {
             if (liveNodes.get(entry.getKey()) > 9) {
                 it.remove();
             } else {
-                liveNodes.put(entry.getKey(), liveNodes.get(entry.getKey()) + 1);
+                liveNodes.put(entry.getKey(), entry.getValue() + 1);
             }
         }
     }
-
 }
