@@ -9,6 +9,8 @@ import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentSkipListMap;
+import static A4.DistributedSystemConfiguration.VERBOSE;
+
 
 
 public class ConsistentHashRing {
@@ -74,7 +76,7 @@ public class ConsistentHashRing {
                     hashKey = hashRing.firstKey();
                 }
                 target = hashRing.get(hashKey);
-                if (!NodesList.getInstance().getLiveNodes().containsKey(target)){
+                if (!NodesList.getInstance().getLiveNodes().containsKey(target.getAddress())){
                     hashRing.remove(hashKey);
                     target = null;
                 }
