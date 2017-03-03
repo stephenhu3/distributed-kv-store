@@ -41,7 +41,7 @@ public class NodesList {
         for (Iterator<Map.Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<InetAddress, Integer> entry = it.next();
             if (liveNodes.get(entry.getKey()) > 9) {
-                liveNodes.remove(entry.getKey());
+                it.remove();
             } else {
                 liveNodes.put(entry.getKey(), liveNodes.get(entry.getKey()) + 1);
             }
