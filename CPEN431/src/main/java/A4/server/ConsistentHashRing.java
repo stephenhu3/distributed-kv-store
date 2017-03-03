@@ -63,22 +63,21 @@ public class ConsistentHashRing {
     // Function returns msgWrapper with correct address and port that to send response
     // Function returns an empty MsgWrapper if current machine can service response
     public MsgWrapper getNode(ByteString key) throws NoSuchAlgorithmException {
-        if (hashRing.isEmpty() || key == null) {
+        if (hashRing.isEmpty() || key.isEmpty()) {
             return new MsgWrapper(null, null, 0);
         }
-
-        String hashKey = UniqueIdentifier.MD5Hash(key.toString());
+        String hashKey = UniqueIdentifier.MD5Hash(key.toStringUtf8());
         // If key not contained in hash ring, use successor node (use first node if no successor)
         if (!hashRing.containsKey(hashKey)) {
             MsgWrapper target = null;
             while (target == null) {
-                hashKey = hashRing.ceilingKey(hashKey);
-                if (hashKey == null) {
-                    hashKey = hashRing.firstKey();
-                }
+               hashKey = hashRing.ceilingKey(hashKey);
+               if (hashKey == null) {
+                   hashKey = hashRing.firstKey();
+               }
                 target = hashRing.get(hashKey);
                 if (!NodesList.getInstance().getLiveNodes().containsKey(target.getAddress())) {
-                    hashRing.remove(hashKey);
+//                    hashRing.remove(hashKey);
                     target = null;
                 }
             }
