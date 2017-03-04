@@ -31,6 +31,36 @@ public class MsgWrapper {
 			}
     	}
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !MsgWrapper.class.isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+        final MsgWrapper other = (MsgWrapper) obj;
+        // logical OR, if one or the other is null, they are not equal
+        if (this.getMessage() == null ^ other.getMessage() == null) {
+            return false;
+        }
+
+        if (this.getMessage() != null && !this.getMessage().equals(other.getMessage())) {
+            return false;
+        }
+
+        if (this.getPort() != other.getPort()) {
+            return false;
+        }
+
+        if (this.getAddress() == null ^ other.getAddress() == null) {
+            return false;
+        }
+
+        if (this.getAddress() != null && !this.getAddress().equals(other.getAddress())) {
+            return false;
+        }
+
+        return true;
+    }
     
     public Msg getMessage() {
         return message;
