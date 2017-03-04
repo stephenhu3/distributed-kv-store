@@ -1,5 +1,7 @@
 package A4.server;
 
+import static A4.DistributedSystemConfiguration.MAX_HOPS;
+
 import java.net.InetAddress;
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +43,7 @@ public class NodesList {
         for (Iterator<Map.Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator();
             it.hasNext();) {
             Map.Entry<InetAddress, Integer> entry = it.next();
-            if (entry.getValue() > 9) {
+            if (entry.getValue() > MAX_HOPS) {
                 it.remove();
             } else {
                 liveNodes.put(entry.getKey(), entry.getValue() + 1);

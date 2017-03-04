@@ -9,6 +9,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
+import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 public class ConsistentHashRing {
@@ -25,7 +26,7 @@ public class ConsistentHashRing {
         return instance;
     }
     
-    public void initializeNodes() {
+    private void initializeNodes() {
         try {
             for (Iterator<String> i = NodesList.getInstance().getAllNodes().iterator();
                 i.hasNext();) {
@@ -33,18 +34,20 @@ public class ConsistentHashRing {
                 addNode(nodeAddress, UDP_SERVER_THREAD_PORT);
             }
             // add itself to ring
-            addNode(UDPServerThread.localAddress.getHostAddress(), UDP_SERVER_THREAD_PORT);
+            addNode(InetAddress.getLocalHost().getHostAddress(), UDP_SERVER_THREAD_PORT);
         } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (UnknownHostException e) {
             e.printStackTrace();
         }
     }
 
     // Add a server and port to the hash ring
     // TODO: Handle redistributing content on node addition
-    public void addNode(String name, int port) throws NoSuchAlgorithmException {
-        String hashKey = UniqueIdentifier.MD5Hash(name);
+    public void addNode(String ip, int port) throws NoSuchAlgorithmException {
+        String hashKey = UniqueIdentifier.MD5Hash(ip);
         try {
-            InetAddress address = InetAddress.getByName(name);
+            InetAddress address = InetAddress.getByName(ip);
             hashRing.put(hashKey, new MsgWrapper(null, address, port));
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -71,13 +74,10 @@ public class ConsistentHashRing {
         if (!hashRing.containsKey(hashKey)) {
             MsgWrapper target = null;
             while (target == null) {
-               hashKey = hashRing.ceilingKey(hashKey);
-               if (hashKey == null) {
-                   hashKey = hashRing.firstKey();
-               }
+                SortedMap<String, MsgWrapper> tailMap = hashRing.tailMap(hashKey);
+                hashKey = tailMap.isEmpty() ? hashRing.firstKey() : tailMap.firstKey();
                 target = hashRing.get(hashKey);
                 if (!NodesList.getInstance().getLiveNodes().containsKey(target.getAddress())) {
-//                    hashRing.remove(hashKey);
                     target = null;
                 }
             }
@@ -88,5 +88,9 @@ public class ConsistentHashRing {
             }
         }
         return hashRing.get(hashKey);
+    }
+
+    public ConcurrentSkipListMap<String, MsgWrapper> getHashRing() {
+        return this.hashRing;
     }
 }
