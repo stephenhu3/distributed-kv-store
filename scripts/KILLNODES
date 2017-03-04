@@ -1,0 +1,7 @@
+#!/bin/bash
+input="dnsServers.txt"
+for var in $(<dnsServers.txt)
+do
+    echo "Accessing $var";
+    ssh -l ubc_cpen431_4 -i ~/.ssh/id_rsa "$var" "bash -s" < ./kill
+ done

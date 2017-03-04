@@ -1,0 +1,8 @@
+#!/bin/bash
+for var in $(<dnsServers.txt)
+do
+    echo "Accessing $var"
+     scp ~/Desktop/A6Code/target/ipServers.txt  ubc_cpen431_4@"$var":/home/ubc_cpen431_4
+     # scp ~/Desktop/A6Code/target/CPEN431-1.0.jar ubc_cpen431_4@"$var":/home/ubc_cpen431_4
+     # scp ~/Desktop/A6Code/target/A4-1.0.jar  ubc_cpen431_4@"$var":/home/ubc_cpen431_4
+ done
