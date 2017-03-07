@@ -1,5 +1,8 @@
 package A4.server;
 
+import static A4.DistributedSystemConfiguration.DEBUG;
+import static A4.DistributedSystemConfiguration.VERBOSE;
+
 import A4.utils.MsgWrapper;
 import A4.utils.UniqueIdentifier;
 import com.google.protobuf.ByteString;
@@ -8,6 +11,7 @@ import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -68,6 +72,18 @@ public class ConsistentHashRing {
     // Function returns msgWrapper with correct address and port that to send response
     // Function returns an empty MsgWrapper if current machine can service response
     public MsgWrapper getNode(ByteString key) throws NoSuchAlgorithmException {
+        if (VERBOSE && DEBUG) {
+            System.out.println("HASH RING CONTENTS");
+            System.out.println("==========");
+            for (Iterator<Entry<String, MsgWrapper>> iter = hashRing.entrySet().iterator();
+                iter.hasNext();) {
+                Map.Entry<String, MsgWrapper> entry = iter.next();
+                MsgWrapper value = entry.getValue();
+                System.out.println(entry.getKey());
+                System.out.println(value.getAddress().getHostAddress() + ":" + value.getPort());
+            }
+        }
+
         if (hashRing.isEmpty() || key.isEmpty()) {
             return new MsgWrapper(null, null, 0);
         }
