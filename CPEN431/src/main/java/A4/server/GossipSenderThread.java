@@ -1,8 +1,6 @@
 package A4.server;
 
 import static A4.DistributedSystemConfiguration.DEBUG;
-import static A4.DistributedSystemConfiguration.GOSSIP_RECEIVER_PORT;
-import static A4.DistributedSystemConfiguration.GOSSIP_SENDER_PORT;
 import static A4.DistributedSystemConfiguration.VERBOSE;
 
 import A4.proto.LiveHostsRequest.LiveHostsReq;
@@ -14,10 +12,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.ArrayList;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -26,21 +23,24 @@ import java.util.Scanner;
 public class GossipSenderThread extends Thread {
     NodesList nodesList = NodesList.getInstance();
     private DatagramSocket socket;
+    private int gossipSenderPort;
 
     public GossipSenderThread(String name, String filename) throws FileNotFoundException,
-        SocketException {
+        SocketException, UnknownHostException {
         super(name);
+        gossipSenderPort = UDPServerThread.localPort + 2;
+
         Map<InetAddress, Integer> liveNodes = new HashMap<>();
-        List<String> allNodes = new ArrayList<String>();
+        Map<InetAddress, Integer> allNodes = new HashMap<>();
 
         File file = new File(filename);
         Scanner scanner = new Scanner(file);
 
         // Populate all nodes list (excluding itself)
         while (scanner.hasNext()) {
-            String ip = scanner.nextLine();
-            if (!ip.equals(UDPServerThread.localAddress.getHostAddress())) {
-                allNodes.add(ip);
+            String[] node = scanner.next().split(":");
+            if (!node[0].equals(UDPServerThread.localAddress.getHostAddress())) {
+                allNodes.put(InetAddress.getByName(node[0]), Integer.parseInt(node[1]));
             }
         }
 
@@ -49,13 +49,13 @@ public class GossipSenderThread extends Thread {
         nodesList.setLiveNodes(liveNodes);
         nodesList.addLiveNode(UDPServerThread.localAddress, 0);
 
-        socket = new DatagramSocket(GOSSIP_SENDER_PORT);
+        socket = new DatagramSocket(gossipSenderPort);
     }
 
     public void run() {
         while (true) {
             if (VERBOSE && DEBUG) {
-                Map<InetAddress, Integer> liveNodes = NodesList.getInstance().getLiveNodes();
+                Map<InetAddress, Integer> liveNodes = nodesList.getLiveNodes();
                 System.out.println("NODES LIST");
                 System.out.println("==========");
                 for (Iterator<Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator(); it.hasNext(); ) {
@@ -65,33 +65,31 @@ public class GossipSenderThread extends Thread {
             }
 
             InetAddress firstAddress, secondAddress;
+            int firstPort, secondPort;
+
             Random rand = new Random();
-            List<String> allNodes = NodesList.getInstance().getAllNodes();
+            Object[] allNodes = nodesList.getAllNodes().values().toArray();
 
             // Reach out to two random nodes
-            String firstHost = allNodes.get(rand.nextInt(allNodes.size()));
-            String secondHost = allNodes.get(rand.nextInt(allNodes.size()));
+            firstAddress = (InetAddress) allNodes[rand.nextInt(allNodes.length)];
+            firstPort = nodesList.getAllNodes().get(firstAddress);
+
+            secondAddress = (InetAddress) allNodes[rand.nextInt(allNodes.length)];
+            secondPort = nodesList.getAllNodes().get(secondAddress);
 
             // Increment hops
-            NodesList.getInstance().refreshLiveNodes();
+            nodesList.refreshLiveNodes();
 
             // Build liveHostsReq protobuf
             byte[] serverList = ByteRepresentation.mapToBytes(nodesList.getLiveNodes());
             LiveHostsReq liveHostsReq = LiveHostsReq.newBuilder()
                     .setLiveHosts(ByteString.copyFrom(serverList))
                     .build();
-            try {
-                firstAddress = InetAddress.getByName(firstHost);
-                secondAddress = InetAddress.getByName(secondHost);
-            } catch (Exception e) {
-                e.printStackTrace();
-                continue;
-            }
 
             DatagramPacket firstPacket = new DatagramPacket(liveHostsReq.toByteArray(),
-                liveHostsReq.toByteArray().length, firstAddress, GOSSIP_RECEIVER_PORT);
+                liveHostsReq.toByteArray().length, firstAddress, firstPort);
             DatagramPacket secondPacket = new DatagramPacket(liveHostsReq.toByteArray(),
-                liveHostsReq.toByteArray().length, secondAddress, GOSSIP_RECEIVER_PORT);
+                liveHostsReq.toByteArray().length, secondAddress, secondPort);
 
             try {
                 socket.send(firstPacket);

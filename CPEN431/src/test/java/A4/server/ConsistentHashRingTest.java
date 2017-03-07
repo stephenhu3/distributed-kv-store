@@ -1,6 +1,5 @@
 package A4.server;
 
-import static A4.DistributedSystemConfiguration.UDP_SERVER_THREAD_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -11,9 +10,7 @@ import com.google.protobuf.ByteString;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ConsistentHashRingTest {
@@ -28,16 +25,20 @@ public class ConsistentHashRingTest {
         liveNodes.put(InetAddress.getByName("129.97.74.12"), 2);
         liveNodes.put(InetAddress.getByName("141.212.113.178"), 4);
         liveNodes.put(InetAddress.getByName("128.208.4.197"), 6);
+        liveNodes.put(InetAddress.getByName("128.208.4.99"), 8);
 
-        List<String> allNodes = new ArrayList<String>();
+        Map<InetAddress, Integer> allNodes = new HashMap<>();
         // contained in live nodes
-        allNodes.add("142.103.2.2");
-        allNodes.add("129.97.74.12");
-        allNodes.add("141.212.113.178");
-        allNodes.add("128.208.4.197");
+        allNodes.put(InetAddress.getByName("142.103.2.2"), 10500);
+        allNodes.put(InetAddress.getByName("129.97.74.12"), 10600);
+        allNodes.put(InetAddress.getByName("141.212.113.178"), 10700);
+        allNodes.put(InetAddress.getByName("128.208.4.197"), 10800);
+        allNodes.put(InetAddress.getByName("128.208.4.99"), 10900);
         // not contained in live nodes
-        allNodes.add("84.88.58.155");
-        allNodes.add("128.208.4.99");
+        allNodes.put(InetAddress.getByName("84.88.58.155"), 11000);
+        allNodes.put(InetAddress.getByName("128.208.4.50"), 11100);
+        allNodes.put(InetAddress.getByName("128.208.4.70"), 11200);
+        allNodes.put(InetAddress.getByName("128.208.4.101"), 11300);
 
         nodesList.setAllNodes(allNodes);
         nodesList.setLiveNodes(liveNodes);
@@ -47,22 +48,25 @@ public class ConsistentHashRingTest {
     @org.junit.Test
     public void testAddNode() throws NoSuchAlgorithmException, UnknownHostException {
         String ip = "198.133.224.147";
+        int port = 10800;
         String hashKey = UniqueIdentifier.MD5Hash(ip);
-        hashRing.addNode(ip, UDP_SERVER_THREAD_PORT);
+        hashRing.addNode(ip, port);
 
-        MsgWrapper expectedValue = new MsgWrapper(null, InetAddress.getByName(ip),
-            UDP_SERVER_THREAD_PORT);
+        MsgWrapper expectedValue = new MsgWrapper(null, InetAddress.getByName(ip), port);
         MsgWrapper actualValue = hashRing.getHashRing().get(hashKey);
 
         assertEquals(expectedValue, actualValue);
+        // teardown
+        hashRing.removeNode(ip);
     }
 
     @org.junit.Test
     public void testRemoveNode() throws NoSuchAlgorithmException {
         String ip = "128.153.241.117";
+        int port = 10800;
         String hashKey = UniqueIdentifier.MD5Hash(ip);
 
-        hashRing.addNode(ip, UDP_SERVER_THREAD_PORT);
+        hashRing.addNode(ip, port);
         assertNotNull(hashRing.getHashRing().get(hashKey));
 
         hashRing.removeNode(ip);
@@ -77,13 +81,21 @@ public class ConsistentHashRingTest {
     }
 
     @org.junit.Test
-    public void testGetNodeFirstSuccessor() {
-        // TODO
+    public void testGetNodeFirstSuccessor() throws NoSuchAlgorithmException {
+        String testKey = "128.208.4.98";
+        String expectedKey = "128.208.4.99";
+        MsgWrapper actualValue = hashRing.getNode(ByteString.copyFromUtf8(testKey));
+        MsgWrapper expectedValue = hashRing.getNode(ByteString.copyFromUtf8(expectedKey));
+        assertEquals(actualValue, expectedValue);
     }
 
     @org.junit.Test
-    public void testGetNodeSecondSuccessor() {
-        // TODO
+    public void testGetNodeSecondSuccessor() throws NoSuchAlgorithmException {
+//        String testKey = "128.208.4.50";
+//        String expectedKey = "128.208.4.99";
+//        MsgWrapper actualValue = hashRing.getNode(ByteString.copyFromUtf8(testKey));
+//        MsgWrapper expectedValue = hashRing.getNode(ByteString.copyFromUtf8(expectedKey));
+//        assertEquals(actualValue, expectedValue);
     }
 
     @org.junit.Test

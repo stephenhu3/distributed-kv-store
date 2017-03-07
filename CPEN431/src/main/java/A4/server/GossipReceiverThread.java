@@ -1,6 +1,5 @@
 package A4.server;
 
-import static A4.DistributedSystemConfiguration.GOSSIP_RECEIVER_PORT;
 import static A4.DistributedSystemConfiguration.MAX_MSG_SIZE;
 
 import A4.proto.LiveHostsRequest.LiveHostsReq;
@@ -18,11 +17,17 @@ import java.util.Map;
 public class GossipReceiverThread extends Thread {
     NodesList nodesList;
     private DatagramSocket socket;
+    private int gossipReceiverPort;
 
     public GossipReceiverThread(String name) throws SocketException {
         super(name);
-        socket = new DatagramSocket(GOSSIP_RECEIVER_PORT);
+        gossipReceiverPort = UDPServerThread.localPort + 1;
+        socket = new DatagramSocket(gossipReceiverPort);
         nodesList = NodesList.getInstance();
+    }
+
+    public int getPort() {
+        return this.gossipReceiverPort;
     }
 
     public void run() {

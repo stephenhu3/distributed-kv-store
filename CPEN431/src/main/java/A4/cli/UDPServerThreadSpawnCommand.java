@@ -1,7 +1,6 @@
 package A4.cli;
 
 import static A4.DistributedSystemConfiguration.VERBOSE;
-import static A4.DistributedSystemConfiguration.UDP_SERVER_THREAD_PORT;
 
 import A4.server.GossipReceiverThread;
 import A4.server.GossipSenderThread;
@@ -44,23 +43,25 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
 
     @Override
     public void run(Bootstrap<?> bootstrap, Namespace namespace) throws Exception {
-
+        int port = namespace.getInt("port");
         String name = namespace.getString("name");
         String nodes = namespace.getString("nodes");
         String servers = namespace.getString("servers");
 
         if (VERBOSE) {
             System.out.println("Name: " + name);
+            System.out.println("Port: " + port);
             System.out.println("Nodes: " + nodes);
         }
 
         // if in server mode, keep server running after each served request
-        new UDPServerThread(name + "-server-thread").start();
-        new GossipSenderThread(name + "-gossip-sender-thread", nodes).start();
+        new UDPServerThread(name + "-server-thread", port).start();
         new GossipReceiverThread(name + "-gossip-receiver-thread").start();
+        new GossipSenderThread(name + "-gossip-sender-thread", nodes).start();
         new RequestHandlerThread(name + "-request-handler").start();
         new KVOperationThread(name + "-kv-operation-thread").start();
+        // TODO: Refine this to ensure no collisions
         new ResponseHandlerThread(name + "-response-handler",
-            UDP_SERVER_THREAD_PORT + new Random().nextInt(10000)).start();
+            port + new Random().nextInt(10000)).start();
     }
 }

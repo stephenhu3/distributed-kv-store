@@ -4,14 +4,13 @@ import static A4.DistributedSystemConfiguration.MAX_HOPS;
 
 import java.net.InetAddress;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 public class NodesList {
     private static NodesList instance = new NodesList();
     private NodesList() {}
     private Map<InetAddress, Integer> liveNodes;
-    private List<String> allNodes;
+    private Map<InetAddress, Integer> allNodes;
 
     public static NodesList getInstance() {
         return instance;
@@ -21,7 +20,7 @@ public class NodesList {
         return liveNodes;
     }
 
-    public List<String> getAllNodes() {
+    public Map<InetAddress, Integer> getAllNodes() {
         return allNodes;
     }
 
@@ -29,7 +28,7 @@ public class NodesList {
         this.liveNodes = liveNodes;
     }
 
-    public void setAllNodes(List<String> allNodes) {
+    public void setAllNodes(Map<InetAddress, Integer> allNodes) {
         this.allNodes = allNodes;
     }
 
@@ -40,11 +39,11 @@ public class NodesList {
     // Increment hops and clear old entries
     public void refreshLiveNodes() {
         liveNodes.put(UDPServerThread.localAddress, 0);
-        for (Iterator<Map.Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator();
-            it.hasNext();) {
-            Map.Entry<InetAddress, Integer> entry = it.next();
+        for (Iterator<Map.Entry<InetAddress, Integer>> iter = liveNodes.entrySet().iterator();
+            iter.hasNext();) {
+            Map.Entry<InetAddress, Integer> entry = iter.next();
             if (entry.getValue() > MAX_HOPS) {
-                it.remove();
+                iter.remove();
             } else {
                 liveNodes.put(entry.getKey(), entry.getValue() + 1);
             }
