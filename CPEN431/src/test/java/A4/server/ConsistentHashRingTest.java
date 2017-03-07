@@ -23,7 +23,6 @@ public class ConsistentHashRingTest {
         Map<InetAddress, Integer> liveNodes = new HashMap<>();
         liveNodes.put(InetAddress.getByName("142.103.2.2"), 1);
         liveNodes.put(InetAddress.getByName("129.97.74.12"), 2);
-        liveNodes.put(InetAddress.getByName("141.212.113.178"), 4);
         liveNodes.put(InetAddress.getByName("128.208.4.197"), 6);
         liveNodes.put(InetAddress.getByName("128.208.4.99"), 8);
 
@@ -49,7 +48,7 @@ public class ConsistentHashRingTest {
     public void testAddNode() throws NoSuchAlgorithmException, UnknownHostException {
         String ip = "198.133.224.147";
         int port = 10800;
-        String hashKey = UniqueIdentifier.MD5Hash(ip);
+        String hashKey = UniqueIdentifier.MD5Hash(ip + ":" + port);
         hashRing.addNode(ip, port);
 
         MsgWrapper expectedValue = new MsgWrapper(null, InetAddress.getByName(ip), port);
@@ -57,19 +56,19 @@ public class ConsistentHashRingTest {
 
         assertEquals(expectedValue, actualValue);
         // teardown
-        hashRing.removeNode(ip);
+        hashRing.removeNode(ip, port);
     }
 
     @org.junit.Test
     public void testRemoveNode() throws NoSuchAlgorithmException {
         String ip = "128.153.241.117";
         int port = 10800;
-        String hashKey = UniqueIdentifier.MD5Hash(ip);
+        String hashKey = UniqueIdentifier.MD5Hash(ip + ":" + port);
 
         hashRing.addNode(ip, port);
         assertNotNull(hashRing.getHashRing().get(hashKey));
 
-        hashRing.removeNode(ip);
+        hashRing.removeNode(ip, port);
         assertNull(hashRing.getHashRing().get(hashKey));
     }
 
@@ -82,8 +81,8 @@ public class ConsistentHashRingTest {
 
     @org.junit.Test
     public void testGetNodeFirstSuccessor() throws NoSuchAlgorithmException {
-        String testKey = "128.208.4.98";
-        String expectedKey = "128.208.4.99";
+        String testKey = "141.212.113.178:10700";
+        String expectedKey = "128.208.4.99:10900";
         MsgWrapper actualValue = hashRing.getNode(ByteString.copyFromUtf8(testKey));
         MsgWrapper expectedValue = hashRing.getNode(ByteString.copyFromUtf8(expectedKey));
         assertEquals(actualValue, expectedValue);
@@ -91,15 +90,18 @@ public class ConsistentHashRingTest {
 
     @org.junit.Test
     public void testGetNodeSecondSuccessor() throws NoSuchAlgorithmException {
-//        String testKey = "128.208.4.50";
-//        String expectedKey = "128.208.4.99";
-//        MsgWrapper actualValue = hashRing.getNode(ByteString.copyFromUtf8(testKey));
-//        MsgWrapper expectedValue = hashRing.getNode(ByteString.copyFromUtf8(expectedKey));
-//        assertEquals(actualValue, expectedValue);
+        String testKey = "128.208.4.70:11200";
+        String expectedKey = "128.208.4.99:10900";
+        MsgWrapper actualValue = hashRing.getNode(ByteString.copyFromUtf8(testKey));
+        MsgWrapper expectedValue = hashRing.getNode(ByteString.copyFromUtf8(expectedKey));
+        assertEquals(actualValue, expectedValue);
     }
 
     @org.junit.Test
-    public void testGetNodeFirstKey() {
-        // TODO
+    public void testGetNodeFirstKey() throws NoSuchAlgorithmException {
+        String testKey = "129.97.74.12:10600";
+        MsgWrapper actualValue = hashRing.getNode(ByteString.copyFromUtf8(testKey));
+        MsgWrapper expectedValue = hashRing.getNode(ByteString.copyFromUtf8(testKey));
+        assertEquals(actualValue, expectedValue);
     }
 }

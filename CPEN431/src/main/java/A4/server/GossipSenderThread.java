@@ -39,8 +39,10 @@ public class GossipSenderThread extends Thread {
         // Populate all nodes list (excluding itself)
         while (scanner.hasNext()) {
             String[] node = scanner.next().split(":");
-            if (!node[0].equals(UDPServerThread.localAddress.getHostAddress())) {
-                allNodes.put(InetAddress.getByName(node[0]), Integer.parseInt(node[1]));
+            int port = Integer.parseInt(node[1]);
+            if (!node[0].equals(UDPServerThread.localAddress.getHostAddress())
+                && port != UDPServerThread.localPort) {
+                allNodes.put(InetAddress.getByName(node[0]), port);
             }
         }
 
@@ -58,24 +60,21 @@ public class GossipSenderThread extends Thread {
                 Map<InetAddress, Integer> liveNodes = nodesList.getLiveNodes();
                 System.out.println("NODES LIST");
                 System.out.println("==========");
-                for (Iterator<Entry<InetAddress, Integer>> it = liveNodes.entrySet().iterator(); it.hasNext(); ) {
-                    Map.Entry<InetAddress, Integer> entry = it.next();
+                for (Iterator<Entry<InetAddress, Integer>> iter = liveNodes.entrySet().iterator();
+                    iter.hasNext();) {
+                    Map.Entry<InetAddress, Integer> entry = iter.next();
                     System.out.println(entry.getKey() + ":" + entry.getValue());
                 }
             }
 
-            InetAddress firstAddress, secondAddress;
-            int firstPort, secondPort;
+            Map.Entry<InetAddress, Integer> firstNode, secondNode;
 
             Random rand = new Random();
-            Object[] allNodes = nodesList.getAllNodes().values().toArray();
+            Object[] allNodes = nodesList.getAllNodes().entrySet().toArray();
 
             // Reach out to two random nodes
-            firstAddress = (InetAddress) allNodes[rand.nextInt(allNodes.length)];
-            firstPort = nodesList.getAllNodes().get(firstAddress);
-
-            secondAddress = (InetAddress) allNodes[rand.nextInt(allNodes.length)];
-            secondPort = nodesList.getAllNodes().get(secondAddress);
+            firstNode = (Map.Entry<InetAddress, Integer>) allNodes[rand.nextInt(allNodes.length)];
+            secondNode = (Map.Entry<InetAddress, Integer>) allNodes[rand.nextInt(allNodes.length)];
 
             // Increment hops
             nodesList.refreshLiveNodes();
@@ -86,10 +85,11 @@ public class GossipSenderThread extends Thread {
                     .setLiveHosts(ByteString.copyFrom(serverList))
                     .build();
 
+            // gossip receiver thread port is port offset by +1
             DatagramPacket firstPacket = new DatagramPacket(liveHostsReq.toByteArray(),
-                liveHostsReq.toByteArray().length, firstAddress, firstPort);
+                liveHostsReq.toByteArray().length, firstNode.getKey(), firstNode.getValue() + 1);
             DatagramPacket secondPacket = new DatagramPacket(liveHostsReq.toByteArray(),
-                liveHostsReq.toByteArray().length, secondAddress, secondPort);
+                liveHostsReq.toByteArray().length, secondNode.getKey(), secondNode.getValue() + 1);
 
             try {
                 socket.send(firstPacket);

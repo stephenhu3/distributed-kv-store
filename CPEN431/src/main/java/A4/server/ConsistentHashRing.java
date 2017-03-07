@@ -47,7 +47,7 @@ public class ConsistentHashRing {
     // Add a server and port to the hash ring
     // TODO: Handle redistributing content on node addition
     public void addNode(String ip, int port) throws NoSuchAlgorithmException {
-        String hashKey = UniqueIdentifier.MD5Hash(ip);
+        String hashKey = UniqueIdentifier.MD5Hash(ip + ":" + port);
         try {
             InetAddress address = InetAddress.getByName(ip);
             hashRing.put(hashKey, new MsgWrapper(null, address, port));
@@ -58,8 +58,8 @@ public class ConsistentHashRing {
     
     // Remove a server and port from the hash ring
     // TODO: Handle redistributing content on node removal
-    public void removeNode(String nodeAddress) throws NoSuchAlgorithmException {
-        String key = UniqueIdentifier.MD5Hash(nodeAddress);
+    public void removeNode(String address, int port) throws NoSuchAlgorithmException {
+        String key = UniqueIdentifier.MD5Hash(address + ":" + port);
         hashRing.remove(key);
     }
 
@@ -73,17 +73,12 @@ public class ConsistentHashRing {
         }
         String hashKey = UniqueIdentifier.MD5Hash(key.toStringUtf8());
         // If key not contained in hash ring, use successor node (use first node if no successor)
-        // TODO: Improve readability
         // TODO: Implement logic for handling when full loop around hash ring is made
-        // !NodesList.getInstance().getLiveNodes().containsKey(hashRing.get(hashKey).getAddress())
-        if (!hashRing.containsKey(hashKey)) {
+        if (!hashRing.containsKey(hashKey)
+            || !nodesList.getLiveNodes().containsKey(hashRing.get(hashKey).getAddress())) {
             MsgWrapper target = null;
             while (target == null) {
-//                hashKey = hashRing.ceilingKey(hashKey);
-//                if (hashKey == null) {
-//                    hashKey = hashRing.firstKey();
-//                }
-                SortedMap<String, MsgWrapper> tailMap = hashRing.tailMap(hashKey);
+                SortedMap<String, MsgWrapper> tailMap = hashRing.tailMap(hashKey, false);
                 hashKey = tailMap.isEmpty() ? hashRing.firstKey() : tailMap.firstKey();
 
                 target = hashRing.get(hashKey);
