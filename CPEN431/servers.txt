@@ -29,10 +29,4 @@ ricepl-5.cs.rice.edu:10696
 planetlab03.cs.washington.edu:10696
 planetlab1.cs.ubc.ca:10696
 planetlab2.emich.edu:10696
-planetlab1.emich.edu:10696
-planetlab2.temple.edu:10696
-planetlab2.unr.edu:10696
 salt.planetlab.cs.umd.edu:10696
-planetlab2.citadel.edu:10696
-planetlab4.rutgers.edu:10696
-planetlab-02.bu.edu:10696
