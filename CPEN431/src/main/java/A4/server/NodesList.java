@@ -10,7 +10,7 @@ public class NodesList {
     private static NodesList instance = new NodesList();
     private NodesList() {}
     private Map<InetAddress, Integer> liveNodes;
-    private Map<InetAddress, Integer> allNodes;
+    private Map<String, Integer> allNodes;
 
     public static NodesList getInstance() {
         return instance;
@@ -20,7 +20,7 @@ public class NodesList {
         return liveNodes;
     }
 
-    public Map<InetAddress, Integer> getAllNodes() {
+    public Map<String, Integer> getAllNodes() {
         return allNodes;
     }
 
@@ -28,7 +28,7 @@ public class NodesList {
         this.liveNodes = liveNodes;
     }
 
-    public void setAllNodes(Map<InetAddress, Integer> allNodes) {
+    public void setAllNodes(Map<String, Integer> allNodes) {
         this.allNodes = allNodes;
     }
 

@@ -26,18 +26,18 @@ public class ConsistentHashRingTest {
         liveNodes.put(InetAddress.getByName("128.208.4.197"), 6);
         liveNodes.put(InetAddress.getByName("128.208.4.99"), 8);
 
-        Map<InetAddress, Integer> allNodes = new HashMap<>();
+        Map<String, Integer> allNodes = new HashMap<>();
         // contained in live nodes
-        allNodes.put(InetAddress.getByName("142.103.2.2"), 10500);
-        allNodes.put(InetAddress.getByName("129.97.74.12"), 10600);
-        allNodes.put(InetAddress.getByName("141.212.113.178"), 10700);
-        allNodes.put(InetAddress.getByName("128.208.4.197"), 10800);
-        allNodes.put(InetAddress.getByName("128.208.4.99"), 10900);
+        allNodes.put("142.103.2.2:10500", 10500);
+        allNodes.put("129.97.74.12:10600", 10600);
+        allNodes.put("141.212.113.178:10700", 10700);
+        allNodes.put("128.208.4.197:10800", 10800);
+        allNodes.put("128.208.4.99:10900", 10900);
         // not contained in live nodes
-        allNodes.put(InetAddress.getByName("84.88.58.155"), 11000);
-        allNodes.put(InetAddress.getByName("128.208.4.50"), 11100);
-        allNodes.put(InetAddress.getByName("128.208.4.70"), 11200);
-        allNodes.put(InetAddress.getByName("128.208.4.101"), 11300);
+        allNodes.put("84.88.58.155:11000", 11000);
+        allNodes.put("128.208.4.50:11100", 11100);
+        allNodes.put("128.208.4.70:11200", 11200);
+        allNodes.put("128.208.4.101:11300", 11300);
 
         nodesList.setAllNodes(allNodes);
         nodesList.setLiveNodes(liveNodes);

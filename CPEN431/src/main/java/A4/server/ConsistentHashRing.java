@@ -1,6 +1,5 @@
 package A4.server;
 
-import static A4.DistributedSystemConfiguration.DEBUG;
 import static A4.DistributedSystemConfiguration.VERBOSE;
 
 import A4.utils.MsgWrapper;
@@ -34,10 +33,11 @@ public class ConsistentHashRing {
     
     private void initializeNodes() {
         try {
-            for (Iterator<Map.Entry<InetAddress, Integer>> iter
+            for (Iterator<Map.Entry<String, Integer>> iter
                 = nodesList.getAllNodes().entrySet().iterator(); iter.hasNext();) {
-                Map.Entry<InetAddress, Integer> node = iter.next();
-                addNode(node.getKey().getHostAddress(), node.getValue());
+                Map.Entry<String, Integer> node = iter.next();
+                String[] address = node.getKey().split(":");
+                addNode(address[0], node.getValue());
             }
             // add itself to ring
             addNode(InetAddress.getLocalHost().getHostAddress(), UDPServerThread.localPort);
@@ -72,7 +72,7 @@ public class ConsistentHashRing {
     // Function returns msgWrapper with correct address and port that to send response
     // Function returns an empty MsgWrapper if current machine can service response
     public MsgWrapper getNode(ByteString key) throws NoSuchAlgorithmException {
-        if (VERBOSE && DEBUG) {
+        if (VERBOSE) {
             System.out.println("HASH RING CONTENTS");
             System.out.println("==========");
             for (Iterator<Entry<String, MsgWrapper>> iter = hashRing.entrySet().iterator();
@@ -89,7 +89,7 @@ public class ConsistentHashRing {
         }
         String hashKey = UniqueIdentifier.MD5Hash(key.toStringUtf8());
         // If key not contained in hash ring, use successor node (use first node if no successor)
-        // TODO: Implement logic for handling when full loop around hash ring is made
+        // Ultimately, if no successor is found, it will at least return itself as destination node
         if (!hashRing.containsKey(hashKey)
             || !nodesList.getLiveNodes().containsKey(hashRing.get(hashKey).getAddress())) {
             MsgWrapper target = null;
