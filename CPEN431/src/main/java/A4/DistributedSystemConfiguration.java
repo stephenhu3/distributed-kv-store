@@ -1,10 +1,8 @@
 package A4;
 
-import io.dropwizard.Configuration;
-
-public class DistributedSystemConfiguration extends Configuration {
+public class DistributedSystemConfiguration {
     // Enable debugging print statements
-    public static final boolean VERBOSE = true;
+    public static final boolean VERBOSE = false;
     // Greater debugging granularity
     public static final boolean DEBUG = false;
     // Keep alive if in server mode to serve multiple requests
@@ -18,9 +16,6 @@ public class DistributedSystemConfiguration extends Configuration {
     public static final int JVM_HEAP_SIZE_KB = 64000;
     // Out of memory threshold triggers at 3.75% free memory remaining in verbose mode
     // set as 6.25% when VERBOSE is false
-    public static final double OUT_OF_MEMORY_THRESHOLD = 0.09;
-    public static final int UDP_SERVER_THREAD_PORT = 10696;
-    public static final int GOSSIP_RECEIVER_PORT = 10697;
-    public static final int GOSSIP_SENDER_PORT = 10698;
-    public static final int MAX_HOPS = 5;
+    public static final double OUT_OF_MEMORY_THRESHOLD = 0.05;
+    public static final int MAX_HOPS = 10;
 }

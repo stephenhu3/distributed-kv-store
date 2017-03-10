@@ -1,10 +1,14 @@
 package A4.server;
 
-import static A4.DistributedSystemConfiguration.MAX_MSG_SIZE;
+import A4.utils.ByteRepresentation;
 
 import A4.proto.LiveHostsRequest.LiveHostsReq;
-import A4.utils.ByteRepresentation;
+import A4.server.NodesList;
+
 import com.google.protobuf.InvalidProtocolBufferException;
+
+import static A4.DistributedSystemConfiguration.MAX_MSG_SIZE;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -19,9 +23,9 @@ public class GossipReceiverThread extends Thread {
     private DatagramSocket socket;
     private int gossipReceiverPort;
 
-    public GossipReceiverThread(String name) throws SocketException {
-        super(name);
-        gossipReceiverPort = UDPServerThread.localPort + 1;
+    public GossipReceiverThread(String name, int port) throws SocketException {
+    	super(name);
+        gossipReceiverPort = port + 1;
         socket = new DatagramSocket(gossipReceiverPort);
         nodesList = NodesList.getInstance();
     }
@@ -29,7 +33,7 @@ public class GossipReceiverThread extends Thread {
     public int getPort() {
         return this.gossipReceiverPort;
     }
-
+    
     public void run() {
         while (true) {
             // listen for incoming gossip packets

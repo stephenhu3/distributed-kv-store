@@ -1,6 +1,6 @@
 package A4.server;
 
-import static A4.DistributedSystemConfiguration.SHUTDOWN_NODE;
+
 import static A4.resources.ProtocolBufferKeyValueStoreResponse.generateDeleteAllResponse;
 import static A4.resources.ProtocolBufferKeyValueStoreResponse.generateGetPIDResponse;
 import static A4.resources.ProtocolBufferKeyValueStoreResponse.generateGetResponse;
@@ -10,71 +10,48 @@ import static A4.resources.ProtocolBufferKeyValueStoreResponse.generateRemoveRes
 import static A4.resources.ProtocolBufferKeyValueStoreResponse.generateShutdownResponse;
 import static A4.resources.ProtocolBufferKeyValueStoreResponse.generateUnrecognizedCommandResponse;
 
-import A4.proto.KeyValueRequest.KVRequest;
-import A4.proto.Message.Msg;
-import A4.utils.MsgWrapper;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import A4.proto.KeyValueRequest.KVRequest;
+import A4.proto.Message.Msg;
+
 import java.security.NoSuchAlgorithmException;
+import A4.utils.MsgWrapper;
 
-public class KVOperationThread extends Thread {
-    public KVOperationThread(String name) {
-        super(name);
-    }
+public class KVOperationThread {
+	public static MsgWrapper serveReq(Msg req) {
+        KVRequest request = null;
+        MsgWrapper wrap = null;
+        try {
+        	request = KVRequest.parseFrom(req.getPayload());
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        } 
 
-    public void run() {
-        while (true) {
-            if (SHUTDOWN_NODE) {
-                System.exit(0);
-            }
-            while (!KVRequestQueue.getInstance().getQueue().isEmpty()) {
-                Msg req = KVRequestQueue.getInstance().getQueue().poll();
-                KVRequest kvReq = null;
-
-                try {
-                    kvReq = KVRequest.parseFrom(req.getPayload());
-                } catch (InvalidProtocolBufferException e) {
-                    e.printStackTrace();
-                }
-
-                MsgWrapper fwdReq = null;
-                try {
-                    fwdReq = ConsistentHashRing.getInstance().getNode(kvReq.getKey());
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
-
-                Msg res;
-                // currentNode is correct node, find a response, set correct receiver
-                if (fwdReq != null && (fwdReq.getPort() == 0 || fwdReq.getAddress() == null)) {
-                    if (req.hasFwdPort() && req.hasFwdAddress()) {
-                        try {
-                            fwdReq = new MsgWrapper(null, InetAddress.getByName(
-                                req.getFwdAddress().toStringUtf8()), req.getFwdPort());
-                        } catch (UnknownHostException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    res = generateResponse(
-                        kvReq.getCommand(),
-                        kvReq.getKey(),
-                        kvReq.getValue(),
-                        req.getMessageID()
-                    );
-                    KVResponseQueue.getInstance().getQueue().add(res);
-                } else {
-                    fwdReq.setForward(true);
-                    KVResponseQueue.getInstance().getQueue().add(req);
-                }
-                ForwardingQueue.getInstance().getQueue().add(fwdReq);
-            }
+        try {
+        	wrap= ConsistentHashRing.getInstance().getNode(request.getKey());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
         }
+
+        Msg response;
+        // currentNode is correct node, find a response, set correct receiver
+        if (wrap != null && (wrap.getPort() == 0 || wrap.getAddress() == null)) {
+            response = generateResponse(
+            	request.getCommand(),
+                request.getKey(),
+                request.getValue(),
+                req.getMessageID()
+            );
+            wrap.setMessage(response);
+        } else {
+        	wrap.setMessage(req);
+        }
+        return wrap;
     }
 
-    private Msg generateResponse(int cmd, ByteString key, ByteString value, ByteString messageID) {
+    private static Msg generateResponse(int cmd, ByteString key, ByteString value, ByteString messageID) {
         Msg reply = null;
 
         switch (cmd) {

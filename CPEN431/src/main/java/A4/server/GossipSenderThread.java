@@ -1,10 +1,11 @@
 package A4.server;
 
-import static A4.DistributedSystemConfiguration.DEBUG;
-import static A4.DistributedSystemConfiguration.VERBOSE;
+import A4.utils.ByteRepresentation;
 
 import A4.proto.LiveHostsRequest.LiveHostsReq;
-import A4.utils.ByteRepresentation;
+import A4.server.NodesList;
+import A4.server.UDPServerThread;
+
 import com.google.protobuf.ByteString;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,23 +15,21 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GossipSenderThread extends Thread {
     NodesList nodesList = NodesList.getInstance();
     private DatagramSocket socket;
     private int gossipSenderPort;
 
-    public GossipSenderThread(String name, String filename) throws FileNotFoundException,
+    public GossipSenderThread(String name, String filename, int port) throws FileNotFoundException,
         SocketException, UnknownHostException {
-        super(name);
-        gossipSenderPort = UDPServerThread.localPort + 2;
+        gossipSenderPort = port + 2;
 
-        Map<InetAddress, Integer> liveNodes = new HashMap<>();
+        ConcurrentHashMap<InetAddress, Integer> liveNodes = new ConcurrentHashMap<>();
         Map<String, Integer> allNodes = new HashMap<>();
 
         File file = new File(filename);
@@ -53,16 +52,16 @@ public class GossipSenderThread extends Thread {
 
     public void run() {
         while (true) {
-            if (VERBOSE && DEBUG) {
-                Map<InetAddress, Integer> liveNodes = nodesList.getLiveNodes();
-                System.out.println("NODES LIST");
-                System.out.println("==========");
-                for (Iterator<Entry<InetAddress, Integer>> iter = liveNodes.entrySet().iterator();
-                    iter.hasNext();) {
-                    Map.Entry<InetAddress, Integer> entry = iter.next();
-                    System.out.println(entry.getKey() + ":" + entry.getValue());
-                }
-            }
+//            if (VERBOSE && DEBUG) {
+//                Map<InetAddress, Integer> liveNodes = nodesList.getLiveNodes();
+//                System.out.println("NODES LIST");
+//                System.out.println("==========");
+//                for (Iterator<Entry<InetAddress, Integer>> iter = liveNodes.entrySet().iterator();
+//                    iter.hasNext();) {
+//                    Map.Entry<InetAddress, Integer> entry = iter.next();
+//                    System.out.println(entry.getKey() + ":" + entry.getValue());
+//                }
+//            }
 
             Map.Entry<String, Integer> firstNode, secondNode;
             String[] firstAddress, secondAddress;

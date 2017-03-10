@@ -1,10 +1,13 @@
 package A4.server;
 
-import static A4.DistributedSystemConfiguration.VERBOSE;
+
+import com.google.protobuf.ByteString;
 
 import A4.utils.MsgWrapper;
 import A4.utils.UniqueIdentifier;
-import com.google.protobuf.ByteString;
+
+import static A4.DistributedSystemConfiguration.VERBOSE;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
@@ -83,11 +86,12 @@ public class ConsistentHashRing {
                 System.out.println(value.getAddress().getHostAddress() + ":" + value.getPort());
             }
         }
-
+        
         if (hashRing.isEmpty() || key.isEmpty()) {
             return new MsgWrapper(null, null, 0);
         }
         String hashKey = UniqueIdentifier.MD5Hash(key.toStringUtf8());
+        
         // If key not contained in hash ring, use successor node (use first node if no successor)
         // Ultimately, if no successor is found, it will at least return itself as destination node
         if (!hashRing.containsKey(hashKey)
@@ -96,7 +100,6 @@ public class ConsistentHashRing {
             while (target == null) {
                 SortedMap<String, MsgWrapper> tailMap = hashRing.tailMap(hashKey, false);
                 hashKey = tailMap.isEmpty() ? hashRing.firstKey() : tailMap.firstKey();
-
                 target = hashRing.get(hashKey);
                 if (!NodesList.getInstance().getLiveNodes().containsKey(target.getAddress())) {
                     target = null;
