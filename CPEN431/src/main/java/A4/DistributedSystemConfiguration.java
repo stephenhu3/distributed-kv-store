@@ -1,6 +1,8 @@
 package A4;
 
-public class DistributedSystemConfiguration {
+import io.dropwizard.Configuration;
+
+public class DistributedSystemConfiguration extends Configuration {
     // Enable debugging print statements
     public static final boolean VERBOSE = false;
     // Greater debugging granularity

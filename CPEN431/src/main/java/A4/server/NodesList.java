@@ -6,22 +6,18 @@ import static A4.DistributedSystemConfiguration.MAX_HOPS;
 import java.net.InetAddress;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import A4.server.NodesList;
-import A4.server.UDPServerThread;
 
 public class NodesList {
     private static NodesList instance = new NodesList();
     private NodesList() {}
-    private ConcurrentHashMap<InetAddress, Integer> liveNodes;
+    private Map<InetAddress, Integer> liveNodes;
     private Map<String, Integer> allNodes;
 
     public static NodesList getInstance() {
         return instance;
     }
 
-    public ConcurrentHashMap<InetAddress, Integer> getLiveNodes() {
+    public Map<InetAddress, Integer> getLiveNodes() {
         return liveNodes;
     }
 
@@ -29,7 +25,7 @@ public class NodesList {
         return allNodes;
     }
 
-    public void setLiveNodes(ConcurrentHashMap<InetAddress, Integer> liveNodes) {
+    public void setLiveNodes(Map<InetAddress, Integer> liveNodes) {
         this.liveNodes = liveNodes;
     }
 
