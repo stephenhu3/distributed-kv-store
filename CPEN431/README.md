@@ -8,7 +8,7 @@ Alan Chang : 31580111
 
 GROUP ID: 4a
 
-A4 Verification Code: TBD {INSERT ACTUAL CODE HERE}
+A4 Verification Code: 33B5046
 #Deliverables
 Proof of Shutdown:
 Shutdown is triggered via the SHUTDOWN_NODE static variable located in the DistributedSystemConfiguration class. 
