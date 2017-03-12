@@ -1,0 +1,28 @@
+CPEN 431 Test Client
+Time: Sat Mar 04 07:49:53 UTC 2017
+Build Date: Fri Mar 03 02:23:57 UTC 2017
+Java process ID: 19897
+Running test in submit mode using secret code: 0697667687!
+[A6 Tests]
+
+Checking if the test client is running on AWS
+Detected instance type: t2.micro
+
+Done building node list.
+The deployment has 28 server nodes.
+Results server is up. Secret is valid.
+Checking if server is up... 
+[Test isAlive]
+Request Timeout.
+Request Timeout.
+Request Timeout.
+Request Timeout.
+Request Timeout.
+Request Timeout.
+Request Timeout.
+Request Timeout.
+Request Timeout.
+Request Timeout.
+>>> Server node planetlab01.cs.washington.edu is not behaving as expected.
+First server is down. Aborting.
+Testing completed in 40.643s
