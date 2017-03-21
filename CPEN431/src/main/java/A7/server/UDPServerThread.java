@@ -5,6 +5,8 @@ import static A7.DistributedSystemConfiguration.SHUTDOWN_NODE;
 import static A7.DistributedSystemConfiguration.VERBOSE;
 import static A7.utils.Checksum.calculateProtocolBufferChecksum;
 
+import A7.core.RequestCache;
+import A7.resources.ProtocolBufferKeyValueStoreResponse;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -33,8 +35,8 @@ public class UDPServerThread {
     public UDPServerThread(String name, int port) throws IOException {
         socket = new DatagramSocket(port);
         sendSocket = new DatagramSocket(localPort+ new Random().nextInt(10000));
-        this.localAddress = InetAddress.getLocalHost();
-        this.localPort = port;
+        localAddress = InetAddress.getLocalHost();
+        localPort = port;
     }
     
     public void receive() {
@@ -62,7 +64,6 @@ public class UDPServerThread {
 		
 		public ReceiverWorker(DatagramPacket received) throws IOException{
 	    	this.reqPacket = received;
-//	    	socket = new DatagramSocket(localPort+ new Random().nextInt(10000));
 	    }
 
 	    @Override
@@ -92,16 +93,18 @@ public class UDPServerThread {
 			        return;
 			    }
 			
-				//Begin Retrieval
+				// begin Retrieval
 			    InetAddress requestAddress = reqPacket.getAddress();
 				int requestPort = reqPacket.getPort();
 				
 				MsgWrapper responseMsg = null ;
 			    MsgWrapper cached = RequestCache.getInstance().getCache().getIfPresent(currentID);
 			    
-			    if(cached == null){
-			    	MsgWrapper messageWrap = KVOperationThread.serveReq(request);
-					if (messageWrap != null && (messageWrap.getPort() == 0 || messageWrap.getAddress() == null)) {
+			    if (cached == null) {
+			    	MsgWrapper messageWrap =
+						ProtocolBufferKeyValueStoreResponse.serveRequest(request);
+					if (messageWrap != null && (messageWrap.getPort() == 0
+						|| messageWrap.getAddress() == null)) {
 						if (request.hasFwdPort() && request.hasFwdAddress()) {
 			                try {
 			                	messageWrap.setAddress(
@@ -127,7 +130,6 @@ public class UDPServerThread {
 			    	responseMsg = cached;
 			    }
 			   
-//			    ResponseHandlerThread.handleResponse(responseMsg);
 				byte[] responseData = responseMsg.getMessage().toByteArray();
 				DatagramPacket responsePacket = new DatagramPacket(
 						responseData, responseData.length, 

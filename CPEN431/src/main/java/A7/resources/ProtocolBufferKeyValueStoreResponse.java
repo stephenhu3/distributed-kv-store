@@ -7,12 +7,16 @@ import static A7.DistributedSystemConfiguration.VERBOSE;
 import static A7.utils.ByteRepresentation.bytesToHex;
 import static A7.utils.ProtocolBuffers.wrapMessage;
 
+import A7.core.ConsistentHashRing;
 import A7.core.KeyValueStoreSingleton;
+import A7.proto.KeyValueRequest.KVRequest;
 import A7.proto.KeyValueResponse.KVResponse;
 import A7.proto.Message.Msg;
+import A7.utils.MsgWrapper;
 import A7.utils.UniqueIdentifier;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
 public class ProtocolBufferKeyValueStoreResponse {
@@ -29,7 +33,7 @@ public class ProtocolBufferKeyValueStoreResponse {
     [possibly more standard codes will get defined here]
     anything > 0x20. Your own error codes. [Define them in your Readme]
 
-    Note: all requests that return a non-zero (failure) error code should not modify the state of the server
+    Note: all requests that return a non-zero (failure) error code should not modify server state
     */
 
     private static HashMap<String, Integer> codes;
@@ -62,7 +66,8 @@ public class ProtocolBufferKeyValueStoreResponse {
                 resPayload = generateKvReply(codes.get("success"), value, pid);
             } else {
                 if (VERBOSE > 0) {
-                    System.out.println("Out of memory, remaining: " + Runtime.getRuntime().freeMemory());
+                    System.out.println("Out of memory, remaining: "
+                        + Runtime.getRuntime().freeMemory());
                 }
                 // return out of memory response if GC limit about to be exceeded
                 return generateOutOfMemoryResponse(messageID);
@@ -188,5 +193,70 @@ public class ProtocolBufferKeyValueStoreResponse {
             // Latest protocol buffer definitions removed version field, uncomment once reintroduced
             // System.out.println("Version: " + reply.getVersion());
         }
+    }
+
+    public static MsgWrapper serveRequest(Msg req) {
+        KVRequest request = null;
+        MsgWrapper forwardRequest = null;
+        try {
+            request = KVRequest.parseFrom(req.getPayload());
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            forwardRequest = ConsistentHashRing.getInstance().getNode(request.getKey());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        Msg response;
+        // currentNode is correct node, find a response, set correct receiver
+        if (forwardRequest != null && (forwardRequest.getPort() == 0
+            || forwardRequest.getAddress() == null)) {
+            response = generateResponse(
+                request.getCommand(),
+                request.getKey(),
+                request.getValue(),
+                req.getMessageID()
+            );
+            forwardRequest.setMessage(response);
+        } else {
+            forwardRequest.setMessage(req);
+        }
+        return forwardRequest;
+    }
+
+    private static Msg generateResponse(int cmd, ByteString key, ByteString value,
+        ByteString messageID) {
+        Msg reply = null;
+
+        switch (cmd) {
+            case 1:
+                reply = generatePutResponse(key, value, messageID);
+                break;
+            case 2:
+                reply = generateGetResponse(key, messageID);
+                break;
+            case 3:
+                reply = generateRemoveResponse(key, messageID);
+                break;
+            case 4:
+                reply = generateShutdownResponse(messageID);
+                break;
+            case 5:
+                reply = generateDeleteAllResponse(messageID);
+                break;
+            case 6:
+                reply = generateIsAlive(messageID);
+                break;
+            case 7:
+                reply = generateGetPIDResponse(messageID);
+                break;
+            default:
+                // return error code 5, unrecognized command
+                reply = generateUnrecognizedCommandResponse(messageID);
+        }
+        return reply;
     }
 }

@@ -1,4 +1,4 @@
-package A7.server;
+package A7.core;
 
 import A7.utils.MsgWrapper;
 

@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import A7.core.ConsistentHashRing;
+import A7.core.NodesList;
 import A7.utils.MsgWrapper;
 import A7.utils.UniqueIdentifier;
 import com.google.protobuf.ByteString;

@@ -2,6 +2,7 @@ package A7.server;
 
 import static A7.DistributedSystemConfiguration.VERBOSE;
 
+import A7.core.NodesList;
 import A7.proto.LiveHostsRequest.LiveHostsReq;
 import A7.utils.ByteRepresentation;
 import com.google.protobuf.ByteString;

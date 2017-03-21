@@ -1,5 +1,6 @@
 package A7.server;
 
+import A7.core.NodesList;
 import A7.utils.ByteRepresentation;
 
 import A7.proto.LiveHostsRequest.LiveHostsReq;

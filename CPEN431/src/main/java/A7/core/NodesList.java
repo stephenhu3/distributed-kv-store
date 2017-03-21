@@ -1,8 +1,9 @@
-package A7.server;
+package A7.core;
 
 
 import static A7.DistributedSystemConfiguration.MAX_HOPS;
 
+import A7.server.UDPServerThread;
 import java.net.InetAddress;
 import java.util.Iterator;
 import java.util.Map;
