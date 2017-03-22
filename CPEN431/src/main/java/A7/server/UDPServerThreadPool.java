@@ -92,7 +92,7 @@ public class UDPServerThreadPool {
 			        return;
 			    }
 
-				// begin Retrieval
+				// begin retrieval
 			    InetAddress requestAddress = reqPacket.getAddress();
 				int requestPort = reqPacket.getPort();
 
@@ -134,7 +134,10 @@ public class UDPServerThreadPool {
 						responseData, responseData.length,
 						responseMsg.getAddress(), responseMsg.getPort());
     	        try {
-    	        	sendSocket.send(responsePacket);
+    	        	// address edge case for two threads trying to send response at same time
+    	        	synchronized(sendSocket) {
+						sendSocket.send(responsePacket);
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
