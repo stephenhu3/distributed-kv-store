@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 public class RequestCache {
 	private static RequestCache instance = new RequestCache();
-    Cache<ByteString, MsgWrapper> requestCache;
+    private Cache<ByteString, MsgWrapper> requestCache;
 
     // TODO: Implement cache exceptions, size limits
     private RequestCache() {

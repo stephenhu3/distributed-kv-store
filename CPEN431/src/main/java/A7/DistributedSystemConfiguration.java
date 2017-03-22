@@ -4,7 +4,7 @@ import io.dropwizard.Configuration;
 
 public class DistributedSystemConfiguration extends Configuration {
     // Enable debugging print statements (detail levels 0, 1, or 2)
-    public static final int VERBOSE = 0;
+    public static final int VERBOSE = 1;
     // Used for marking node for shutdown after sending success response
     public static boolean SHUTDOWN_NODE = false;
     public static final int UNIQUE_ID_UDP_SIZE = 16;

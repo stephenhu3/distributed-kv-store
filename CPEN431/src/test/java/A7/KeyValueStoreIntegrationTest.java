@@ -5,7 +5,7 @@
 //
 //import A7.proto.KeyValueResponse.KVResponse;
 //import A7.proto.Message.Msg;
-//import A7.server.UDPServerThread;
+//import A7.server.UDPServerThreadPool;
 //import A7.utils.UniqueIdentifier;
 //import com.google.protobuf.ByteString;
 //import java.io.IOException;
@@ -16,7 +16,7 @@
 //public class KeyValueStoreIntegrationTest {
 //
 //    private void spawnUDPServerThread() throws IOException {
-//        new UDPServerThread("Integration test", 10129).run();
+//        new UDPServerThreadPool("Integration test", 10129).run();
 //    }
 //
 ////    @Test

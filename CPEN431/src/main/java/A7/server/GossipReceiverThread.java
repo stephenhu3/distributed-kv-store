@@ -1,14 +1,11 @@
 package A7.server;
 
-import A7.core.NodesList;
-import A7.utils.ByteRepresentation;
-
-import A7.proto.LiveHostsRequest.LiveHostsReq;
-
-import com.google.protobuf.InvalidProtocolBufferException;
-
 import static A7.DistributedSystemConfiguration.MAX_MSG_SIZE;
 
+import A7.core.NodesList;
+import A7.proto.LiveHostsRequest.LiveHostsReq;
+import A7.utils.ByteRepresentation;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -19,7 +16,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class GossipReceiverThread extends Thread {
-    NodesList nodesList;
+    private NodesList nodesList;
     private DatagramSocket socket;
     private int gossipReceiverPort;
 

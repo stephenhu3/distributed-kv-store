@@ -3,7 +3,7 @@ package A7.core;
 
 import static A7.DistributedSystemConfiguration.MAX_HOPS;
 
-import A7.server.UDPServerThread;
+import A7.server.UDPServerThreadPool;
 import java.net.InetAddress;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,7 +40,7 @@ public class NodesList {
 
     // Increment hops and clear old entries
     public void refreshLiveNodes() {
-        liveNodes.put(UDPServerThread.localAddress, 0);
+        liveNodes.put(UDPServerThreadPool.localAddress, 0);
         for (Iterator<Map.Entry<InetAddress, Integer>> iter = liveNodes.entrySet().iterator();
             iter.hasNext();) {
             Map.Entry<InetAddress, Integer> entry = iter.next();

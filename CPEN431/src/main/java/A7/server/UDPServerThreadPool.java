@@ -24,15 +24,14 @@ import A7.proto.Message.Msg;
 import A7.utils.MsgWrapper;
 import A7.utils.ProtocolBuffers;
 
-public class UDPServerThread {
-	public static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(30);
-    
+public class UDPServerThreadPool {
 	public static InetAddress localAddress;
-    public static int localPort;
+	public static int localPort;
+	private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(30);
     private static DatagramSocket socket;
     private static DatagramSocket sendSocket;
 
-    public UDPServerThread(String name, int port) throws IOException {
+    public UDPServerThreadPool(int port) throws IOException {
         socket = new DatagramSocket(port);
         sendSocket = new DatagramSocket(localPort+ new Random().nextInt(10000));
         localAddress = InetAddress.getLocalHost();
@@ -58,29 +57,29 @@ public class UDPServerThread {
             }
         }
 	}
-    
-	public class ReceiverWorker implements Runnable {
+
+	class ReceiverWorker implements Runnable {
 		DatagramPacket reqPacket;
-		
-		public ReceiverWorker(DatagramPacket received) throws IOException{
+
+		ReceiverWorker(DatagramPacket received) throws IOException{
 	    	this.reqPacket = received;
 	    }
 
 	    @Override
 	    public void run() {
-	    	Msg request =  null;
+	    	Msg request = null;
 			try {
 				request = Msg.parseFrom(
 			        Arrays.copyOf(reqPacket.getData(), reqPacket.getLength()));
 			} catch (InvalidProtocolBufferException e) {
 			    e.printStackTrace();
 			}
-			
+
 			if (VERBOSE > 0) {
 			    System.out
 			        .println("Available Memory (bytes): " + Runtime.getRuntime().freeMemory());
 			}
-			
+
 			ByteString currentID = request.getMessageID();
 			byte[] payload = request.getPayload().toByteArray();
 
@@ -92,14 +91,14 @@ public class UDPServerThread {
 			        // TODO: Return self-defined error code
 			        return;
 			    }
-			
+
 				// begin Retrieval
 			    InetAddress requestAddress = reqPacket.getAddress();
 				int requestPort = reqPacket.getPort();
-				
-				MsgWrapper responseMsg = null ;
+
+				MsgWrapper responseMsg;
 			    MsgWrapper cached = RequestCache.getInstance().getCache().getIfPresent(currentID);
-			    
+
 			    if (cached == null) {
 			    	MsgWrapper messageWrap =
 						ProtocolBufferKeyValueStoreResponse.serveRequest(request);
@@ -123,16 +122,16 @@ public class UDPServerThread {
 				                ByteString.copyFromUtf8(requestAddress.getHostAddress()),
 				                requestPort));
 			        }
-			    	
+
 					responseMsg = messageWrap;
 					RequestCache.getInstance().getCache().put(currentID, messageWrap);
 			    } else {
 			    	responseMsg = cached;
 			    }
-			   
+
 				byte[] responseData = responseMsg.getMessage().toByteArray();
 				DatagramPacket responsePacket = new DatagramPacket(
-						responseData, responseData.length, 
+						responseData, responseData.length,
 						responseMsg.getAddress(), responseMsg.getPort());
     	        try {
     	        	sendSocket.send(responsePacket);

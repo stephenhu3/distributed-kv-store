@@ -46,7 +46,7 @@ public class GossipSenderThread extends Thread {
         nodesList.setAllNodes(allNodes);
         // Add itself to live hosts list
         nodesList.setLiveNodes(liveNodes);
-        nodesList.addLiveNode(UDPServerThread.localAddress, 0);
+        nodesList.addLiveNode(UDPServerThreadPool.localAddress, 0);
 
         socket = new DatagramSocket(gossipSenderPort);
     }

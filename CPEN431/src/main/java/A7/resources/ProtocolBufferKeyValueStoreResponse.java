@@ -50,7 +50,7 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
 
     // note, ConcurrentHashMap throws NullPointerException if specified key or value is null
-    public static Msg generatePutResponse(ByteString key, ByteString value, ByteString messageID) {
+    private static Msg generatePutResponse(ByteString key, ByteString value, ByteString messageID) {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
@@ -77,7 +77,7 @@ public class ProtocolBufferKeyValueStoreResponse {
         return msg;
     }
 
-    public static Msg generateGetResponse(ByteString key, ByteString messageID) {
+    private static Msg generateGetResponse(ByteString key, ByteString messageID) {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
@@ -98,7 +98,7 @@ public class ProtocolBufferKeyValueStoreResponse {
         return msg;
     }
 
-    public static Msg generateRemoveResponse(ByteString key, ByteString messageID) {
+    private static Msg generateRemoveResponse(ByteString key, ByteString messageID) {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
@@ -119,7 +119,7 @@ public class ProtocolBufferKeyValueStoreResponse {
         return msg;
     }
 
-    public static Msg generateShutdownResponse(ByteString messageID) {
+    private static Msg generateShutdownResponse(ByteString messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
         KVResponse resPayload = generateKvReply(codes.get("success"), null, pid);
         Msg msg = wrapMessage(messageID, resPayload.toByteString());
@@ -128,7 +128,7 @@ public class ProtocolBufferKeyValueStoreResponse {
         return msg;
     }
 
-    public static Msg generateDeleteAllResponse(ByteString messageID) {
+    private static Msg generateDeleteAllResponse(ByteString messageID) {
         KeyValueStoreSingleton.getInstance().getMap().clear();
         int pid = UniqueIdentifier.getCurrentPID();
         KVResponse resPayload = generateKvReply(codes.get("success"), null, pid);
@@ -136,25 +136,25 @@ public class ProtocolBufferKeyValueStoreResponse {
         return msg;
     }
 
-    public static Msg generateIsAlive(ByteString messageID) {
+    private static Msg generateIsAlive(ByteString messageID) {
         return generateGetPIDResponse(messageID);
     }
 
-    public static Msg generateGetPIDResponse(ByteString messageID) {
+    private static Msg generateGetPIDResponse(ByteString messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
         KVResponse resPayload = generateKvReply(codes.get("success"), null, pid);
         Msg msg = wrapMessage(messageID, resPayload.toByteString());
         return msg;
     }
 
-    public static Msg generateUnrecognizedCommandResponse(ByteString messageID) {
+    private static Msg generateUnrecognizedCommandResponse(ByteString messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
         KVResponse resPayload = generateKvReply(codes.get("unrecognized command"), null, pid);
         Msg msg = wrapMessage(messageID, resPayload.toByteString());
         return msg;
     }
 
-    public static Msg generateOutOfMemoryResponse(ByteString messageID) {
+    private static Msg generateOutOfMemoryResponse(ByteString messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
         KVResponse resPayload = generateKvReply(codes.get("out of memory"), null, pid);
         Msg msg = wrapMessage(messageID, resPayload.toByteString());
@@ -174,6 +174,39 @@ public class ProtocolBufferKeyValueStoreResponse {
         }
 
         return resPayload.build();
+    }
+
+    private static Msg generateResponse(int cmd, ByteString key, ByteString value,
+        ByteString messageID) {
+        Msg reply;
+
+        switch (cmd) {
+            case 1:
+                reply = generatePutResponse(key, value, messageID);
+                break;
+            case 2:
+                reply = generateGetResponse(key, messageID);
+                break;
+            case 3:
+                reply = generateRemoveResponse(key, messageID);
+                break;
+            case 4:
+                reply = generateShutdownResponse(messageID);
+                break;
+            case 5:
+                reply = generateDeleteAllResponse(messageID);
+                break;
+            case 6:
+                reply = generateIsAlive(messageID);
+                break;
+            case 7:
+                reply = generateGetPIDResponse(messageID);
+                break;
+            default:
+                // return error code 5, unrecognized command
+                reply = generateUnrecognizedCommandResponse(messageID);
+        }
+        return reply;
     }
 
     public static void parseResponse(ByteString response) {
@@ -225,38 +258,5 @@ public class ProtocolBufferKeyValueStoreResponse {
             forwardRequest.setMessage(req);
         }
         return forwardRequest;
-    }
-
-    private static Msg generateResponse(int cmd, ByteString key, ByteString value,
-        ByteString messageID) {
-        Msg reply = null;
-
-        switch (cmd) {
-            case 1:
-                reply = generatePutResponse(key, value, messageID);
-                break;
-            case 2:
-                reply = generateGetResponse(key, messageID);
-                break;
-            case 3:
-                reply = generateRemoveResponse(key, messageID);
-                break;
-            case 4:
-                reply = generateShutdownResponse(messageID);
-                break;
-            case 5:
-                reply = generateDeleteAllResponse(messageID);
-                break;
-            case 6:
-                reply = generateIsAlive(messageID);
-                break;
-            case 7:
-                reply = generateGetPIDResponse(messageID);
-                break;
-            default:
-                // return error code 5, unrecognized command
-                reply = generateUnrecognizedCommandResponse(messageID);
-        }
-        return reply;
     }
 }

@@ -3,7 +3,7 @@ package A7.core;
 
 import static A7.DistributedSystemConfiguration.VERBOSE;
 
-import A7.server.UDPServerThread;
+import A7.server.UDPServerThreadPool;
 import A7.utils.MsgWrapper;
 import A7.utils.UniqueIdentifier;
 import com.google.protobuf.ByteString;
@@ -17,14 +17,14 @@ import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 public class ConsistentHashRing {
-    NodesList nodesList;
+    private NodesList nodesList;
 
     private static ConsistentHashRing instance = new ConsistentHashRing();
     
     private final ConcurrentSkipListMap<String, MsgWrapper> hashRing;
     
     private ConsistentHashRing() {
-        hashRing = new ConcurrentSkipListMap<String, MsgWrapper>();
+        hashRing = new ConcurrentSkipListMap<>();
         nodesList = NodesList.getInstance();
         initializeNodes();
     }
@@ -42,10 +42,8 @@ public class ConsistentHashRing {
                 addNode(address[0], node.getValue());
             }
             // add itself to ring
-            addNode(InetAddress.getLocalHost().getHostAddress(), UDPServerThread.localPort);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (UnknownHostException e) {
+            addNode(InetAddress.getLocalHost().getHostAddress(), UDPServerThreadPool.localPort);
+        } catch (NoSuchAlgorithmException|UnknownHostException e) {
             e.printStackTrace();
         }
     }
@@ -104,8 +102,8 @@ public class ConsistentHashRing {
                     target = null;
                 }
             }
-            if (target.getAddress().equals(UDPServerThread.localAddress)
-                    && target.getPort() == UDPServerThread.localPort) {
+            if (target.getAddress().equals(UDPServerThreadPool.localAddress)
+                    && target.getPort() == UDPServerThreadPool.localPort) {
                 // Command applies to current node
                 return new MsgWrapper(null, null, 0);
             }

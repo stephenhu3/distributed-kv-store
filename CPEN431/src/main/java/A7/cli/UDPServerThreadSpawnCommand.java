@@ -4,7 +4,7 @@ import static A7.DistributedSystemConfiguration.VERBOSE;
 
 import A7.server.GossipReceiverThread;
 import A7.server.GossipSenderThread;
-import A7.server.UDPServerThread;
+import A7.server.UDPServerThreadPool;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
@@ -49,7 +49,7 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
             System.out.println("Nodes: " + nodes);
         }
 
-        UDPServerThread server = new UDPServerThread(name + "-server-thread", port);
+        UDPServerThreadPool server = new UDPServerThreadPool(port);
         new GossipReceiverThread(name + "-gossip-receiver-thread", port).start();
         new GossipSenderThread(name + "-gossip-sender-thread", nodes, port).start();
         server.receive();
