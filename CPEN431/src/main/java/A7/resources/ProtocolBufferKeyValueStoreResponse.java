@@ -231,14 +231,19 @@ public class ProtocolBufferKeyValueStoreResponse {
     public static MsgWrapper serveRequest(Msg req) {
         KVRequest request = null;
         MsgWrapper forwardRequest = null;
+
         try {
             request = KVRequest.parseFrom(req.getPayload());
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
         }
 
+        // duplicate request to next two successors to maintain replication factor 3
         try {
             forwardRequest = ConsistentHashRing.getInstance().getNode(request.getKey());
+            // TODO: use reworked client to send request to successors
+            // use UDPClient and generateXRequest here to duplicate requests to replicas
+            String origin = ConsistentHashRing.getInstance().getKey(request.getKey());
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }

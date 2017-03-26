@@ -2,6 +2,7 @@ package A7.server;
 
 import static A7.DistributedSystemConfiguration.MAX_MSG_SIZE;
 import static A7.DistributedSystemConfiguration.SHUTDOWN_NODE;
+import static A7.DistributedSystemConfiguration.UDP_SERVER_THREAD_POOL_NTHREADS;
 import static A7.DistributedSystemConfiguration.VERBOSE;
 import static A7.utils.Checksum.calculateProtocolBufferChecksum;
 
@@ -27,7 +28,8 @@ import A7.utils.ProtocolBuffers;
 public class UDPServerThreadPool {
 	public static InetAddress localAddress;
 	public static int localPort;
-	private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(30);
+	private static ThreadPoolExecutor executor =
+		(ThreadPoolExecutor) Executors.newFixedThreadPool(UDP_SERVER_THREAD_POOL_NTHREADS);
     private static DatagramSocket socket;
     private static DatagramSocket sendSocket;
 

@@ -16,4 +16,5 @@ public class DistributedSystemConfiguration extends Configuration {
     // set as 6.25% when VERBOSE is false
     public static final double OUT_OF_MEMORY_THRESHOLD = 0.05;
     public static final int MAX_HOPS = 10;
+    public static final int UDP_SERVER_THREAD_POOL_NTHREADS = 30;
 }
