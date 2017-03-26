@@ -52,6 +52,15 @@ public final class KeyValueRequest {
      * <code>optional int32 version = 4;</code>
      */
     int getVersion();
+
+    /**
+     * <code>optional bool notReplicated = 5;</code>
+     */
+    boolean hasNotReplicated();
+    /**
+     * <code>optional bool notReplicated = 5;</code>
+     */
+    boolean getNotReplicated();
   }
   /**
    * Protobuf type {@code KVRequest}
@@ -69,6 +78,7 @@ public final class KeyValueRequest {
       key_ = com.google.protobuf.ByteString.EMPTY;
       value_ = com.google.protobuf.ByteString.EMPTY;
       version_ = 0;
+      notReplicated_ = false;
     }
 
     @java.lang.Override
@@ -117,6 +127,11 @@ public final class KeyValueRequest {
             case 32: {
               bitField0_ |= 0x00000008;
               version_ = input.readInt32();
+              break;
+            }
+            case 40: {
+              bitField0_ |= 0x00000010;
+              notReplicated_ = input.readBool();
               break;
             }
           }
@@ -204,6 +219,21 @@ public final class KeyValueRequest {
       return version_;
     }
 
+    public static final int NOTREPLICATED_FIELD_NUMBER = 5;
+    private boolean notReplicated_;
+    /**
+     * <code>optional bool notReplicated = 5;</code>
+     */
+    public boolean hasNotReplicated() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional bool notReplicated = 5;</code>
+     */
+    public boolean getNotReplicated() {
+      return notReplicated_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -232,6 +262,9 @@ public final class KeyValueRequest {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeInt32(4, version_);
       }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeBool(5, notReplicated_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -255,6 +288,10 @@ public final class KeyValueRequest {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(4, version_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(5, notReplicated_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -293,6 +330,11 @@ public final class KeyValueRequest {
         result = result && (getVersion()
             == other.getVersion());
       }
+      result = result && (hasNotReplicated() == other.hasNotReplicated());
+      if (hasNotReplicated()) {
+        result = result && (getNotReplicated()
+            == other.getNotReplicated());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -319,6 +361,11 @@ public final class KeyValueRequest {
       if (hasVersion()) {
         hash = (37 * hash) + VERSION_FIELD_NUMBER;
         hash = (53 * hash) + getVersion();
+      }
+      if (hasNotReplicated()) {
+        hash = (37 * hash) + NOTREPLICATED_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getNotReplicated());
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -446,6 +493,8 @@ public final class KeyValueRequest {
         bitField0_ = (bitField0_ & ~0x00000004);
         version_ = 0;
         bitField0_ = (bitField0_ & ~0x00000008);
+        notReplicated_ = false;
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -486,6 +535,10 @@ public final class KeyValueRequest {
           to_bitField0_ |= 0x00000008;
         }
         result.version_ = version_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.notReplicated_ = notReplicated_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -539,6 +592,9 @@ public final class KeyValueRequest {
         }
         if (other.hasVersion()) {
           setVersion(other.getVersion());
+        }
+        if (other.hasNotReplicated()) {
+          setNotReplicated(other.getNotReplicated());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -704,6 +760,38 @@ public final class KeyValueRequest {
         onChanged();
         return this;
       }
+
+      private boolean notReplicated_ ;
+      /**
+       * <code>optional bool notReplicated = 5;</code>
+       */
+      public boolean hasNotReplicated() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional bool notReplicated = 5;</code>
+       */
+      public boolean getNotReplicated() {
+        return notReplicated_;
+      }
+      /**
+       * <code>optional bool notReplicated = 5;</code>
+       */
+      public Builder setNotReplicated(boolean value) {
+        bitField0_ |= 0x00000010;
+        notReplicated_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool notReplicated = 5;</code>
+       */
+      public Builder clearNotReplicated() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        notReplicated_ = false;
+        onChanged();
+        return this;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
@@ -767,9 +855,10 @@ public final class KeyValueRequest {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\025KeyValueRequest.proto\"I\n\tKVRequest\022\017\n\007" +
+      "\n\025KeyValueRequest.proto\"`\n\tKVRequest\022\017\n\007" +
       "command\030\001 \002(\r\022\013\n\003key\030\002 \001(\014\022\r\n\005value\030\003 \001(" +
-      "\014\022\017\n\007version\030\004 \001(\005B\021B\017KeyValueRequest"
+      "\014\022\017\n\007version\030\004 \001(\005\022\025\n\rnotReplicated\030\005 \001(" +
+      "\010B\021B\017KeyValueRequest"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -788,7 +877,7 @@ public final class KeyValueRequest {
     internal_static_KVRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_KVRequest_descriptor,
-        new java.lang.String[] { "Command", "Key", "Value", "Version", });
+        new java.lang.String[] { "Command", "Key", "Value", "Version", "NotReplicated", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

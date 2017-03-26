@@ -2,42 +2,58 @@ package A7.server;
 
 import static A7.DistributedSystemConfiguration.MAX_MSG_SIZE;
 import static A7.DistributedSystemConfiguration.SHUTDOWN_NODE;
+import static A7.DistributedSystemConfiguration.UDP_SERVER_THREAD_POOL_NTHREADS;
 import static A7.DistributedSystemConfiguration.VERBOSE;
 import static A7.utils.Checksum.calculateProtocolBufferChecksum;
+import static A7.utils.UniqueIdentifier.generateUniqueID;
 
+import A7.client.UDPClient;
+import A7.core.ConsistentHashRing;
 import A7.core.RequestCache;
+import A7.proto.KeyValueRequest.KVRequest;
+import A7.proto.Message.Msg;
 import A7.resources.ProtocolBufferKeyValueStoreResponse;
+import A7.utils.MsgWrapper;
+import A7.utils.ProtocolBuffers;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
-
-import A7.proto.Message.Msg;
-import A7.utils.MsgWrapper;
-import A7.utils.ProtocolBuffers;
-
 public class UDPServerThreadPool {
-	public static InetAddress localAddress;
-	public static int localPort;
-	protected static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(30);
+    private static UDPServerThreadPool instance = new UDPServerThreadPool();
     private static DatagramSocket socket;
     private static DatagramSocket sendSocket;
 
-    public UDPServerThreadPool(int port) throws IOException {
+    protected static ThreadPoolExecutor executor =
+		(ThreadPoolExecutor) Executors.newFixedThreadPool(UDP_SERVER_THREAD_POOL_NTHREADS);
+
+    public static InetAddress localAddress;
+    public static int localPort;
+
+    private UDPServerThreadPool(){}
+
+    public static void initialize(int port) throws SocketException, UnknownHostException {
         socket = new DatagramSocket(port);
-        sendSocket = new DatagramSocket(localPort+ new Random().nextInt(10000));
+        sendSocket = new DatagramSocket(new Random().nextInt(10000));
         localAddress = InetAddress.getLocalHost();
         localPort = port;
     }
-    
+
+    public static UDPServerThreadPool getInstance() {
+        return instance;
+    }
+
+    // process incoming requests
     public void receive() {
 		while (true) {
             if (SHUTDOWN_NODE) {
@@ -56,6 +72,11 @@ public class UDPServerThreadPool {
                 e.printStackTrace();
             }
         }
+	}
+
+	// duplicate request to two successors for replication
+	public void replicate(KVRequest request) {
+        executor.execute(new ReplicaWorker(request));
 	}
 
 	class ReceiverWorker implements Runnable {
@@ -143,5 +164,74 @@ public class UDPServerThreadPool {
 				}
 			}
 	    }
+	}
+
+	class ReplicaWorker implements Runnable {
+		KVRequest request;
+
+		ReplicaWorker(KVRequest request) {
+			this.request = request;
+		}
+
+		@Override
+		public void run() {
+			String originKey = null;
+			String firstSuccessorKey = null;
+            String secondSuccessorKey = null;
+
+            try {
+                originKey = ConsistentHashRing.getInstance().getKey(request.getKey());
+                firstSuccessorKey = ConsistentHashRing.getInstance().getSuccessorKey(originKey);
+                secondSuccessorKey = ConsistentHashRing.getInstance()
+                    .getSuccessorKey(firstSuccessorKey);
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+
+            KVRequest replicateKVReq = KVRequest.newBuilder()
+				.setCommand(request.getCommand())
+				.setKey(request.getKey())
+				.setValue(request.getValue())
+				.setNotReplicated(true)
+				.build();
+
+            byte[] messageID = new byte[0];
+            try {
+                messageID = generateUniqueID();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+            ByteString payload = replicateKVReq.toByteString();
+
+			Msg replicateMsg = Msg.newBuilder()
+				.setMessageID(ByteString.copyFrom(messageID))
+				.setPayload(payload)
+				.setCheckSum(calculateProtocolBufferChecksum(payload,
+                    ByteString.copyFrom(messageID)))
+				.build();
+
+			MsgWrapper firstSuccessorNode = ConsistentHashRing.getInstance()
+				.getHashRing().get(firstSuccessorKey);
+			MsgWrapper secondSuccessorNode = ConsistentHashRing.getInstance()
+				.getHashRing().get(secondSuccessorKey);
+
+			// TODO: decide if we want retries based on response
+			// Note: currently, UDPClient handles retries and blocks waiting for response
+			try {
+				UDPClient.sendProtocolBufferRequest(
+                    replicateMsg.toByteArray(),
+                    firstSuccessorNode.getAddress().getHostAddress(),
+                    firstSuccessorNode.getPort(),
+                    messageID);
+
+                UDPClient.sendProtocolBufferRequest(
+                    replicateMsg.toByteArray(),
+                    secondSuccessorNode.getAddress().getHostAddress(),
+                    secondSuccessorNode.getPort(),
+                    messageID);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+        }
 	}
 }

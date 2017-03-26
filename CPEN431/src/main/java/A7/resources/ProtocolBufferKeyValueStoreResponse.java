@@ -12,6 +12,7 @@ import A7.core.KeyValueStoreSingleton;
 import A7.proto.KeyValueRequest.KVRequest;
 import A7.proto.KeyValueResponse.KVResponse;
 import A7.proto.Message.Msg;
+import A7.server.UDPServerThreadPool;
 import A7.utils.MsgWrapper;
 import A7.utils.UniqueIdentifier;
 
@@ -222,6 +223,70 @@ public class ProtocolBufferKeyValueStoreResponse {
 
         return resPayload.build();
     }
+  
+    public static void parseResponse(ByteString response) {
+        KVResponse reply = null;
+
+        // deserialize response payload
+        try {
+            reply = KVResponse.parseFrom(response);
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
+
+        if (VERBOSE > 0) {
+            System.out.println("Error Code: " + reply.getErrCode());
+            System.out.println("Value: " + bytesToHex(reply.getValue().toByteArray()));
+            System.out.println("PID: " + reply.getPid());
+            // Latest protocol buffer definitions removed version field, uncomment once reintroduced
+            // System.out.println("Version: " + reply.getVersion());
+        }
+    }
+
+    public static MsgWrapper serveRequest(Msg req) {
+        // TODO: ONLY replicate commands that are put/remove mutations, don't replicate anything else
+        KVRequest request = null;
+        MsgWrapper forwardRequest = null;
+
+        try {
+            request = KVRequest.parseFrom(req.getPayload());
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            forwardRequest = ConsistentHashRing.getInstance().getNode(request.getKey());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        Msg response;
+        // currentNode is correct node, find a response, set correct receiver
+        if (forwardRequest != null && (forwardRequest.getPort() == 0
+            || forwardRequest.getAddress() == null)) {
+            // process operation on current node and generate response
+            response = generateResponse(
+                request.getCommand(),
+                request.getKey(),
+                request.getValue(),
+                req.getMessageID()
+            );
+            forwardRequest.setMessage(response);
+
+            // duplicate request to next two successors to maintain replication factor 3 on put
+            // & remove operations but don't replicate if KVRequest's optional notReplicated is true
+            if ((!request.hasNotReplicated() || request.getNotReplicated() == false)
+                && (request.getCommand() == 1 || request.getCommand() == 3)) {
+                // spin off separate thread to send replicated requests,
+                // so it doesn't block current operations
+                UDPServerThreadPool.getInstance().replicate(request);
+            }
+        } else {
+            forwardRequest.setMessage(req);
+        }
+
+        return forwardRequest;
+    }
 
     private static Msg generateResponse(int cmd, ByteString key, ByteString value,
         ByteString messageID) {
@@ -257,56 +322,5 @@ public class ProtocolBufferKeyValueStoreResponse {
                 reply = generateUnrecognizedCommandResponse(messageID);
         }
         return reply;
-    }
-
-    public static void parseResponse(ByteString response) {
-        KVResponse reply = null;
-
-        // deserialize response payload
-        try {
-            reply = KVResponse.parseFrom(response);
-        } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
-        }
-
-        if (VERBOSE > 0) {
-            System.out.println("Error Code: " + reply.getErrCode());
-            System.out.println("Value: " + bytesToHex(reply.getValue().toByteArray()));
-            System.out.println("PID: " + reply.getPid());
-            // Latest protocol buffer definitions removed version field, uncomment once reintroduced
-            // System.out.println("Version: " + reply.getVersion());
-        }
-    }
-
-    public static MsgWrapper serveRequest(Msg req) {
-        KVRequest request = null;
-        MsgWrapper forwardRequest = null;
-        try {
-            request = KVRequest.parseFrom(req.getPayload());
-        } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            forwardRequest = ConsistentHashRing.getInstance().getNode(request.getKey());
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-
-        Msg response;
-        // currentNode is correct node, find a response, set correct receiver
-        if (forwardRequest != null && (forwardRequest.getPort() == 0
-            || forwardRequest.getAddress() == null)) {
-            response = generateResponse(
-                request.getCommand(),
-                request.getKey(),
-                request.getValue(),
-                req.getMessageID()
-            );
-            forwardRequest.setMessage(response);
-        } else {
-            forwardRequest.setMessage(req);
-        }
-        return forwardRequest;
     }
 }

@@ -111,6 +111,48 @@ public class ConsistentHashRing {
         return hashRing.get(hashKey);
     }
 
+    // returns the key of the node "responsible" for the hashed key
+    public String getKey(ByteString key) throws NoSuchAlgorithmException {
+        if (hashRing.isEmpty() || key.isEmpty()) {
+            return null;
+        }
+        String hashKey = UniqueIdentifier.MD5Hash(key.toStringUtf8());
+
+        // If next key not contained in live nodes, use successor node ("loops" around)
+        // Ultimately, if no successor is found, it will return its own key
+        if (!hashRing.containsKey(hashKey)
+            || !nodesList.getLiveNodes().containsKey(hashRing.get(hashKey).getAddress())) {
+            MsgWrapper target = null;
+            while (target == null) {
+                SortedMap<String, MsgWrapper> tailMap = hashRing.tailMap(hashKey, false);
+                hashKey = tailMap.isEmpty() ? hashRing.firstKey() : tailMap.firstKey();
+                target = hashRing.get(hashKey);
+                if (!NodesList.getInstance().getLiveNodes().containsKey(target.getAddress())) {
+                    target = null;
+                }
+            }
+        }
+        return hashKey;
+    }
+
+    // given a key, return the successor node's key
+    public String getSuccessorKey(String hashKey) throws NoSuchAlgorithmException {
+        if (hashRing.isEmpty() || hashKey.isEmpty()) {
+            return null;
+        }
+        MsgWrapper target = null;
+
+        while (target == null) {
+            SortedMap<String, MsgWrapper> tailMap = hashRing.tailMap(hashKey, false);
+            hashKey = tailMap.isEmpty() ? hashRing.firstKey() : tailMap.firstKey();
+            target = hashRing.get(hashKey);
+            if (!NodesList.getInstance().getLiveNodes().containsKey(target.getAddress())) {
+                target = null;
+            }
+        }
+        return hashKey;
+    }
+
     public ConcurrentSkipListMap<String, MsgWrapper> getHashRing() {
         return this.hashRing;
     }
