@@ -31,13 +31,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class UDPServerThreadPool {
     private static UDPServerThreadPool instance = new UDPServerThreadPool();
-
-	public static InetAddress localAddress;
-	public static int localPort;
-	private static ThreadPoolExecutor executor =
-		(ThreadPoolExecutor) Executors.newFixedThreadPool(UDP_SERVER_THREAD_POOL_NTHREADS);
     private static DatagramSocket socket;
     private static DatagramSocket sendSocket;
+
+    protected static ThreadPoolExecutor executor =
+		(ThreadPoolExecutor) Executors.newFixedThreadPool(UDP_SERVER_THREAD_POOL_NTHREADS);
+
+    public static InetAddress localAddress;
+    public static int localPort;
 
     private UDPServerThreadPool(){}
 

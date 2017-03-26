@@ -17,4 +17,7 @@ public class DistributedSystemConfiguration extends Configuration {
     public static final double OUT_OF_MEMORY_THRESHOLD = 0.05;
     public static final int MAX_HOPS = 10;
     public static final int UDP_SERVER_THREAD_POOL_NTHREADS = 30;
+    public static final int CLIENT_TARGET_PORT = 10696;
+    public static final int MAX_REP_PAYLOAD_SIZE= 15500;
+    public static final int REP_FACTOR = 3;
 }
