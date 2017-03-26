@@ -5,10 +5,14 @@ import static A7.DistributedSystemConfiguration.OUT_OF_MEMORY_THRESHOLD;
 import static A7.DistributedSystemConfiguration.SHUTDOWN_NODE;
 import static A7.DistributedSystemConfiguration.VERBOSE;
 import static A7.utils.ByteRepresentation.bytesToHex;
+import static A7.utils.Checksum.calculateProtocolBufferChecksum;
 import static A7.utils.ProtocolBuffers.wrapMessage;
+import static A7.utils.UniqueIdentifier.generateUniqueID;
 
+import A7.client.UDPClient;
 import A7.core.ConsistentHashRing;
 import A7.core.KeyValueStoreSingleton;
+import A7.core.NodesList;
 import A7.proto.KeyValueRequest.KVRequest;
 import A7.proto.KeyValueResponse.KVResponse;
 import A7.proto.Message.Msg;
@@ -238,12 +242,8 @@ public class ProtocolBufferKeyValueStoreResponse {
             e.printStackTrace();
         }
 
-        // duplicate request to next two successors to maintain replication factor 3
         try {
             forwardRequest = ConsistentHashRing.getInstance().getNode(request.getKey());
-            // TODO: use reworked client to send request to successors
-            // use UDPClient and generateXRequest here to duplicate requests to replicas
-            String origin = ConsistentHashRing.getInstance().getKey(request.getKey());
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -252,6 +252,7 @@ public class ProtocolBufferKeyValueStoreResponse {
         // currentNode is correct node, find a response, set correct receiver
         if (forwardRequest != null && (forwardRequest.getPort() == 0
             || forwardRequest.getAddress() == null)) {
+            // process operation on current node and generate response
             response = generateResponse(
                 request.getCommand(),
                 request.getKey(),
@@ -259,9 +260,67 @@ public class ProtocolBufferKeyValueStoreResponse {
                 req.getMessageID()
             );
             forwardRequest.setMessage(response);
+
+            // duplicate request to next two successors to maintain replication factor 3
+            // but if KVRequest's optional notReplicated field is true, don't replicate
+            // TODO: break this into separate function and write unit tests for it
+            if (!request.hasNotReplicated() || request.getNotReplicated() == false) {
+                String origin = null;
+                String firstSuccessorIP = null;
+                String secondSuccessorIP = null;
+
+                try {
+                    origin= ConsistentHashRing.getInstance().getKey(request.getKey());
+                    firstSuccessorIP = ConsistentHashRing.getInstance().getSuccessorKey(origin);
+                    secondSuccessorIP = ConsistentHashRing.getInstance()
+                        .getSuccessorKey(firstSuccessorIP);
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
+
+                KVRequest replicateKVReq = KVRequest.newBuilder()
+                    .setCommand(request.getCommand())
+                    .setKey(request.getKey())
+                    .setValue(request.getValue())
+                    .setNotReplicated(true)
+                    .build();
+
+                byte[] messageID = null;
+                ByteString payload = replicateKVReq.toByteString();
+
+                try {
+                    messageID = generateUniqueID();
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
+
+                Msg replicateMsg = Msg.newBuilder()
+                    .setMessageID(ByteString.copyFrom(messageID))
+                    .setPayload(payload)
+                    .setCheckSum(calculateProtocolBufferChecksum(payload,
+                        ByteString.copyFrom(messageID)))
+                    .build();
+
+                // TODO: decide if we want retries based on response
+                try {
+                    byte[] firstResponse = UDPClient.sendProtocolBufferRequest(
+                        replicateMsg.toByteArray(),
+                        firstSuccessorIP,
+                        NodesList.getInstance().getAllNodes().get(firstSuccessorIP),
+                        messageID);
+                    byte[] secondResponse = UDPClient.sendProtocolBufferRequest(
+                        replicateMsg.toByteArray(),
+                        secondSuccessorIP,
+                        NodesList.getInstance().getAllNodes().get(secondSuccessorIP),
+                        messageID);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         } else {
             forwardRequest.setMessage(req);
         }
+
         return forwardRequest;
     }
 }
