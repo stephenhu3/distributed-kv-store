@@ -49,9 +49,9 @@ public class UDPServerThreadSpawnCommand extends io.dropwizard.cli.Command {
             System.out.println("Nodes: " + nodes);
         }
 
-        UDPServerThreadPool server = new UDPServerThreadPool(port);
+        UDPServerThreadPool.initialize(port);
         new GossipReceiverThread(name + "-gossip-receiver-thread", port).start();
         new GossipSenderThread(name + "-gossip-sender-thread", nodes, port).start();
-        server.receive();
+        UDPServerThreadPool.getInstance().receive();
     }
 }

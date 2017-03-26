@@ -106,4 +106,20 @@ public class ConsistentHashRingTest {
         MsgWrapper expectedValue = hashRing.getNode(ByteString.copyFromUtf8(testKey));
         assertEquals(actualValue, expectedValue);
     }
+
+    @org.junit.Test
+    public void testGetKeyExactMatch() throws NoSuchAlgorithmException {
+        String testKey = "128.208.4.197:10800";
+        String actualValue = hashRing.getKey(ByteString.copyFromUtf8(testKey));
+        String expectedValue = "408cadefe3bd2979ecc1afab6c336669";
+        assertEquals(actualValue, expectedValue);
+    }
+
+    @org.junit.Test
+    public void testGetFirstSuccessorKey() throws NoSuchAlgorithmException {
+        String testKey = "408cadefe3bd2979ecc1afab6c336669";
+        String actualValue = hashRing.getSuccessorKey(testKey);
+        String expectedValue = "9a030279e0c322a2db9240c46bceddb5";
+        assertEquals(actualValue, expectedValue);
+    }
 }

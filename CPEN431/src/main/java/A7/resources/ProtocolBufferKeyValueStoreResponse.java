@@ -5,17 +5,14 @@ import static A7.DistributedSystemConfiguration.OUT_OF_MEMORY_THRESHOLD;
 import static A7.DistributedSystemConfiguration.SHUTDOWN_NODE;
 import static A7.DistributedSystemConfiguration.VERBOSE;
 import static A7.utils.ByteRepresentation.bytesToHex;
-import static A7.utils.Checksum.calculateProtocolBufferChecksum;
 import static A7.utils.ProtocolBuffers.wrapMessage;
-import static A7.utils.UniqueIdentifier.generateUniqueID;
 
-import A7.client.UDPClient;
 import A7.core.ConsistentHashRing;
 import A7.core.KeyValueStoreSingleton;
-import A7.core.NodesList;
 import A7.proto.KeyValueRequest.KVRequest;
 import A7.proto.KeyValueResponse.KVResponse;
 import A7.proto.Message.Msg;
+import A7.server.UDPServerThreadPool;
 import A7.utils.MsgWrapper;
 import A7.utils.UniqueIdentifier;
 import com.google.protobuf.ByteString;
@@ -180,6 +177,70 @@ public class ProtocolBufferKeyValueStoreResponse {
         return resPayload.build();
     }
 
+    public static void parseResponse(ByteString response) {
+        KVResponse reply = null;
+
+        // deserialize response payload
+        try {
+            reply = KVResponse.parseFrom(response);
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
+
+        if (VERBOSE > 0) {
+            System.out.println("Error Code: " + reply.getErrCode());
+            System.out.println("Value: " + bytesToHex(reply.getValue().toByteArray()));
+            System.out.println("PID: " + reply.getPid());
+            // Latest protocol buffer definitions removed version field, uncomment once reintroduced
+            // System.out.println("Version: " + reply.getVersion());
+        }
+    }
+
+    public static MsgWrapper serveRequest(Msg req) {
+        // TODO: ONLY replicate commands that are put/remove mutations, don't replicate anything else
+        KVRequest request = null;
+        MsgWrapper forwardRequest = null;
+
+        try {
+            request = KVRequest.parseFrom(req.getPayload());
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            forwardRequest = ConsistentHashRing.getInstance().getNode(request.getKey());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        Msg response;
+        // currentNode is correct node, find a response, set correct receiver
+        if (forwardRequest != null && (forwardRequest.getPort() == 0
+            || forwardRequest.getAddress() == null)) {
+            // process operation on current node and generate response
+            response = generateResponse(
+                request.getCommand(),
+                request.getKey(),
+                request.getValue(),
+                req.getMessageID()
+            );
+            forwardRequest.setMessage(response);
+
+            // duplicate request to next two successors to maintain replication factor 3 on put
+            // & remove operations but don't replicate if KVRequest's optional notReplicated is true
+            if ((!request.hasNotReplicated() || request.getNotReplicated() == false)
+                && (request.getCommand() == 1 || request.getCommand() == 3)) {
+                // spin off separate thread to send replicated requests,
+                // so it doesn't block current operations
+                UDPServerThreadPool.getInstance().replicate(request);
+            }
+        } else {
+            forwardRequest.setMessage(req);
+        }
+
+        return forwardRequest;
+    }
+
     private static Msg generateResponse(int cmd, ByteString key, ByteString value,
         ByteString messageID) {
         Msg reply;
@@ -211,116 +272,5 @@ public class ProtocolBufferKeyValueStoreResponse {
                 reply = generateUnrecognizedCommandResponse(messageID);
         }
         return reply;
-    }
-
-    public static void parseResponse(ByteString response) {
-        KVResponse reply = null;
-
-        // deserialize response payload
-        try {
-            reply = KVResponse.parseFrom(response);
-        } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
-        }
-
-        if (VERBOSE > 0) {
-            System.out.println("Error Code: " + reply.getErrCode());
-            System.out.println("Value: " + bytesToHex(reply.getValue().toByteArray()));
-            System.out.println("PID: " + reply.getPid());
-            // Latest protocol buffer definitions removed version field, uncomment once reintroduced
-            // System.out.println("Version: " + reply.getVersion());
-        }
-    }
-
-    public static MsgWrapper serveRequest(Msg req) {
-        KVRequest request = null;
-        MsgWrapper forwardRequest = null;
-
-        try {
-            request = KVRequest.parseFrom(req.getPayload());
-        } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            forwardRequest = ConsistentHashRing.getInstance().getNode(request.getKey());
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-
-        Msg response;
-        // currentNode is correct node, find a response, set correct receiver
-        if (forwardRequest != null && (forwardRequest.getPort() == 0
-            || forwardRequest.getAddress() == null)) {
-            // process operation on current node and generate response
-            response = generateResponse(
-                request.getCommand(),
-                request.getKey(),
-                request.getValue(),
-                req.getMessageID()
-            );
-            forwardRequest.setMessage(response);
-
-            // duplicate request to next two successors to maintain replication factor 3
-            // but if KVRequest's optional notReplicated field is true, don't replicate
-            // TODO: break this into separate function and write unit tests for it
-            if (!request.hasNotReplicated() || request.getNotReplicated() == false) {
-                String origin = null;
-                String firstSuccessorIP = null;
-                String secondSuccessorIP = null;
-
-                try {
-                    origin= ConsistentHashRing.getInstance().getKey(request.getKey());
-                    firstSuccessorIP = ConsistentHashRing.getInstance().getSuccessorKey(origin);
-                    secondSuccessorIP = ConsistentHashRing.getInstance()
-                        .getSuccessorKey(firstSuccessorIP);
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
-
-                KVRequest replicateKVReq = KVRequest.newBuilder()
-                    .setCommand(request.getCommand())
-                    .setKey(request.getKey())
-                    .setValue(request.getValue())
-                    .setNotReplicated(true)
-                    .build();
-
-                byte[] messageID = null;
-                ByteString payload = replicateKVReq.toByteString();
-
-                try {
-                    messageID = generateUniqueID();
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
-
-                Msg replicateMsg = Msg.newBuilder()
-                    .setMessageID(ByteString.copyFrom(messageID))
-                    .setPayload(payload)
-                    .setCheckSum(calculateProtocolBufferChecksum(payload,
-                        ByteString.copyFrom(messageID)))
-                    .build();
-
-                // TODO: decide if we want retries based on response
-                try {
-                    byte[] firstResponse = UDPClient.sendProtocolBufferRequest(
-                        replicateMsg.toByteArray(),
-                        firstSuccessorIP,
-                        NodesList.getInstance().getAllNodes().get(firstSuccessorIP),
-                        messageID);
-                    byte[] secondResponse = UDPClient.sendProtocolBufferRequest(
-                        replicateMsg.toByteArray(),
-                        secondSuccessorIP,
-                        NodesList.getInstance().getAllNodes().get(secondSuccessorIP),
-                        messageID);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            forwardRequest.setMessage(req);
-        }
-
-        return forwardRequest;
     }
 }
