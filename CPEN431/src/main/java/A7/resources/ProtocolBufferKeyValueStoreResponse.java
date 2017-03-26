@@ -14,10 +14,17 @@ import A7.proto.KeyValueResponse.KVResponse;
 import A7.proto.Message.Msg;
 import A7.utils.MsgWrapper;
 import A7.utils.UniqueIdentifier;
+
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 public class ProtocolBufferKeyValueStoreResponse {
     /*
@@ -49,6 +56,46 @@ public class ProtocolBufferKeyValueStoreResponse {
         codes.put("invalid value length", 7);
     }
 
+    // received response to poulate duplicate map
+    public static Msg generatePutDupesResponse(ByteString value, ByteString messageID) {
+        KVResponse resPayload;
+        int pid = UniqueIdentifier.getCurrentPID();
+        ConcurrentSkipListMap<ByteString, ByteString> dupeMap = new ConcurrentSkipListMap<ByteString, ByteString>();
+        
+        // Parse byte array to Map
+		try {
+			ByteArrayInputStream byteIn = new ByteArrayInputStream(value.toByteArray());
+	        ObjectInputStream in;
+			in = new ObjectInputStream(byteIn);
+			dupeMap = (ConcurrentSkipListMap<ByteString, ByteString>) in.readObject();
+		} catch (IOException | ClassNotFoundException e) {
+			resPayload = generateKvReply(codes.get("KVStore failure"), null, pid);
+			e.printStackTrace();
+		}
+	
+		if (value == null) {
+            resPayload = generateKvReply(codes.get("KVStore failure"), null, pid);
+        } else {
+            if (Runtime.getRuntime().freeMemory() >
+                (JVM_HEAP_SIZE_KB * OUT_OF_MEMORY_THRESHOLD) * 1024) {
+    	        KeyValueStoreSingleton.getInstance().getMap().putAll(dupeMap);
+                if (VERBOSE > 0) {
+                    System.out.println("Put Value: " + bytesToHex(value.toByteArray()));
+                }
+                resPayload = generateKvReply(codes.get("success"), value, pid);
+            } else {
+                if (VERBOSE > 0) {
+                    System.out.println("Out of memory, remaining: "
+                        + Runtime.getRuntime().freeMemory());
+                }
+                // return out of memory response if GC limit about to be exceeded
+                return generateOutOfMemoryResponse(messageID);
+            }
+        }
+        Msg msg = wrapMessage(messageID, resPayload.toByteString());
+        return msg;
+    }
+    
     // note, ConcurrentHashMap throws NullPointerException if specified key or value is null
     public static Msg generatePutResponse(ByteString key, ByteString value, ByteString messageID) {
         KVResponse resPayload;
@@ -201,6 +248,9 @@ public class ProtocolBufferKeyValueStoreResponse {
                 break;
             case 7:
                 reply = generateGetPIDResponse(messageID);
+                break;
+            case 8:
+                reply = generatePutDupesResponse(value, messageID);
                 break;
             default:
                 // return error code 5, unrecognized command

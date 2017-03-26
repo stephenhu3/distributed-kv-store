@@ -1,15 +1,17 @@
 package A7.resources;
 
-import static A7.utils.ProtocolBuffers.wrapMessage;
+import com.google.protobuf.ByteString;
 
 import A7.proto.KeyValueRequest.KVRequest;
 import A7.proto.Message.Msg;
-import com.google.protobuf.ByteString;
+
+import static A7.utils.ProtocolBuffers.wrapMessage;
+
 import java.util.HashMap;
 
 public class ProtocolBufferKeyValueStoreRequest {
     /*
-    1. Field “command” with tag number one can be:
+    1. Field “command" with tag number one can be:
        0x01 - Put: This is a put operation.
        0x02 - Get: This is a get operation.
        0x03 - Remove: This is a remove operation.
@@ -19,9 +21,9 @@ public class ProtocolBufferKeyValueStoreRequest {
        0x07 - GetPID: the node is expected to reply with the processID of the Java process
        [Note: We may add some more management operations]
        anything > 0x20. Your own commands if you want.  They may be useful for debugging.
-    2. Field “key” with tag number two is the identification of the value in the key-value store
+    2. Field “key" with tag number two is the identification of the value in the key-value store
        and it is up to 32 bytes long.
-    3. Field “value” with tag number three is only used with “put” operation.
+    3. Field “value" with tag number three is only used with “put" operation.
        Its maximum length is 10,000 bytes.
     4. Field ‘version’ for the value, for now left unused.
     */
@@ -36,8 +38,15 @@ public class ProtocolBufferKeyValueStoreRequest {
         commands.put("deleteAll", 5);
         commands.put("isAlive", 6);
         commands.put("getPID", 7);
+        commands.put("putDupes", 8);
     }
 
+    public static Msg generateDupesRequest(ByteString val, ByteString messageID) {
+        KVRequest reqPayload = generateKvRequest(commands.get("putDupes"), null, val);
+        Msg msg = wrapMessage(messageID, reqPayload.toByteString());
+        return msg;
+    }
+    
     public static Msg generatePutRequest(ByteString key, ByteString val, ByteString messageID) {
         KVRequest reqPayload = generateKvRequest(commands.get("put"), key, val);
         Msg msg = wrapMessage(messageID, reqPayload.toByteString());

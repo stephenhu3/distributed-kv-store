@@ -27,7 +27,7 @@ import A7.utils.ProtocolBuffers;
 public class UDPServerThreadPool {
 	public static InetAddress localAddress;
 	public static int localPort;
-	private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(30);
+	protected static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(30);
     private static DatagramSocket socket;
     private static DatagramSocket sendSocket;
 

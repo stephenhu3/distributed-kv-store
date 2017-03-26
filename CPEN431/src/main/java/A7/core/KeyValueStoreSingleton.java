@@ -1,7 +1,9 @@
 package A7.core;
 
 import com.google.protobuf.ByteString;
+
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 public class KeyValueStoreSingleton {
     /*
@@ -22,17 +24,18 @@ public class KeyValueStoreSingleton {
 
     // eagerly created thread-safe instance to improve performance of multithreaded getInstance
     private static KeyValueStoreSingleton instance = new KeyValueStoreSingleton();
-    private ConcurrentHashMap<ByteString, ByteString> map;
-
+    ConcurrentSkipListMap<ByteString, ByteString> map;
+    
     private KeyValueStoreSingleton(){
-        map = new ConcurrentHashMap<>();
+        map = new ConcurrentSkipListMap<>();
     }
 
     public static KeyValueStoreSingleton getInstance() {
         return instance;
     }
 
-    public ConcurrentHashMap<ByteString, ByteString> getMap() {
+    public ConcurrentSkipListMap<ByteString, ByteString> getMap() {
         return map;
     }
+
 }
