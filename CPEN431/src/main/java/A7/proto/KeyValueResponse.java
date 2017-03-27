@@ -43,6 +43,15 @@ public final class KeyValueResponse {
      * <code>optional int32 pid = 3;</code>
      */
     int getPid();
+
+    /**
+     * <code>optional int32 version = 4;</code>
+     */
+    boolean hasVersion();
+    /**
+     * <code>optional int32 version = 4;</code>
+     */
+    int getVersion();
   }
   /**
    * Protobuf type {@code KVResponse}
@@ -59,6 +68,7 @@ public final class KeyValueResponse {
       errCode_ = 0;
       value_ = com.google.protobuf.ByteString.EMPTY;
       pid_ = 0;
+      version_ = 0;
     }
 
     @java.lang.Override
@@ -102,6 +112,11 @@ public final class KeyValueResponse {
             case 24: {
               bitField0_ |= 0x00000004;
               pid_ = input.readInt32();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              version_ = input.readInt32();
               break;
             }
           }
@@ -174,6 +189,21 @@ public final class KeyValueResponse {
       return pid_;
     }
 
+    public static final int VERSION_FIELD_NUMBER = 4;
+    private int version_;
+    /**
+     * <code>optional int32 version = 4;</code>
+     */
+    public boolean hasVersion() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional int32 version = 4;</code>
+     */
+    public int getVersion() {
+      return version_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -199,6 +229,9 @@ public final class KeyValueResponse {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeInt32(3, pid_);
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeInt32(4, version_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -218,6 +251,10 @@ public final class KeyValueResponse {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(3, pid_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(4, version_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -251,6 +288,11 @@ public final class KeyValueResponse {
         result = result && (getPid()
             == other.getPid());
       }
+      result = result && (hasVersion() == other.hasVersion());
+      if (hasVersion()) {
+        result = result && (getVersion()
+            == other.getVersion());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -273,6 +315,10 @@ public final class KeyValueResponse {
       if (hasPid()) {
         hash = (37 * hash) + PID_FIELD_NUMBER;
         hash = (53 * hash) + getPid();
+      }
+      if (hasVersion()) {
+        hash = (37 * hash) + VERSION_FIELD_NUMBER;
+        hash = (53 * hash) + getVersion();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -398,6 +444,8 @@ public final class KeyValueResponse {
         bitField0_ = (bitField0_ & ~0x00000002);
         pid_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
+        version_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -434,6 +482,10 @@ public final class KeyValueResponse {
           to_bitField0_ |= 0x00000004;
         }
         result.pid_ = pid_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.version_ = version_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -484,6 +536,9 @@ public final class KeyValueResponse {
         }
         if (other.hasPid()) {
           setPid(other.getPid());
+        }
+        if (other.hasVersion()) {
+          setVersion(other.getVersion());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -614,6 +669,38 @@ public final class KeyValueResponse {
         onChanged();
         return this;
       }
+
+      private int version_ ;
+      /**
+       * <code>optional int32 version = 4;</code>
+       */
+      public boolean hasVersion() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional int32 version = 4;</code>
+       */
+      public int getVersion() {
+        return version_;
+      }
+      /**
+       * <code>optional int32 version = 4;</code>
+       */
+      public Builder setVersion(int value) {
+        bitField0_ |= 0x00000008;
+        version_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 version = 4;</code>
+       */
+      public Builder clearVersion() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        version_ = 0;
+        onChanged();
+        return this;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
@@ -677,9 +764,9 @@ public final class KeyValueResponse {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\026KeyValueResponse.proto\"9\n\nKVResponse\022\017" +
+      "\n\026KeyValueResponse.proto\"J\n\nKVResponse\022\017" +
       "\n\007errCode\030\001 \002(\r\022\r\n\005value\030\002 \001(\014\022\013\n\003pid\030\003 " +
-      "\001(\005B\022B\020KeyValueResponse"
+      "\001(\005\022\017\n\007version\030\004 \001(\005B\022B\020KeyValueResponse"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -698,7 +785,7 @@ public final class KeyValueResponse {
     internal_static_KVResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_KVResponse_descriptor,
-        new java.lang.String[] { "ErrCode", "Value", "Pid", });
+        new java.lang.String[] { "ErrCode", "Value", "Pid", "Version", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

@@ -85,7 +85,12 @@ public class GossipSenderThread extends Thread {
 
             // Increment hops
             nodesList.refreshLiveNodes();
-
+            try {
+				FailDetection();
+			} catch (NoSuchAlgorithmException | SocketException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
             // Build liveHostsReq protobuf
             byte[] serverList = ByteRepresentation.mapToBytes(nodesList.getLiveNodes());
             LiveHostsReq liveHostsReq = LiveHostsReq.newBuilder()

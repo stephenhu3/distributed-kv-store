@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.google.protobuf.ByteString;
 import A7.client.UDPClient;
 import A7.core.KeyValueStoreSingleton;
+import A7.core.VersionedValue;
 import A7.proto.KeyValueRequest.KVRequest;
 import A7.proto.Message.Msg;
 import A7.utils.MsgWrapper;
@@ -25,7 +26,7 @@ public class SendReplication implements Runnable {
 	
 	private ByteString createSubMap(int from, int to) throws IOException{
 		// Populate new hashMap from ranges provided
-		ConcurrentHashMap<ByteString, ByteString> newMap = new ConcurrentHashMap<ByteString, ByteString>();
+		ConcurrentHashMap<ByteString, VersionedValue> newMap = new ConcurrentHashMap<ByteString, VersionedValue>();
 		Object[] keySet = KeyValueStoreSingleton.getInstance().getMap().keySet().toArray();
 		for(int i=from ; i < to; i++){
 			newMap.put( (ByteString) keySet[i], 
