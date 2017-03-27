@@ -1,100 +1,116 @@
 package A7.server;
 
-import static A7.DistributedSystemConfiguration.CLIENT_TARGET_PORT;
 import static A7.DistributedSystemConfiguration.MAX_REP_PAYLOAD_SIZE;
-import static A7.DistributedSystemConfiguration.REP_FACTOR;
-import static A7.DistributedSystemConfiguration.VERBOSE;
 import static A7.utils.Checksum.calculateProtocolBufferChecksum;
+import static A7.utils.UniqueIdentifier.generateUniqueID;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.NavigableSet;
-import java.util.Random;
-import java.util.SortedMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-
+import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.ConcurrentHashMap;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
-
+import A7.client.UDPClient;
 import A7.core.KeyValueStoreSingleton;
-import A7.core.RequestCache;
-import A7.proto.LiveHostsRequest.LiveHostsReq;
+import A7.proto.KeyValueRequest.KVRequest;
 import A7.proto.Message.Msg;
-import A7.resources.ProtocolBufferKeyValueStoreResponse;
-import A7.server.UDPServerThreadPool.ReceiverWorker;
-import A7.utils.ByteRepresentation;
 import A7.utils.MsgWrapper;
-import A7.utils.ProtocolBuffers;
 
 public class SendReplication implements Runnable {    
-	InetAddress sendLocation;
-	DatagramSocket sendSocket;
+	MsgWrapper sendLocation;
 	
-	public SendReplication(InetAddress received) throws SocketException{
+	public SendReplication(MsgWrapper received) {
 		this.sendLocation = received;
-		sendSocket = new DatagramSocket();
 	}
 	
-	//Builds the application level payload for replication message
-	private ByteString buildPayload(ByteString from, ByteString to, boolean include) throws IOException{
+	private ByteString createSubMap(int from, int to) throws IOException{
+		// Populate new hashMap from ranges provided
+		ConcurrentHashMap<ByteString, ByteString> newMap = new ConcurrentHashMap<ByteString, ByteString>();
+		Object[] keySet = KeyValueStoreSingleton.getInstance().getMap().keySet().toArray();
+		for(int i=from ; i < to; i++){
+			newMap.put( (ByteString) keySet[i], 
+				KeyValueStoreSingleton.getInstance().getMap().get(keySet[i]));
+		}
+		//Nothing in range to serilaize; return null 
+		//(ie. do not seriliaze the HashMap obejct iteslf if there are no keys inside)
+		if(newMap.size() == 0){
+			return null;
+		}
+		// Write object to ByteString
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		ObjectOutputStream out = new ObjectOutputStream(bos);
-        out.writeObject(KeyValueStoreSingleton.getInstance().getMap().subMap(from, true, to, include));
+        out.writeObject(newMap);
         out.flush();
-        ByteString repPayload = ByteString.copyFrom(bos.toByteArray());
-        return repPayload;   
+        return ByteString.copyFrom(bos.toByteArray());
 	}
 	
-	private void serveReplication(ByteString from, ByteString mid, ByteString to){
-		ByteString headMapPayload = buildPayload(from, mid, false);
-		if(headMapPayload.size() > MAX_REP_PAYLOAD_SIZE){
-			Object[] headMap = KeyValueStoreSingleton.getInstance().getMap().headMap(mid, false).keySet().toArray();
-			ByteString midKey =  (ByteString) headMap[(int) headMap.length/2];
-			serveReplication(from, midKey, mid);
-		}else if(headMapPayload.size() > 0){
-			Msg msg = generateMessage();
-			sendOut(msg);
+	private void sendDupRequestMsg(ByteString value){
+		KVRequest dupeKVReq= KVRequest.newBuilder()
+			.setCommand(8)
+			.setValue(value)
+			.build();
+
+		byte[] messageID = new byte[0];
+		try {
+			messageID = generateUniqueID();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
 		}
 		
-		ByteString tailMapPayload = buildPayload(mid, to, true);
-		if(tailMapPayload.size() > MAX_REP_PAYLOAD_SIZE){
-			Object[] headMap = KeyValueStoreSingleton.getInstance().getMap().tailMap(mid, true).keySet().toArray();
-			ByteString midKey =  (ByteString) headMap[(int) headMap.length/2];
-			serveReplication(mid, midKey, to);
-		}else if(tailMapPayload.size() > 0){
-			Msg msg = generateMessage();
-			sendOut(msg);
+		ByteString payload = dupeKVReq.toByteString();
+		
+		Msg dupeMsg = Msg.newBuilder()
+			.setMessageID(ByteString.copyFrom(messageID))
+			.setPayload(payload)
+			.setCheckSum(calculateProtocolBufferChecksum(payload,
+		        ByteString.copyFrom(messageID)))
+			.build();
+
+		// TODO: decide if we want retries based on response
+		// Note: currently, UDPClient handles retries and blocks waiting for response
+		try {
+			UDPClient.sendProtocolBufferRequest(
+					dupeMsg.toByteArray(),
+                sendLocation.getAddress().getHostAddress(),
+                sendLocation.getPort(),
+                messageID);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
-	private void sendOut(Msg responseMsg){
-		byte[] responseData = responseMsg.toByteArray();
-		DatagramPacket responsePacket = new DatagramPacket(
-			responseData, responseData.length,
-			sendLocation, CLIENT_TARGET_PORT);
-        try {
-        	// address edge case for two threads trying to send response at same time
-        	synchronized(sendSocket) {
-				sendSocket.send(responsePacket);
+	private void serveReplication(int from, int mid, int to){
+		try {
+			ByteString headPayload;
+				headPayload = createSubMap(from, mid);
+			if(headPayload.size() > MAX_REP_PAYLOAD_SIZE){
+				int midKey = (mid - from)/2;
+				serveReplication(from, midKey, mid);
+			}else if(headPayload != null && headPayload.size() != 0){
+	
+				sendDupRequestMsg(headPayload);
+			}
+			
+			ByteString tailPayload = createSubMap(mid, to);
+			if(tailPayload.size() > MAX_REP_PAYLOAD_SIZE){
+				int midKey = (to - mid)/2;
+				serveReplication(mid, midKey, to);
+			}else if(headPayload != null && headPayload.size() != 0){
+				sendDupRequestMsg(tailPayload);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		
 	}
 	
     @Override
     public void run() {
-    	ByteString from = KeyValueStoreSingleton.getInstance().getMap().firstKey();
-    	ByteString to = KeyValueStoreSingleton.getInstance().getMap().lastKey();
-    	ByteString mid = KeyValueStoreSingleton.getInstance().getMap().lastKey();
+    	Object[] keySet = KeyValueStoreSingleton.getInstance().getMap().keySet().toArray();
+    	int from = 0;
+    	int mid = keySet.length;
+    	int to = keySet.length;
     	
     	serveReplication(from, mid, to);
     }	

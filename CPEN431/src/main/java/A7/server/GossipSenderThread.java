@@ -143,7 +143,7 @@ public class GossipSenderThread extends Thread {
     	    		successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
             }
     		//send to successor
-    		UDPServerThreadPool.executor.execute(new SendReplication(successor.getValue().getAddress()));
+    		UDPServerThreadPool.executor.execute(new SendReplication(successor.getValue()));
         }
     	
     	// Check if predecessor is down and if down keep checking next predecessor
@@ -182,7 +182,7 @@ public class GossipSenderThread extends Thread {
 	    	    		successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
 	            }
 				//Landed on live successor node, execute
-	    		UDPServerThreadPool.executor.execute(new SendReplication(successor.getValue().getAddress()));
+	    		UDPServerThreadPool.executor.execute(new SendReplication(successor.getValue()));
 	    		successor = ConsistentHashRing.getInstance().getHashRing().higherEntry(successor.getKey());
 	    		if(successor == null)
     	    		successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();

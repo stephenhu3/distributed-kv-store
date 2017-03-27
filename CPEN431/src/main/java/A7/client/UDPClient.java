@@ -69,7 +69,7 @@ public class UDPClient {
 
     public static byte[] sendProtocolBufferRequest(byte[] msg, String ip, int port, byte[] messageID)
             throws Exception {
-        DatagramSocket socket = new DatagramSocket(port);
+        DatagramSocket socket = new DatagramSocket();
         InetAddress address = InetAddress.getByName(ip);
 
         // allocate response with max size of 16kB, truncate when number of byte received is known
