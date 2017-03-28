@@ -15,6 +15,7 @@ import A7.core.KeyValueStoreSingleton;
 import A7.core.VersionedValue;
 import A7.proto.KeyValueRequest.KVRequest;
 import A7.proto.Message.Msg;
+import A7.resources.ProtocolBufferKeyValueStoreRequest;
 import A7.utils.MsgWrapper;
 
 public class SendReplication implements Runnable {    
@@ -25,7 +26,7 @@ public class SendReplication implements Runnable {
 	}
 
 	// create submap from index "from" to index "to" (exclusive)
-	private ByteString createSubMap(int from, int to) throws IOException {
+	protected ByteString createSubMap(int from, int to) throws IOException {
 		// Populate new hashMap from ranges provided
 		ConcurrentHashMap<ByteString, VersionedValue> newMap = new ConcurrentHashMap<ByteString, VersionedValue>();
 		Object[] keySet = KeyValueStoreSingleton.getInstance().getMap().keySet().toArray();
@@ -46,12 +47,7 @@ public class SendReplication implements Runnable {
         return ByteString.copyFrom(bos.toByteArray());
 	}
 	
-	private void sendDupeRequestMsg(ByteString value) {
-		KVRequest dupeKVReq = KVRequest.newBuilder()
-			.setCommand(8)
-			.setValue(value)
-			.build();
-
+	protected void sendDupeRequestMsg(ByteString value) {
 		byte[] messageID = new byte[0];
 
 		try {
@@ -60,13 +56,7 @@ public class SendReplication implements Runnable {
 			e.printStackTrace();
 		}
 		
-		ByteString payload = dupeKVReq.toByteString();
-		
-		Msg dupeMsg = Msg.newBuilder()
-			.setMessageID(ByteString.copyFrom(messageID))
-			.setPayload(payload)
-			.setCheckSum(calculateProtocolBufferChecksum(payload, ByteString.copyFrom(messageID)))
-			.build();
+		Msg dupeMsg = ProtocolBufferKeyValueStoreRequest.generateDupesRequest(value, ByteString.copyFrom(messageID));
 
 		// TODO: decide if we want retries based on response
 		// Note: currently, UDPClient handles retries and blocks waiting for response
@@ -81,7 +71,7 @@ public class SendReplication implements Runnable {
 		}
 	}
 
-	private void serveReplication(int from, int mid, int to) {
+	protected void serveReplication(int from, int mid, int to) {
 		try {
 			ByteString headPayload = createSubMap(from, mid);
 

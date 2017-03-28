@@ -1,8 +1,10 @@
 package A7.core;
 
+import java.io.Serializable;
+
 import com.google.protobuf.ByteString;
 
-public class VersionedValue {
+public class VersionedValue implements Serializable {
 	private int version;
 	private ByteString value;
 	
