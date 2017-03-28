@@ -56,8 +56,7 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
 
     // received response to poulate duplicate map
-    public static Msg generatePutDupesResponse(ByteString value, ByteString messageID,
-        int version) {
+    public static Msg generatePutDupesResponse(ByteString value, ByteString messageID) {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
@@ -71,12 +70,12 @@ public class ProtocolBufferKeyValueStoreResponse {
 			in = new ObjectInputStream(byteIn);
 			dupeMap = (ConcurrentSkipListMap<ByteString, VersionedValue>) in.readObject();
 		} catch (IOException | ClassNotFoundException e) {
-			resPayload = generateKvReply(codes.get("KVStore failure"), null, pid, version);
+			resPayload = generateKvReply(codes.get("KVStore failure"), null, pid, -1);
 			e.printStackTrace();
 		}
 	
 		if (value == null) {
-            resPayload = generateKvReply(codes.get("KVStore failure"), null, pid, version);
+            resPayload = generateKvReply(codes.get("KVStore failure"), null, pid, -1);
         } else {
             if (Runtime.getRuntime().freeMemory() >
                 (JVM_HEAP_SIZE_KB * OUT_OF_MEMORY_THRESHOLD) * 1024) {
@@ -84,7 +83,7 @@ public class ProtocolBufferKeyValueStoreResponse {
                 if (VERBOSE > 0) {
                     System.out.println("Put Value: " + bytesToHex(value.toByteArray()));
                 }
-                resPayload = generateKvReply(codes.get("success"), null, pid, version);
+                resPayload = generateKvReply(codes.get("success"), null, pid, -1);
             } else {
                 if (VERBOSE > 0) {
                     System.out.println("Out of memory, remaining: "
@@ -326,7 +325,7 @@ public class ProtocolBufferKeyValueStoreResponse {
                 reply = generateGetPIDResponse(messageID);
                 break;
             case 8:
-                reply = generatePutDupesResponse(value, messageID, version);
+                reply = generatePutDupesResponse(value, messageID);
                 break;
             default:
                 // return error code 5, unrecognized command
