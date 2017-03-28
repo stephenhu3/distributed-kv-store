@@ -124,6 +124,7 @@ public class SendReplicationTest {
 		assertNotNull(request);
 		assertEquals(request.getCheckSum(),
             calculateProtocolBufferChecksum(currentID.toByteArray(), payload));
+		socket.close();
 	}
     
 }

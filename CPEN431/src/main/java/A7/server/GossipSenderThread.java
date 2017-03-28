@@ -126,13 +126,9 @@ public class GossipSenderThread extends Thread {
         }
     }
     
-    // Finds which node has failed
-    private void FailDetection() throws NoSuchAlgorithmException, SocketException {
-    	// Check if successor is down
-    	String currentNodeHash = UniqueIdentifier.MD5Hash(
-    			UDPServerThreadPool.localAddress.getHostAddress()
-    			+ ":" + UDPServerThreadPool.localPort);
-        
+    // Returns the ConsistentHashRing entry of node to duplicate KVStore on in event
+    // of node's successor going down.
+    protected static MsgWrapper successorsDuplicate(String currentNodeHash){
     	Entry<String, MsgWrapper> successor =
             ConsistentHashRing.getInstance().getHashRing().higherEntry(currentNodeHash);
 
@@ -151,16 +147,15 @@ public class GossipSenderThread extends Thread {
                 successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
             }
         }
-
-        // send to successor, but don't send if that successor happens to be own node
-        if (!successor.getValue().getAddress().equals(UDPServerThreadPool.localAddress)) {
-            UDPServerThreadPool.executor.execute(new SendReplication(successor.getValue()));
-        }
-    	
-    	// Check if predecessor is down and if down, keeps checking previous predecessor
-    	// Checks only up to REP_FACTOR - 1 predecessors because REP_FACTOR is inclusive
-    	// Current node will not have keys that is REP_FACTOR away
+		return successor.getValue();
+    }
+    
+    // Check if predecessor is down and if down, keeps checking previous predecessor
+	// Checks only up to REP_FACTOR - 1 predecessors because REP_FACTOR is inclusive
+	// Current node will not have keys that is REP_FACTOR away
+    protected static MsgWrapper[] predessorsDuplicate(String currentNodeHash){
     	int deadPred = 0;
+    	MsgWrapper[] dupeNodes = null;
     	Entry<String, MsgWrapper> predecessor =
             ConsistentHashRing.getInstance().getHashRing().lowerEntry(currentNodeHash);
 
@@ -182,7 +177,8 @@ public class GossipSenderThread extends Thread {
     	if (deadPred > 0) {
     		// Navigate to first node that needs duplication if deadPred == 2, 1 node up from
             // current; if deadPread == 1, 2 nodes from current, etc.
-	    	successor = ConsistentHashRing.getInstance().getHashRing().higherEntry(currentNodeHash);
+    		Entry<String, MsgWrapper> successor =
+	    	    ConsistentHashRing.getInstance().getHashRing().higherEntry(currentNodeHash);
 
 	    	if (successor == null) {
                 successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
@@ -196,7 +192,9 @@ public class GossipSenderThread extends Thread {
                     successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
                 }
 			}
-
+	    	
+	    	dupeNodes = new MsgWrapper[deadPred];
+	    	
 	    	for (int i = 0; i < deadPred; i++) {
 	    		// if current successor dead, find next live node
 	    		while (!NodesList.getInstance().getLiveNodes()
@@ -209,10 +207,7 @@ public class GossipSenderThread extends Thread {
                     }
 	            }
 
-				//Landed on live successor node, execute
-	    		if (!successor.getValue().getAddress().equals(UDPServerThreadPool.localAddress)){
-		    		UDPServerThreadPool.executor.execute(new SendReplication(successor.getValue()));
-	    		}
+	    		dupeNodes[i] = successor.getValue();
 
 	    		successor = ConsistentHashRing.getInstance().getHashRing()
                     .higherEntry(successor.getKey());
@@ -222,5 +217,30 @@ public class GossipSenderThread extends Thread {
                 }
 			}
     	}
+		return dupeNodes;
+    }
+    
+    // Finds which node has failed. Run duplication on discovered targets from detecting failure on
+    // successor and predecessor nodes
+    protected static void FailDetection() throws NoSuchAlgorithmException, SocketException {
+        // Check if successor is down
+    	String currentNodeHash = UniqueIdentifier.MD5Hash(
+    			UDPServerThreadPool.localAddress.getHostAddress()
+    			+ ":" + UDPServerThreadPool.localPort);
+        MsgWrapper succTarget = successorsDuplicate(currentNodeHash);
+        // send to successor, but don't send if that successor happens to be own node
+        if (!succTarget.getAddress().equals(UDPServerThreadPool.localAddress)) {
+            UDPServerThreadPool.executor.execute(new SendReplication(succTarget));
+        }
+        
+        MsgWrapper[] predTargets = predessorsDuplicate(currentNodeHash);
+        // send to successor, but don't send if that successor happens to be own node
+        if (predTargets != null) {
+        	for (int i = 0; i < predTargets.length; i++) {
+	        	if(!predTargets[i].getAddress().equals(UDPServerThreadPool.localAddress)) {
+	        		UDPServerThreadPool.executor.execute(new SendReplication(predTargets[i]));
+	        	}
+        	}
+        }
     }
 }

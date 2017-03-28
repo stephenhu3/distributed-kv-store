@@ -74,21 +74,25 @@ public class SendReplication implements Runnable {
 	protected void serveReplication(int from, int mid, int to) {
 		try {
 			ByteString headPayload = createSubMap(from, mid);
-
-			if (headPayload.size() > MAX_REP_PAYLOAD_SIZE) {
-				int midKey = (mid - from) / 2;
-				serveReplication(from, midKey, mid);
-			} else if (headPayload != null && headPayload.size() != 0) {
-				sendDupeRequestMsg(headPayload);
+			
+			if (headPayload != null) {
+				if (headPayload.size() > MAX_REP_PAYLOAD_SIZE) {
+					int midKey = (mid - from) / 2;
+					serveReplication(from, midKey, mid);
+				} else if (headPayload.size() != 0) {
+					sendDupeRequestMsg(headPayload);
+				}
 			}
 			
 			ByteString tailPayload = createSubMap(mid, to);
-
-			if (tailPayload.size() > MAX_REP_PAYLOAD_SIZE) {
-				int midKey = (to - mid) / 2;
-				serveReplication(mid, midKey, to);
-			} else if (headPayload != null && headPayload.size() != 0) {
-				sendDupeRequestMsg(tailPayload);
+			
+			if (tailPayload != null) {
+				if (tailPayload.size() > MAX_REP_PAYLOAD_SIZE) {
+					int midKey = (to - mid) / 2;
+					serveReplication(mid, midKey, to);
+				} else if (headPayload.size() != 0) {
+					sendDupeRequestMsg(tailPayload);
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
