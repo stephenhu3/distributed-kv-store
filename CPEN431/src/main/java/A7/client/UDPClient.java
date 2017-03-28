@@ -133,6 +133,9 @@ public class UDPClient {
             return responseMsg.getPayload().toByteArray();
         }
         socket.close();
-        throw new Exception("Failed to receive message after max retries attempted.");
+        if (VERBOSE > 0) {
+            System.out.println("Failed to receive message after max retries attempted.");
+        }
+        return null;
     }
 }
