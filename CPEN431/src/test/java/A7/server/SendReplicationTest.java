@@ -31,7 +31,7 @@ public class SendReplicationTest {
 	@org.junit.Before
     public void setUp() throws Exception {
         KVStore = KeyValueStoreSingleton.getInstance().getMap();
-        sendReplication = new SendReplication(null)
+        sendReplication = new SendReplication(null);
         KVStore.put(ByteString.copyFrom("Key1".getBytes()), new VersionedValue(ByteString.copyFrom("Value1".getBytes()), 1));
         KVStore.put(ByteString.copyFrom("Key2".getBytes()), new VersionedValue(ByteString.copyFrom("Value2".getBytes()), 2));
         KVStore.put(ByteString.copyFrom("Key3".getBytes()), new VersionedValue(ByteString.copyFrom("Value3".getBytes()), 3));
@@ -44,16 +44,16 @@ public class SendReplicationTest {
        ByteString subMap = sendReplication.createSubMap(0, 1);
        ConcurrentHashMap<ByteString, VersionedValue> dupeMap =
                new ConcurrentHashMap<ByteString, VersionedValue>();
-       // Parse byte array to Map
+       // Parse ByteString back to Map
         try {
-   		    ByteArrayInputStream byteIn = new ByteArrayInputStream(value.toByteArray());
+   		    ByteArrayInputStream byteIn = new ByteArrayInputStream(subMap.toByteArray());
    	        ObjectInputStream in;
    			in = new ObjectInputStream(byteIn);
-   			dupeMap = (ConcurrentSkipListMap<ByteString, VersionedValue>) in.readObject();
+   			dupeMap = (ConcurrentHashMap<ByteString, VersionedValue>) in.readObject();
    		} catch (IOException | ClassNotFoundException e) {
-   			resPayload = generateKvReply(codes.get("KVStore failure"), null, pid, -1);
    			e.printStackTrace();
    		}
+        
 	}
 
 }
