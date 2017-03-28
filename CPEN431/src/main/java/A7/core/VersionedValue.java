@@ -2,21 +2,20 @@ package A7.core;
 
 import com.google.protobuf.ByteString;
 
-public class VersionedValue{
+public class VersionedValue {
 	private int version;
 	private ByteString value;
 	
-	public VersionedValue(ByteString value,  int version){
+	public VersionedValue(ByteString value,  int version) {
 		this.version = version;
-    	this.value = value;
+    		this.value = value;
 	}
 	
-	public int getVersion(){
+	public int getVersion() {
 		return this.version;
 	}
 
-	public ByteString getValue(){
+	public ByteString getValue() {
 		return this.value;
-	}
-	
+	}	
 }
