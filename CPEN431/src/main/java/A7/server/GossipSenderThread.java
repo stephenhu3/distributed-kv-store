@@ -148,7 +148,9 @@ public class GossipSenderThread extends Thread {
     	    		successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
             }
     		//send to successor
-    		UDPServerThreadPool.executor.execute(new SendReplication(successor.getValue()));
+    		if (!successor.getValue().getAddress().equals(UDPServerThreadPool.localAddress)){
+	    		UDPServerThreadPool.executor.execute(new SendReplication(successor.getValue()));
+    		}
         }
     	
     	// Check if predecessor is down and if down keep checking next predecessor
@@ -173,13 +175,15 @@ public class GossipSenderThread extends Thread {
 	    	successor = ConsistentHashRing.getInstance().getHashRing().higherEntry(currentNodeHash);
 	    	if(successor == null)
 	    		successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
+    		
+	    	//find next successor that's alive since first duplicated node
 	    	for(int skip = deadPred; skip < (REP_FACTOR-1); skip++ ){
 	    		successor = ConsistentHashRing.getInstance().getHashRing().higherEntry(successor.getKey());
 	    		if(successor == null)
     	    		successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
 			}
 	    	for(int i = 0; i < deadPred; i++){
-	    		//find next successor that's alive since first duplicated node
+	    		// if current successor dead, find next linve
 	    		while(!NodesList.getInstance().getLiveNodes().containsKey(successor.getValue().getAddress())){
 	    			//no live successor found yet, check next
 	    			successor = ConsistentHashRing.getInstance().getHashRing().higherEntry(successor.getKey());
@@ -187,7 +191,9 @@ public class GossipSenderThread extends Thread {
 	    	    		successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
 	            }
 				//Landed on live successor node, execute
-	    		UDPServerThreadPool.executor.execute(new SendReplication(successor.getValue()));
+	    		if (!successor.getValue().getAddress().equals(UDPServerThreadPool.localAddress)){
+		    		UDPServerThreadPool.executor.execute(new SendReplication(successor.getValue()));
+	    		}
 	    		successor = ConsistentHashRing.getInstance().getHashRing().higherEntry(successor.getKey());
 	    		if(successor == null)
     	    		successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
