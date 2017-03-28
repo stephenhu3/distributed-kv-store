@@ -139,9 +139,10 @@ public class UDPServerThreadPool {
 						}
 			        } else {
 			        	messageWrap.setMessage(
-			        			ProtocolBuffers.wrapFwdMessage(request,
-				                ByteString.copyFromUtf8(requestAddress.getHostAddress()),
-				                requestPort));
+							ProtocolBuffers.wrapFwdMessage(
+                            request,
+                            ByteString.copyFromUtf8(requestAddress.getHostAddress()),
+                            requestPort));
 			        }
 
 					responseMsg = messageWrap;
@@ -196,18 +197,20 @@ public class UDPServerThreadPool {
 				.build();
 
             byte[] messageID = new byte[0];
+
             try {
                 messageID = generateUniqueID();
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             }
+
             ByteString payload = replicateKVReq.toByteString();
+            ByteString messageIDByteString = ByteString.copyFrom(messageID);
 
 			Msg replicateMsg = Msg.newBuilder()
-				.setMessageID(ByteString.copyFrom(messageID))
+				.setMessageID(messageIDByteString)
 				.setPayload(payload)
-				.setCheckSum(calculateProtocolBufferChecksum(payload,
-                    ByteString.copyFrom(messageID)))
+				.setCheckSum(calculateProtocolBufferChecksum(messageIDByteString, payload))
 				.build();
 
 			MsgWrapper firstSuccessorNode = ConsistentHashRing.getInstance()

@@ -16,7 +16,7 @@ public class MsgWrapper {
         this.address = address;
     }
     
-    //Create MsgWrapper around messages forwarded
+    // Create MsgWrapper around messages forwarded
     public MsgWrapper(Msg requestMessage) {
     	this.message = null;
         this.port = 0;
