@@ -10,6 +10,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -79,6 +80,21 @@ public class FailDetectionTest {
     	if (entry == null) {
     		entry = hashRing.getInstance().getHashRing().firstEntry();
     	}
+    	// if predecssor of current node is down, the returned duplicate node is suppose to be the first node outside the duplication
+    	// range of the down'ed node, or REP_Factor-1 away from the current
+    	Entry<String, MsgWrapper> checkEntry = hashRing.getInstance().getHashRing().higherEntry(downedNode);
+    	if (checkEntry == null) {
+    		checkEntry = hashRing.getInstance().getHashRing().firstEntry();
+    	}
+    	checkEntry = hashRing.getInstance().getHashRing().higherEntry(entry.getKey());
+    	if (checkEntry == null) {
+    		checkEntry = hashRing.getInstance().getHashRing().firstEntry();
+    	}
+    	checkEntry = hashRing.getInstance().getHashRing().higherEntry(entry.getKey());
+    	if (checkEntry == null) {
+    		checkEntry = hashRing.getInstance().getHashRing().firstEntry();
+    	}
+
     	String currentNodeHash = UniqueIdentifier.MD5Hash(
     			entry.getValue().getAddress().getHostAddress()
     			+ ":" + entry.getValue().getPort());
@@ -87,10 +103,6 @@ public class FailDetectionTest {
     	//Should only duplicate to 1, only one node down
     	assertEquals(pred.length, 1);
     	
-    	Entry<String, MsgWrapper> checkEntry = hashRing.getInstance().getHashRing().higherEntry(downedNode);
-    	if (checkEntry == null) {
-    		checkEntry = hashRing.getInstance().getHashRing().firstEntry();
-    	}
 //    	System.out.println(REP_FACTOR - 1);
 //    	// By logic, the node to duplicate onto is REP_FACTOR - 1 away
 //    	for (int skip = 1; skip < REP_FACTOR - 1; skip++) {
@@ -100,12 +112,13 @@ public class FailDetectionTest {
 //        	}
 //		}
 //    	
-    	for (int skip = pred.length; skip < REP_FACTOR - 1; skip++) {
-    		checkEntry = hashRing.getInstance().getHashRing().higherEntry(checkEntry.getKey());
-        	if (checkEntry == null) {
-        		checkEntry = hashRing.getInstance().getHashRing().firstEntry();
-        	}
-		}
+    	hashRing.getHashRing();
+    	for (Iterator<Map.Entry<String, MsgWrapper>> iter
+            = hashRing.getHashRing().tailMap("0").entrySet().iterator(); iter.hasNext();) {
+            Map.Entry<String, MsgWrapper> node = iter.next();
+            System.out.println(node.getValue().getAddress().getHostName());
+        	
+        }
     	System.out.println("Real");
     	System.out.println(pred[0].getAddress().getHostName());
     	System.out.println(checkEntry.getValue().getAddress().getHostName());
