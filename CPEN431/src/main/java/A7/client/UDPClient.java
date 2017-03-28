@@ -20,7 +20,7 @@ public class UDPClient {
 
     public static byte[] sendRawBytesRequest(byte[] req, String ip, int port, byte[] uniqueID)
             throws Exception {
-        DatagramSocket socket = new DatagramSocket(port);
+        DatagramSocket socket = new DatagramSocket();
         InetAddress address = InetAddress.getByName(ip);
 
         byte[] res = new byte[RES_UDP_SIZE];

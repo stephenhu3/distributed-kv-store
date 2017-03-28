@@ -7,6 +7,9 @@ import static A7.utils.UniqueIdentifier.generateUniqueID;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ConcurrentHashMap;
 import com.google.protobuf.ByteString;
@@ -60,35 +63,41 @@ public class SendReplication implements Runnable {
 
 		// TODO: decide if we want retries based on response
 		// Note: currently, UDPClient handles retries and blocks waiting for response
+		DatagramSocket socket = null;
 		try {
 			UDPClient.sendProtocolBufferRequest(
-			    dupeMsg.toByteArray(),
-                sendLocation.getAddress().getHostAddress(),
-                sendLocation.getPort(),
-                messageID);
+				    dupeMsg.toByteArray(),
+	                sendLocation.getAddress().getHostAddress(),
+	                sendLocation.getPort(),
+	                messageID);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
 	}
 
 	protected void serveReplication(int from, int mid, int to) {
 		try {
 			ByteString headPayload = createSubMap(from, mid);
-
-			if (headPayload.size() > MAX_REP_PAYLOAD_SIZE) {
-				int midKey = (mid - from) / 2;
-				serveReplication(from, midKey, mid);
-			} else if (headPayload != null && headPayload.size() != 0) {
-				sendDupeRequestMsg(headPayload);
+			
+			if (headPayload != null) {
+				if (headPayload.size() > MAX_REP_PAYLOAD_SIZE) {
+					int midKey = (mid - from) / 2;
+					serveReplication(from, midKey, mid);
+				} else if (headPayload.size() != 0) {
+					sendDupeRequestMsg(headPayload);
+				}
 			}
 			
 			ByteString tailPayload = createSubMap(mid, to);
-
-			if (tailPayload.size() > MAX_REP_PAYLOAD_SIZE) {
-				int midKey = (to - mid) / 2;
-				serveReplication(mid, midKey, to);
-			} else if (headPayload != null && headPayload.size() != 0) {
-				sendDupeRequestMsg(tailPayload);
+			
+			if (tailPayload != null) {
+				if (tailPayload.size() > MAX_REP_PAYLOAD_SIZE) {
+					int midKey = (to - mid) / 2;
+					serveReplication(mid, midKey, to);
+				} else if (headPayload.size() != 0) {
+					sendDupeRequestMsg(tailPayload);
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
