@@ -126,57 +126,55 @@ public class GossipSenderThread extends Thread {
         }
     }
     
- // Finds which node has failed
-    private void FailDetection() throws NoSuchAlgorithmException, SocketException{
+    // Finds which node has failed
+    private void FailDetection() throws NoSuchAlgorithmException, SocketException {
     	// Check if successor is down
     	String currentNodeHash = UniqueIdentifier.MD5Hash(
     			UDPServerThreadPool.localAddress.getHostAddress()
-    			+":"+ UDPServerThreadPool.localPort);
+    			+ ":" + UDPServerThreadPool.localPort);
         
     	Entry<String, MsgWrapper> successor =
             ConsistentHashRing.getInstance().getHashRing().higherEntry(currentNodeHash);
+
     	if (successor == null) {
             successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
         }
-    	if (!NodesList.getInstance().getLiveNodes()
+
+        // if no successor found, ends up being itself, as own node belongs in liveNodes
+    	while (!NodesList.getInstance().getLiveNodes()
             .containsKey(successor.getValue().getAddress())) {
             // successor is down, must send own replication store to next available successor
     		successor =
                 ConsistentHashRing.getInstance().getHashRing().higherEntry(successor.getKey());
+    		// loop around to first entry if last node reached
     		if (successor == null) {
                 successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
             }
-    		while (!NodesList.getInstance().getLiveNodes()
-                .containsKey(successor.getValue().getAddress())) {
-    			// no live successor found yet, check next
-    			successor = ConsistentHashRing.getInstance().getHashRing()
-                    .higherEntry(successor.getKey());
-    			if (successor == null) {
-                    successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
-                }
-            }
-    		// send to successor, but don't send if that successor happens to be own node
-    		if (!successor.getValue().getAddress().equals(UDPServerThreadPool.localAddress)) {
-	    		UDPServerThreadPool.executor.execute(new SendReplication(successor.getValue()));
-    		}
+        }
+
+        // send to successor, but don't send if that successor happens to be own node
+        if (!successor.getValue().getAddress().equals(UDPServerThreadPool.localAddress)) {
+            UDPServerThreadPool.executor.execute(new SendReplication(successor.getValue()));
         }
     	
-    	// Check if predecessor is down and if down keep checking next predecessor
-    	// Check's only up to REP_FACTOR -1 predecessors b/c REP_FACTOR inclusive
-    	// current node will not have keys that is REP_FACTOR away
+    	// Check if predecessor is down and if down, keeps checking previous predecessor
+    	// Checks only up to REP_FACTOR - 1 predecessors because REP_FACTOR is inclusive
+    	// Current node will not have keys that is REP_FACTOR away
     	int deadPred = 0;
     	Entry<String, MsgWrapper> predecessor =
             ConsistentHashRing.getInstance().getHashRing().lowerEntry(currentNodeHash);
+
     	if (predecessor == null) {
             predecessor = ConsistentHashRing.getInstance().getHashRing().lastEntry();
         }
+
     	while (!NodesList.getInstance().getLiveNodes()
             .containsKey(predecessor.getValue().getAddress()) && deadPred < REP_FACTOR - 1) {
-			// Predecessor is down, see it IT'S predecessor is down
+			// Predecessor is down, see its predecessor is down
     		deadPred++;
     		predecessor =
                 ConsistentHashRing.getInstance().getHashRing().lowerEntry(predecessor.getKey());
-    		if(predecessor == null) {
+    		if (predecessor == null) {
                 predecessor = ConsistentHashRing.getInstance().getHashRing().lastEntry();
             }
         }
@@ -185,21 +183,22 @@ public class GossipSenderThread extends Thread {
     		// Navigate to first node that needs duplication if deadPred == 2, 1 node up from
             // current; if deadPread == 1, 2 nodes from current, etc.
 	    	successor = ConsistentHashRing.getInstance().getHashRing().higherEntry(currentNodeHash);
-	    	if(successor == null) {
+
+	    	if (successor == null) {
                 successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
             }
     		
-	    	//find next successor that's alive since first duplicated node
-	    	for (int skip = deadPred; skip < (REP_FACTOR-1); skip++) {
-	    		successor = ConsistentHashRing.getInstance().getHashRing()
-                    .higherEntry(successor.getKey());
-	    		if(successor == null) {
+	    	// find next successor that's alive since first duplicated node
+	    	for (int skip = deadPred; skip < REP_FACTOR - 1; skip++) {
+	    		successor =
+                    ConsistentHashRing.getInstance().getHashRing().higherEntry(successor.getKey());
+	    		if (successor == null) {
                     successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
                 }
 			}
 
 	    	for (int i = 0; i < deadPred; i++) {
-	    		// if current successor dead, find next live
+	    		// if current successor dead, find next live node
 	    		while (!NodesList.getInstance().getLiveNodes()
                     .containsKey(successor.getValue().getAddress())) {
 	    			// no live successor found yet, check next
@@ -209,12 +208,15 @@ public class GossipSenderThread extends Thread {
                         successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
                     }
 	            }
+
 				//Landed on live successor node, execute
 	    		if (!successor.getValue().getAddress().equals(UDPServerThreadPool.localAddress)){
 		    		UDPServerThreadPool.executor.execute(new SendReplication(successor.getValue()));
 	    		}
+
 	    		successor = ConsistentHashRing.getInstance().getHashRing()
                     .higherEntry(successor.getKey());
+
 	    		if(successor == null) {
                     successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
                 }

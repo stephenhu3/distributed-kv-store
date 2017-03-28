@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ProtocolBufferKeyValueStoreResponse {
     /*
@@ -60,15 +60,15 @@ public class ProtocolBufferKeyValueStoreResponse {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
-        ConcurrentSkipListMap<ByteString, VersionedValue> dupeMap =
-            new ConcurrentSkipListMap<ByteString, VersionedValue>();
+        ConcurrentHashMap<ByteString, VersionedValue> dupeMap =
+            new ConcurrentHashMap<ByteString, VersionedValue>();
         
         // Parse byte array to Map
 		try {
 			ByteArrayInputStream byteIn = new ByteArrayInputStream(value.toByteArray());
 	        ObjectInputStream in;
 			in = new ObjectInputStream(byteIn);
-			dupeMap = (ConcurrentSkipListMap<ByteString, VersionedValue>) in.readObject();
+			dupeMap = (ConcurrentHashMap<ByteString, VersionedValue>) in.readObject();
 		} catch (IOException | ClassNotFoundException e) {
 			resPayload = generateKvReply(codes.get("KVStore failure"), null, pid, -1);
 			e.printStackTrace();
@@ -77,12 +77,10 @@ public class ProtocolBufferKeyValueStoreResponse {
 		if (value == null) {
             resPayload = generateKvReply(codes.get("KVStore failure"), null, pid, -1);
         } else {
+		    // TODO: Investigate if this is sufficient
             if (Runtime.getRuntime().freeMemory() >
                 (JVM_HEAP_SIZE_KB * OUT_OF_MEMORY_THRESHOLD) * 1024) {
     	        KeyValueStoreSingleton.getInstance().getMap().putAll(dupeMap);
-                if (VERBOSE > 0) {
-                    System.out.println("Put Value: " + bytesToHex(value.toByteArray()));
-                }
                 resPayload = generateKvReply(codes.get("success"), null, pid, -1);
             } else {
                 if (VERBOSE > 0) {

@@ -23,18 +23,19 @@ public class SendReplication implements Runnable {
 	public SendReplication(MsgWrapper received) {
 		this.sendLocation = received;
 	}
-	
-	private ByteString createSubMap(int from, int to) throws IOException{
+
+	// create submap from index "from" to index "to" (exclusive)
+	private ByteString createSubMap(int from, int to) throws IOException {
 		// Populate new hashMap from ranges provided
 		ConcurrentHashMap<ByteString, VersionedValue> newMap = new ConcurrentHashMap<ByteString, VersionedValue>();
 		Object[] keySet = KeyValueStoreSingleton.getInstance().getMap().keySet().toArray();
-		for(int i=from ; i < to; i++){
-			newMap.put( (ByteString) keySet[i], 
+		for(int i = from; i < to; i++) {
+			newMap.put((ByteString) keySet[i],
 				KeyValueStoreSingleton.getInstance().getMap().get(keySet[i]));
 		}
 		// Nothing in range to serialize; return null
 		// (ie. do not serialize the HashMap object itself if there are no keys inside)
-		if(newMap.size() == 0){
+		if (newMap.size() == 0) {
 			return null;
 		}
 		// Write object to ByteString
@@ -45,13 +46,14 @@ public class SendReplication implements Runnable {
         return ByteString.copyFrom(bos.toByteArray());
 	}
 	
-	private void sendDupRequestMsg(ByteString value){
-		KVRequest dupeKVReq= KVRequest.newBuilder()
+	private void sendDupeRequestMsg(ByteString value) {
+		KVRequest dupeKVReq = KVRequest.newBuilder()
 			.setCommand(8)
 			.setValue(value)
 			.build();
 
 		byte[] messageID = new byte[0];
+
 		try {
 			messageID = generateUniqueID();
 		} catch (NoSuchAlgorithmException e) {
@@ -63,15 +65,14 @@ public class SendReplication implements Runnable {
 		Msg dupeMsg = Msg.newBuilder()
 			.setMessageID(ByteString.copyFrom(messageID))
 			.setPayload(payload)
-			.setCheckSum(calculateProtocolBufferChecksum(payload,
-		        ByteString.copyFrom(messageID)))
+			.setCheckSum(calculateProtocolBufferChecksum(payload, ByteString.copyFrom(messageID)))
 			.build();
 
 		// TODO: decide if we want retries based on response
 		// Note: currently, UDPClient handles retries and blocks waiting for response
 		try {
 			UDPClient.sendProtocolBufferRequest(
-					dupeMsg.toByteArray(),
+			    dupeMsg.toByteArray(),
                 sendLocation.getAddress().getHostAddress(),
                 sendLocation.getPort(),
                 messageID);
@@ -80,30 +81,28 @@ public class SendReplication implements Runnable {
 		}
 	}
 
-	private void serveReplication(int from, int mid, int to){
+	private void serveReplication(int from, int mid, int to) {
 		try {
-			ByteString headPayload;
-				headPayload = createSubMap(from, mid);
-			if(headPayload.size() > MAX_REP_PAYLOAD_SIZE){
-				int midKey = (mid - from)/2;
+			ByteString headPayload = createSubMap(from, mid);
+
+			if (headPayload.size() > MAX_REP_PAYLOAD_SIZE) {
+				int midKey = (mid - from) / 2;
 				serveReplication(from, midKey, mid);
-			}else if(headPayload != null && headPayload.size() != 0){
-	
-				sendDupRequestMsg(headPayload);
+			} else if (headPayload != null && headPayload.size() != 0) {
+				sendDupeRequestMsg(headPayload);
 			}
 			
 			ByteString tailPayload = createSubMap(mid, to);
-			if(tailPayload.size() > MAX_REP_PAYLOAD_SIZE){
-				int midKey = (to - mid)/2;
+
+			if (tailPayload.size() > MAX_REP_PAYLOAD_SIZE) {
+				int midKey = (to - mid) / 2;
 				serveReplication(mid, midKey, to);
-			}else if(headPayload != null && headPayload.size() != 0){
-				sendDupRequestMsg(tailPayload);
+			} else if (headPayload != null && headPayload.size() != 0) {
+				sendDupeRequestMsg(tailPayload);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		
 	}
 	
     @Override
@@ -112,7 +111,6 @@ public class SendReplication implements Runnable {
     	int from = 0;
     	int mid = keySet.length;
     	int to = keySet.length;
-    	
     	serveReplication(from, mid, to);
     }	
 }
