@@ -7,6 +7,9 @@ import static A7.utils.UniqueIdentifier.generateUniqueID;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ConcurrentHashMap;
 import com.google.protobuf.ByteString;
@@ -60,15 +63,24 @@ public class SendReplication implements Runnable {
 
 		// TODO: decide if we want retries based on response
 		// Note: currently, UDPClient handles retries and blocks waiting for response
+		DatagramSocket socket = null;
 		try {
 			UDPClient.sendProtocolBufferRequest(
-			    dupeMsg.toByteArray(),
-                sendLocation.getAddress().getHostAddress(),
-                sendLocation.getPort(),
-                messageID);
+				    dupeMsg.toByteArray(),
+	                sendLocation.getAddress().getHostAddress(),
+	                sendLocation.getPort(),
+	                messageID);
+			// Should try send and forget to not hold up network?
+//			socket = new DatagramSocket();
+//		    InetAddress address = InetAddress.getByName(sendLocation.getAddress().getHostAddress());
+//		    int port = sendLocation.getPort();
+//		    DatagramPacket reqPacket = new DatagramPacket(dupeMsg.toByteArray(), dupeMsg.toByteArray().length, address, port);
+//		    socket.send(reqPacket);
+//			socket.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
 	}
 
 	protected void serveReplication(int from, int mid, int to) {

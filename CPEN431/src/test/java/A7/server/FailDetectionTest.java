@@ -20,7 +20,7 @@ import A7.utils.MsgWrapper;
 import A7.utils.UniqueIdentifier;
 import A7.server.GossipSenderThread;
 public class FailDetectionTest {
-	ConsistentHashRing hashRing;
+    ConsistentHashRing hashRing;
     NodesList nodesList;
     Map<String, Integer> allNodes;
     Map<InetAddress, Integer> liveNodes;
@@ -50,7 +50,6 @@ public class FailDetectionTest {
         allNodes.put("128.208.4.70:11200", 11200);
         // not contained in live nodes
         allNodes.put("128.208.4.101:11300", 11300);
-
         nodesList.setAllNodes(allNodes);
         nodesList.setLiveNodes(liveNodes);
         hashRing = ConsistentHashRing.getInstance();
@@ -58,75 +57,92 @@ public class FailDetectionTest {
     
     @org.junit.Test
     public void successorsDuplicateTest() throws NoSuchAlgorithmException, SocketException, UnknownHostException {
-    	String downedNode = UniqueIdentifier.MD5Hash("128.208.4.101:11300");
-    	Entry<String, MsgWrapper> entry = hashRing.getInstance().getHashRing().lowerEntry(downedNode);
-    	if (entry == null) {
-    		entry = hashRing.getInstance().getHashRing().lastEntry();
-    	}
-    	String currentNodeHash = UniqueIdentifier.MD5Hash(
-    			entry.getValue().getAddress().getHostAddress()
-    			+ ":" + entry.getValue().getPort());
-    	MsgWrapper succTarget = GossipSenderThread.successorsDuplicate(currentNodeHash);
-    	Entry<String, MsgWrapper> checkEntry = hashRing.getInstance().getHashRing().higherEntry(downedNode);
-    	
-    	assertEquals(succTarget.getAddress().getHostName(), checkEntry.getValue().getAddress().getHostAddress());
-    	assertEquals(succTarget.getPort(), checkEntry.getValue().getPort());
+        String downedNode = UniqueIdentifier.MD5Hash("128.208.4.101:11300");
+        Entry<String, MsgWrapper> entry = hashRing.getInstance().getHashRing().lowerEntry(downedNode);
+        if (entry == null) {
+            entry = hashRing.getInstance().getHashRing().lastEntry();
+        }
+        String currentNodeHash = UniqueIdentifier.MD5Hash(
+                entry.getValue().getAddress().getHostAddress()
+                + ":" + entry.getValue().getPort());
+        MsgWrapper succTarget = GossipSenderThread.successorsDuplicate(currentNodeHash);
+        Entry<String, MsgWrapper> checkEntry = hashRing.getInstance().getHashRing().higherEntry(downedNode);
+
+        assertEquals(succTarget.getAddress().getHostName(), checkEntry.getValue().getAddress().getHostAddress());
+        assertEquals(succTarget.getPort(), checkEntry.getValue().getPort());
     }
 
     @org.junit.Test
     public void predessorsDuplicateTest() throws NoSuchAlgorithmException, SocketException, UnknownHostException {
-    	String downedNode = UniqueIdentifier.MD5Hash("128.208.4.101:11300");
-    	Entry<String, MsgWrapper> entry = hashRing.getInstance().getHashRing().higherEntry(downedNode);
-    	if (entry == null) {
-    		entry = hashRing.getInstance().getHashRing().firstEntry();
-    	}
-    	// if predecssor of current node is down, the returned duplicate node is suppose to be the first node outside the duplication
-    	// range of the down'ed node, or REP_Factor-1 away from the current
-    	Entry<String, MsgWrapper> checkEntry = hashRing.getInstance().getHashRing().higherEntry(downedNode);
-    	if (checkEntry == null) {
-    		checkEntry = hashRing.getInstance().getHashRing().firstEntry();
-    	}
-    	checkEntry = hashRing.getInstance().getHashRing().higherEntry(entry.getKey());
-    	if (checkEntry == null) {
-    		checkEntry = hashRing.getInstance().getHashRing().firstEntry();
-    	}
-    	checkEntry = hashRing.getInstance().getHashRing().higherEntry(entry.getKey());
-    	if (checkEntry == null) {
-    		checkEntry = hashRing.getInstance().getHashRing().firstEntry();
-    	}
-
-    	String currentNodeHash = UniqueIdentifier.MD5Hash(
-    			entry.getValue().getAddress().getHostAddress()
-    			+ ":" + entry.getValue().getPort());
-    	MsgWrapper[] pred = GossipSenderThread.predessorsDuplicate(currentNodeHash);
-    	
-    	//Should only duplicate to 1, only one node down
-    	assertEquals(pred.length, 1);
-    	
-//    	System.out.println(REP_FACTOR - 1);
-//    	// By logic, the node to duplicate onto is REP_FACTOR - 1 away
-//    	for (int skip = 1; skip < REP_FACTOR - 1; skip++) {
-//    		checkEntry = hashRing.getInstance().getHashRing().higherEntry(checkEntry.getKey());
-//        	if (checkEntry == null) {
-//        		checkEntry = hashRing.getInstance().getHashRing().firstEntry();
-//        	}
-//		}
-//    	
-    	hashRing.getHashRing();
-    	for (Iterator<Map.Entry<String, MsgWrapper>> iter
-            = hashRing.getHashRing().tailMap("0").entrySet().iterator(); iter.hasNext();) {
-            Map.Entry<String, MsgWrapper> node = iter.next();
-            System.out.println(node.getValue().getAddress().getHostName());
-        	
+        String downedNode = UniqueIdentifier.MD5Hash("128.208.4.101:11300");
+        Entry<String, MsgWrapper> entry = hashRing.getInstance().getHashRing().higherEntry(downedNode);
+        if (entry == null) {
+            entry = hashRing.getInstance().getHashRing().firstEntry();
         }
-    	System.out.println("Real");
-    	System.out.println(pred[0].getAddress().getHostName());
-    	System.out.println(checkEntry.getValue().getAddress().getHostName());
-    	
-    	assertEquals(pred[0].getAddress().getHostName(), checkEntry.getValue().getAddress().getHostAddress());
-    	assertEquals(pred[0].getPort(), checkEntry.getValue().getPort());
-    	
+        String currentNodeHash = UniqueIdentifier.MD5Hash(
+                entry.getValue().getAddress().getHostAddress()
+                + ":" + entry.getValue().getPort());
+        MsgWrapper[] pred = GossipSenderThread.predessorsDuplicate(currentNodeHash);
+
+        // By logic, the node to duplicate onto is REP_FACTOR - 1 away
+        Entry<String, MsgWrapper> checkEntry = hashRing.getInstance().getHashRing().higherEntry(downedNode);
+        for (int skip = 0; skip < REP_FACTOR-1; skip++) {
+            checkEntry = hashRing.getInstance().getHashRing().higherEntry(checkEntry.getKey());
+            if (checkEntry == null) {
+                checkEntry = hashRing.getInstance().getHashRing().firstEntry();
+            }
+        }
+        //Should only duplicate to 1, only one node down
+        assertEquals(pred.length, 1);
+        assertEquals(pred[0].getAddress(), checkEntry.getValue().getAddress());
+        assertEquals(pred[0].getPort(), checkEntry.getValue().getPort());
     }
-    
-    
+
+    @org.junit.Test
+    public void predessorsDuplicateTest2() throws NoSuchAlgorithmException, SocketException, UnknownHostException {
+        String downedNode = UniqueIdentifier.MD5Hash("128.208.4.101:11300");
+        // Remove second in line of dead node to get 2 in a row dead nodes
+        Entry<String, MsgWrapper> entry = hashRing.getInstance().getHashRing().higherEntry(downedNode);
+        if (entry == null) {
+            entry = hashRing.getInstance().getHashRing().firstEntry();
+        }
+
+        liveNodes.remove(entry.getValue().getAddress());
+        assertEquals(liveNodes.size(), 6);
+
+        // CurrentNode is one more down from this one
+        entry = hashRing.getInstance().getHashRing().higherEntry(entry.getKey());
+        String currentNodeHash = UniqueIdentifier.MD5Hash(
+                entry.getValue().getAddress().getHostAddress()
+                + ":" + entry.getValue().getPort());
+        MsgWrapper[] pred = GossipSenderThread.predessorsDuplicate(currentNodeHash);
+
+        // By logic, the node to duplicate onto is REP_FACTOR - 1 away
+        // As well as REP_FACTOR -1 -1
+        Entry<String, MsgWrapper> checkEntry = hashRing.getInstance().getHashRing().higherEntry(currentNodeHash);
+        for (int skip = pred.length; skip < REP_FACTOR-1; skip++) {
+            checkEntry = hashRing.getInstance().getHashRing().higherEntry(checkEntry.getKey());
+            if (checkEntry == null) {
+                checkEntry = hashRing.getInstance().getHashRing().firstEntry();
+            }
+        }
+        // Next pred.length (including current) nodes that are alive by logic
+        for (int i = 0; i< pred.length; i++) {
+            while (!liveNodes.containsKey(checkEntry.getValue().getAddress())) {
+                checkEntry = hashRing.getInstance().getHashRing().higherEntry(checkEntry.getKey());
+                if (checkEntry == null) {
+                    checkEntry = hashRing.getInstance().getHashRing().firstEntry();
+                }
+            }
+            assertEquals(pred[i].getAddress(), checkEntry.getValue().getAddress());
+            assertEquals(pred[i].getPort(), checkEntry.getValue().getPort());
+            checkEntry = hashRing.getInstance().getHashRing().higherEntry(checkEntry.getKey());
+            if (checkEntry == null) {
+                checkEntry = hashRing.getInstance().getHashRing().firstEntry();
+            }
+
+        }
+        //Should only duplicate to 2, since max duplicates is 2 (as well 2 nodes down)
+        assertEquals(pred.length, 2);
+    }
 }

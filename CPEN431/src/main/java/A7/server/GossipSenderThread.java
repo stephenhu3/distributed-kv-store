@@ -86,11 +86,11 @@ public class GossipSenderThread extends Thread {
             // Increment hops
             nodesList.refreshLiveNodes();
             try {
-				FailDetection();
-			} catch (NoSuchAlgorithmException | SocketException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+                FailDetection();
+            } catch (NoSuchAlgorithmException | SocketException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
             // Build liveHostsReq protobuf
             byte[] serverList = ByteRepresentation.mapToBytes(nodesList.getLiveNodes());
             LiveHostsReq liveHostsReq = LiveHostsReq.newBuilder()
@@ -129,118 +129,124 @@ public class GossipSenderThread extends Thread {
     // Returns the ConsistentHashRing entry of node to duplicate KVStore on in event
     // of node's successor going down.
     protected static MsgWrapper successorsDuplicate(String currentNodeHash){
-    	Entry<String, MsgWrapper> successor =
+        Entry<String, MsgWrapper> successor =
             ConsistentHashRing.getInstance().getHashRing().higherEntry(currentNodeHash);
 
-    	if (successor == null) {
+        if (successor == null) {
             successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
         }
 
+        // if first successor alive, no need to duplicate
+        if (NodesList.getInstance().getLiveNodes()
+                .containsKey(successor.getValue().getAddress())) {
+            return new MsgWrapper(null, null, 0);
+        }
+
         // if no successor found, ends up being itself, as own node belongs in liveNodes
-    	while (!NodesList.getInstance().getLiveNodes()
+        while (!NodesList.getInstance().getLiveNodes()
             .containsKey(successor.getValue().getAddress())) {
             // successor is down, must send own replication store to next available successor
-    		successor =
+            successor =
                 ConsistentHashRing.getInstance().getHashRing().higherEntry(successor.getKey());
-    		// loop around to first entry if last node reached
-    		if (successor == null) {
+            // loop around to first entry if last node reached
+            if (successor == null) {
                 successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
             }
         }
-		return successor.getValue();
+        return successor.getValue();
     }
     
     // Check if predecessor is down and if down, keeps checking previous predecessor
-	// Checks only up to REP_FACTOR - 1 predecessors because REP_FACTOR is inclusive
-	// Current node will not have keys that is REP_FACTOR away
+    // Checks only up to REP_FACTOR - 1 predecessors because REP_FACTOR is inclusive
+    // Current node will not have keys that is REP_FACTOR away
     protected static MsgWrapper[] predessorsDuplicate(String currentNodeHash){
-    	int deadPred = 0;
-    	MsgWrapper[] dupeNodes = null;
-    	Entry<String, MsgWrapper> predecessor =
+        int deadPred = 0;
+        MsgWrapper[] dupeNodes = null;
+        Entry<String, MsgWrapper> predecessor =
             ConsistentHashRing.getInstance().getHashRing().lowerEntry(currentNodeHash);
 
-    	if (predecessor == null) {
+        if (predecessor == null) {
             predecessor = ConsistentHashRing.getInstance().getHashRing().lastEntry();
         }
 
-    	while (!NodesList.getInstance().getLiveNodes()
+        while (!NodesList.getInstance().getLiveNodes()
             .containsKey(predecessor.getValue().getAddress()) && deadPred < REP_FACTOR - 1) {
-			// Predecessor is down, see its predecessor is down
-    		deadPred++;
-    		predecessor =
+            // Predecessor is down, see its predecessor is down
+            deadPred++;
+            predecessor =
                 ConsistentHashRing.getInstance().getHashRing().lowerEntry(predecessor.getKey());
-    		if (predecessor == null) {
+            if (predecessor == null) {
                 predecessor = ConsistentHashRing.getInstance().getHashRing().lastEntry();
             }
         }
-    	
-    	if (deadPred > 0) {
-    		// Navigate to first node that needs duplication if deadPred == 2, 1 node up from
-            // current; if deadPread == 1, 2 nodes from current, etc.
-    		Entry<String, MsgWrapper> successor =
-	    	    ConsistentHashRing.getInstance().getHashRing().higherEntry(currentNodeHash);
 
-	    	if (successor == null) {
+        if (deadPred > 0) {
+            // Navigate to first node that needs duplication if deadPred == 2, 1 node up from
+            // current; if deadPread == 1, 2 nodes from current, etc.
+            Entry<String, MsgWrapper> successor =
+                ConsistentHashRing.getInstance().getHashRing().higherEntry(currentNodeHash);
+
+            if (successor == null) {
                 successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
             }
-    		
-	    	// find next successor that's alive since first duplicated node
-	    	for (int skip = deadPred; skip < REP_FACTOR - 1; skip++) {
-	    		successor =
+
+            // find next successor that's alive since first duplicated node
+            for (int skip = deadPred; skip < REP_FACTOR - 1; skip++) {
+                successor =
                     ConsistentHashRing.getInstance().getHashRing().higherEntry(successor.getKey());
-	    		if (successor == null) {
+                if (successor == null) {
                     successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
                 }
-			}
-	    	
-	    	dupeNodes = new MsgWrapper[deadPred];
-	    	
-	    	for (int i = 0; i < deadPred; i++) {
-	    		// if current successor dead, find next live node
-	    		while (!NodesList.getInstance().getLiveNodes()
+            }
+
+            dupeNodes = new MsgWrapper[deadPred];
+            for (int i = 0; i < deadPred; i++) {
+                // if current successor dead, find next live node
+                while (!NodesList.getInstance().getLiveNodes()
                     .containsKey(successor.getValue().getAddress())) {
-	    			// no live successor found yet, check next
-	    			successor = ConsistentHashRing.getInstance().getHashRing()
+                    // no live successor found yet, check next
+                    successor = ConsistentHashRing.getInstance().getHashRing()
                         .higherEntry(successor.getKey());
-	    			if (successor == null) {
+                    if (successor == null) {
                         successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
                     }
-	            }
+                }
 
-	    		dupeNodes[i] = successor.getValue();
-
-	    		successor = ConsistentHashRing.getInstance().getHashRing()
+                dupeNodes[i] = successor.getValue();
+                successor = ConsistentHashRing.getInstance().getHashRing()
                     .higherEntry(successor.getKey());
-
-	    		if(successor == null) {
+                if(successor == null) {
                     successor = ConsistentHashRing.getInstance().getHashRing().firstEntry();
                 }
-			}
-    	}
-		return dupeNodes;
+            }
+        }
+        return dupeNodes;
     }
     
     // Finds which node has failed. Run duplication on discovered targets from detecting failure on
     // successor and predecessor nodes
     protected static void FailDetection() throws NoSuchAlgorithmException, SocketException {
         // Check if successor is down
-    	String currentNodeHash = UniqueIdentifier.MD5Hash(
-    			UDPServerThreadPool.localAddress.getHostAddress()
-    			+ ":" + UDPServerThreadPool.localPort);
+        String currentNodeHash = UniqueIdentifier.MD5Hash(
+                UDPServerThreadPool.localAddress.getHostAddress()
+                + ":" + UDPServerThreadPool.localPort);
         MsgWrapper succTarget = successorsDuplicate(currentNodeHash);
-        // send to successor, but don't send if that successor happens to be own node
-        if (!succTarget.getAddress().equals(UDPServerThreadPool.localAddress)) {
+        // send to successor, but don't send if that successor happens to be own node 
+        // or if detected that the successor is not dead
+        if (succTarget != null && succTarget.getPort() != 0 && succTarget.getAddress() != null
+                && !succTarget.getAddress().equals(UDPServerThreadPool.localAddress)) {
             UDPServerThreadPool.executor.execute(new SendReplication(succTarget));
         }
         
         MsgWrapper[] predTargets = predessorsDuplicate(currentNodeHash);
-        // send to successor, but don't send if that successor happens to be own node
-        if (predTargets != null) {
-        	for (int i = 0; i < predTargets.length; i++) {
-	        	if(!predTargets[i].getAddress().equals(UDPServerThreadPool.localAddress)) {
-	        		UDPServerThreadPool.executor.execute(new SendReplication(predTargets[i]));
-	        	}
-        	}
+        // Don't bother duplicating if no predecessors are dead
+        if (predTargets != null && predTargets.length != 0) {
+            // duplicate to each successor found, but don't send if that successor is own node
+            for (int i = 0; i < predTargets.length; i++) {
+                if (!predTargets[i].getAddress().equals(UDPServerThreadPool.localAddress)) {
+                    UDPServerThreadPool.executor.execute(new SendReplication(predTargets[i]));
+                }
+            }
         }
     }
 }
