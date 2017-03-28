@@ -15,6 +15,7 @@ import A7.core.KeyValueStoreSingleton;
 import A7.core.VersionedValue;
 import A7.proto.KeyValueRequest.KVRequest;
 import A7.proto.Message.Msg;
+import A7.resources.ProtocolBufferKeyValueStoreRequest;
 import A7.utils.MsgWrapper;
 
 public class SendReplication implements Runnable {    
@@ -47,11 +48,6 @@ public class SendReplication implements Runnable {
 	}
 	
 	protected void sendDupeRequestMsg(ByteString value) {
-		KVRequest dupeKVReq = KVRequest.newBuilder()
-			.setCommand(8)
-			.setValue(value)
-			.build();
-
 		byte[] messageID = new byte[0];
 
 		try {
@@ -60,13 +56,7 @@ public class SendReplication implements Runnable {
 			e.printStackTrace();
 		}
 		
-		ByteString payload = dupeKVReq.toByteString();
-		
-		Msg dupeMsg = Msg.newBuilder()
-			.setMessageID(ByteString.copyFrom(messageID))
-			.setPayload(payload)
-			.setCheckSum(calculateProtocolBufferChecksum(payload, ByteString.copyFrom(messageID)))
-			.build();
+		Msg dupeMsg = ProtocolBufferKeyValueStoreRequest.generateDupesRequest(value, ByteString.copyFrom(messageID));
 
 		// TODO: decide if we want retries based on response
 		// Note: currently, UDPClient handles retries and blocks waiting for response
