@@ -9,22 +9,20 @@ import static A7.utils.ProtocolBuffers.wrapMessage;
 
 import A7.core.ConsistentHashRing;
 import A7.core.KeyValueStoreSingleton;
+import A7.core.VersionedValue;
 import A7.proto.KeyValueRequest.KVRequest;
 import A7.proto.KeyValueResponse.KVResponse;
 import A7.proto.Message.Msg;
 import A7.server.UDPServerThreadPool;
 import A7.utils.MsgWrapper;
 import A7.utils.UniqueIdentifier;
-
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 public class ProtocolBufferKeyValueStoreResponse {
@@ -61,21 +59,23 @@ public class ProtocolBufferKeyValueStoreResponse {
     public static Msg generatePutDupesResponse(ByteString value, ByteString messageID) {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
-        ConcurrentSkipListMap<ByteString, ByteString> dupeMap = new ConcurrentSkipListMap<ByteString, ByteString>();
+
+        ConcurrentSkipListMap<ByteString, VersionedValue> dupeMap =
+            new ConcurrentSkipListMap<ByteString, VersionedValue>();
         
         // Parse byte array to Map
 		try {
 			ByteArrayInputStream byteIn = new ByteArrayInputStream(value.toByteArray());
 	        ObjectInputStream in;
 			in = new ObjectInputStream(byteIn);
-			dupeMap = (ConcurrentSkipListMap<ByteString, ByteString>) in.readObject();
+			dupeMap = (ConcurrentSkipListMap<ByteString, VersionedValue>) in.readObject();
 		} catch (IOException | ClassNotFoundException e) {
-			resPayload = generateKvReply(codes.get("KVStore failure"), null, pid);
+			resPayload = generateKvReply(codes.get("KVStore failure"), null, pid, -1);
 			e.printStackTrace();
 		}
 	
 		if (value == null) {
-            resPayload = generateKvReply(codes.get("KVStore failure"), null, pid);
+            resPayload = generateKvReply(codes.get("KVStore failure"), null, pid, -1);
         } else {
             if (Runtime.getRuntime().freeMemory() >
                 (JVM_HEAP_SIZE_KB * OUT_OF_MEMORY_THRESHOLD) * 1024) {
@@ -83,7 +83,7 @@ public class ProtocolBufferKeyValueStoreResponse {
                 if (VERBOSE > 0) {
                     System.out.println("Put Value: " + bytesToHex(value.toByteArray()));
                 }
-                resPayload = generateKvReply(codes.get("success"), value, pid);
+                resPayload = generateKvReply(codes.get("success"), null, pid, -1);
             } else {
                 if (VERBOSE > 0) {
                     System.out.println("Out of memory, remaining: "
@@ -98,20 +98,22 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
     
     // note, ConcurrentHashMap throws NullPointerException if specified key or value is null
-    public static Msg generatePutResponse(ByteString key, ByteString value, ByteString messageID) {
+    public static Msg generatePutResponse(ByteString key, ByteString value, ByteString messageID,
+        int version) {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
-
+        
         if (key == null || value == null) {
-            resPayload = generateKvReply(codes.get("KVStore failure"), null, pid);
+            resPayload = generateKvReply(codes.get("KVStore failure"), null, pid, version);
         } else {
             if (Runtime.getRuntime().freeMemory() >
                 (JVM_HEAP_SIZE_KB * OUT_OF_MEMORY_THRESHOLD) * 1024) {
-                KeyValueStoreSingleton.getInstance().getMap().put(key, value);
+                KeyValueStoreSingleton.getInstance().getMap().put(key,
+                    new VersionedValue(value, version));
                 if (VERBOSE > 0) {
                     System.out.println("Put Value: " + bytesToHex(value.toByteArray()));
                 }
-                resPayload = generateKvReply(codes.get("success"), value, pid);
+                resPayload = generateKvReply(codes.get("success"), value, pid, version);
             } else {
                 if (VERBOSE > 0) {
                     System.out.println("Out of memory, remaining: "
@@ -130,13 +132,14 @@ public class ProtocolBufferKeyValueStoreResponse {
         int pid = UniqueIdentifier.getCurrentPID();
 
         if (KeyValueStoreSingleton.getInstance().getMap().containsKey(key)) {
-            ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(key);
-            resPayload = generateKvReply(codes.get("success"), value, pid);
+            ByteString value = KeyValueStoreSingleton.getInstance().getMap().get(key).getValue();
+            int version = KeyValueStoreSingleton.getInstance().getMap().get(key).getVersion();
+            resPayload = generateKvReply(codes.get("success"), value, pid, version);
             if (VERBOSE > 0) {
                 System.out.println("Get Value: " + bytesToHex(value.toByteArray()));
             }
         } else {
-            resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
+            resPayload = generateKvReply(codes.get("key does not exist"), null, pid, -1);
             if (VERBOSE > 0) {
                 System.out.println("Attempted Get Key: " + bytesToHex(key.toByteArray())
                     + " does not exist");
@@ -149,15 +152,15 @@ public class ProtocolBufferKeyValueStoreResponse {
     public static Msg generateRemoveResponse(ByteString key, ByteString messageID) {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
-
+        
         if (KeyValueStoreSingleton.getInstance().getMap().containsKey(key)) {
             KeyValueStoreSingleton.getInstance().getMap().remove(key);
-            resPayload = generateKvReply(codes.get("success"), null, pid);
+            resPayload = generateKvReply(codes.get("success"), null, pid, -1);
             if (VERBOSE > 0) {
                 System.out.println("Removed Key: " + bytesToHex(key.toByteArray()));
             }
         } else {
-            resPayload = generateKvReply(codes.get("key does not exist"), null, pid);
+            resPayload = generateKvReply(codes.get("key does not exist"), null, pid, -1);
             if (VERBOSE > 0) {
                 System.out.println("Failed attempted to remove key: "
                     + bytesToHex(key.toByteArray()) + " does not exist");
@@ -169,7 +172,7 @@ public class ProtocolBufferKeyValueStoreResponse {
 
     public static Msg generateShutdownResponse(ByteString messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
-        KVResponse resPayload = generateKvReply(codes.get("success"), null, pid);
+        KVResponse resPayload = generateKvReply(codes.get("success"), null, pid, -1);
         Msg msg = wrapMessage(messageID, resPayload.toByteString());
         // requirement states sending success response on shutdown
         SHUTDOWN_NODE = true;
@@ -179,7 +182,7 @@ public class ProtocolBufferKeyValueStoreResponse {
     public static Msg generateDeleteAllResponse(ByteString messageID) {
         KeyValueStoreSingleton.getInstance().getMap().clear();
         int pid = UniqueIdentifier.getCurrentPID();
-        KVResponse resPayload = generateKvReply(codes.get("success"), null, pid);
+        KVResponse resPayload = generateKvReply(codes.get("success"), null, pid, -1);
         Msg msg = wrapMessage(messageID, resPayload.toByteString());
         return msg;
     }
@@ -190,33 +193,37 @@ public class ProtocolBufferKeyValueStoreResponse {
 
     public static Msg generateGetPIDResponse(ByteString messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
-        KVResponse resPayload = generateKvReply(codes.get("success"), null, pid);
+        KVResponse resPayload = generateKvReply(codes.get("success"), null, pid, -1);
         Msg msg = wrapMessage(messageID, resPayload.toByteString());
         return msg;
     }
 
     public static Msg generateUnrecognizedCommandResponse(ByteString messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
-        KVResponse resPayload = generateKvReply(codes.get("unrecognized command"), null, pid);
+        KVResponse resPayload = generateKvReply(codes.get("unrecognized command"), null, pid, -1);
         Msg msg = wrapMessage(messageID, resPayload.toByteString());
         return msg;
     }
 
     public static Msg generateOutOfMemoryResponse(ByteString messageID) {
         int pid = UniqueIdentifier.getCurrentPID();
-        KVResponse resPayload = generateKvReply(codes.get("out of memory"), null, pid);
+        KVResponse resPayload = generateKvReply(codes.get("out of memory"), null, pid,-1);
         Msg msg = wrapMessage(messageID, resPayload.toByteString());
         return msg;
     }
 
-    public static KVResponse generateKvReply(int err, ByteString val, int pid) {
+    public static KVResponse generateKvReply(int err, ByteString val, int pid, int version) {
         KVResponse.Builder resPayload = KVResponse.newBuilder();
         resPayload.setErrCode(err);
 
         if (val != null) {
             resPayload.setValue(val);
         }
-
+        
+        if (version != -1) {
+            resPayload.setVersion(version);
+        }
+        
         if (pid != -1) {
             resPayload.setPid(pid);
         }
@@ -246,7 +253,7 @@ public class ProtocolBufferKeyValueStoreResponse {
     public static MsgWrapper serveRequest(Msg req) {
         // TODO: ONLY replicate commands that are put/remove mutations, don't replicate anything else
         KVRequest request = null;
-        MsgWrapper forwardRequest = null;
+        MsgWrapper forwardRequest = new MsgWrapper(null, null, 0);
 
         try {
             request = KVRequest.parseFrom(req.getPayload());
@@ -255,7 +262,9 @@ public class ProtocolBufferKeyValueStoreResponse {
         }
 
         try {
-            forwardRequest = ConsistentHashRing.getInstance().getNode(request.getKey());
+        	 if (!request.hasNotReplicated() || request.getNotReplicated() == false) {
+        		forwardRequest = ConsistentHashRing.getInstance().getNode(request.getKey());
+        	}
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -269,7 +278,8 @@ public class ProtocolBufferKeyValueStoreResponse {
                 request.getCommand(),
                 request.getKey(),
                 request.getValue(),
-                req.getMessageID()
+                req.getMessageID(),
+                request.getVersion()
             );
             forwardRequest.setMessage(response);
 
@@ -289,12 +299,12 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
 
     private static Msg generateResponse(int cmd, ByteString key, ByteString value,
-        ByteString messageID) {
+        ByteString messageID, int version) {
         Msg reply;
 
         switch (cmd) {
             case 1:
-                reply = generatePutResponse(key, value, messageID);
+                reply = generatePutResponse(key, value, messageID, version);
                 break;
             case 2:
                 reply = generateGetResponse(key, messageID);
