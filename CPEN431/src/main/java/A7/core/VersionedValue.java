@@ -6,9 +6,9 @@ public class VersionedValue {
 	private int version;
 	private ByteString value;
 	
-	public VersionedValue(ByteString value,  int version) {
+	public VersionedValue(ByteString value, int version) {
 		this.version = version;
-    		this.value = value;
+		this.value = value;
 	}
 	
 	public int getVersion() {

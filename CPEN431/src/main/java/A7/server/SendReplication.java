@@ -32,8 +32,8 @@ public class SendReplication implements Runnable {
 			newMap.put( (ByteString) keySet[i], 
 				KeyValueStoreSingleton.getInstance().getMap().get(keySet[i]));
 		}
-		//Nothing in range to serilaize; return null 
-		//(ie. do not seriliaze the HashMap obejct iteslf if there are no keys inside)
+		// Nothing in range to serialize; return null
+		// (ie. do not serialize the HashMap object itself if there are no keys inside)
 		if(newMap.size() == 0){
 			return null;
 		}
