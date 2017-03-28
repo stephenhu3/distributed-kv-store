@@ -16,16 +16,13 @@ import A7.proto.Message.Msg;
 import A7.server.UDPServerThreadPool;
 import A7.utils.MsgWrapper;
 import A7.utils.UniqueIdentifier;
-
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 public class ProtocolBufferKeyValueStoreResponse {
@@ -59,11 +56,13 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
 
     // received response to poulate duplicate map
-    public static Msg generatePutDupesResponse(ByteString value, ByteString messageID, int version) {
+    public static Msg generatePutDupesResponse(ByteString value, ByteString messageID,
+        int version) {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
 
-        ConcurrentSkipListMap<ByteString, VersionedValue> dupeMap = new ConcurrentSkipListMap<ByteString, VersionedValue>();
+        ConcurrentSkipListMap<ByteString, VersionedValue> dupeMap =
+            new ConcurrentSkipListMap<ByteString, VersionedValue>();
         
         // Parse byte array to Map
 		try {
@@ -100,7 +99,8 @@ public class ProtocolBufferKeyValueStoreResponse {
     }
     
     // note, ConcurrentHashMap throws NullPointerException if specified key or value is null
-    public static Msg generatePutResponse(ByteString key, ByteString value, ByteString messageID, int version) {
+    public static Msg generatePutResponse(ByteString key, ByteString value, ByteString messageID,
+        int version) {
         KVResponse resPayload;
         int pid = UniqueIdentifier.getCurrentPID();
         
@@ -109,7 +109,8 @@ public class ProtocolBufferKeyValueStoreResponse {
         } else {
             if (Runtime.getRuntime().freeMemory() >
                 (JVM_HEAP_SIZE_KB * OUT_OF_MEMORY_THRESHOLD) * 1024) {
-                KeyValueStoreSingleton.getInstance().getMap().put(key, new A7.core.VersionedValue(value, version));
+                KeyValueStoreSingleton.getInstance().getMap().put(key,
+                    new VersionedValue(value, version));
                 if (VERBOSE > 0) {
                     System.out.println("Put Value: " + bytesToHex(value.toByteArray()));
                 }
@@ -262,9 +263,7 @@ public class ProtocolBufferKeyValueStoreResponse {
         }
 
         try {
-        	 if ( (!request.hasNotReplicated() || request.getNotReplicated() == false)
-                     && (request.getCommand() == 1 || request.getCommand() == 3) 
-                     && request.getCommand() != 8)  {
+        	 if (!request.hasNotReplicated() || request.getNotReplicated() == false) {
         		forwardRequest = ConsistentHashRing.getInstance().getNode(request.getKey());
         	}
         } catch (NoSuchAlgorithmException e) {
