@@ -128,7 +128,7 @@ public class GossipSenderThread extends Thread {
     
     // Returns the ConsistentHashRing entry of node to duplicate KVStore on in event
     // of node's successor going down.
-    protected static MsgWrapper successorsDuplicate(String currentNodeHash){
+    protected static MsgWrapper successorsDuplicate(String currentNodeHash) {
         Entry<String, MsgWrapper> successor =
             ConsistentHashRing.getInstance().getHashRing().higherEntry(currentNodeHash);
 
@@ -159,7 +159,7 @@ public class GossipSenderThread extends Thread {
     // Check if predecessor is down and if down, keeps checking previous predecessor
     // Checks only up to REP_FACTOR - 1 predecessors because REP_FACTOR is inclusive
     // Current node will not have keys that is REP_FACTOR away
-    protected static MsgWrapper[] predessorsDuplicate(String currentNodeHash){
+    protected static MsgWrapper[] predessorsDuplicate(String currentNodeHash) {
         int deadPred = 0;
         MsgWrapper[] dupeNodes = null;
         Entry<String, MsgWrapper> predecessor =

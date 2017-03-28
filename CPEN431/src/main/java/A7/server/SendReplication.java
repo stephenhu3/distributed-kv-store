@@ -70,13 +70,6 @@ public class SendReplication implements Runnable {
 	                sendLocation.getAddress().getHostAddress(),
 	                sendLocation.getPort(),
 	                messageID);
-			// Should try send and forget to not hold up network?
-//			socket = new DatagramSocket();
-//		    InetAddress address = InetAddress.getByName(sendLocation.getAddress().getHostAddress());
-//		    int port = sendLocation.getPort();
-//		    DatagramPacket reqPacket = new DatagramPacket(dupeMsg.toByteArray(), dupeMsg.toByteArray().length, address, port);
-//		    socket.send(reqPacket);
-//			socket.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
