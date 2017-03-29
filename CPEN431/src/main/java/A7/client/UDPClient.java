@@ -7,6 +7,7 @@ import static A7.utils.ByteRepresentation.bytesToHex;
 import static A7.utils.Checksum.calculateProtocolBufferChecksum;
 
 import A7.proto.Message.Msg;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -137,5 +138,19 @@ public class UDPClient {
             System.out.println("Failed to receive message after max retries attempted.");
         }
         return null;
+    }
+
+    public static void sendReplicaRequest(byte[] msg, String ip, int port) throws IOException {
+        DatagramSocket socket = new DatagramSocket();
+        InetAddress address = InetAddress.getByName(ip);
+
+        DatagramPacket reqPacket = new DatagramPacket(msg, msg.length, address, port);
+
+        if (VERBOSE > 0) {
+            System.out.println("Sending packet...");
+        }
+        // send request
+        socket.send(reqPacket);
+        socket.close();
     }
 }

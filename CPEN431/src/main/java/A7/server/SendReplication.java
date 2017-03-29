@@ -29,7 +29,7 @@ public class SendReplication implements Runnable {
 	// create submap from index "from" to index "to" (exclusive)
 	protected ByteString createSubMap(int from, int to) throws IOException {
 		// Populate new hashMap from ranges provided
-		ConcurrentHashMap<ByteString, VersionedValue> newMap = new ConcurrentHashMap<ByteString, VersionedValue>();
+		ConcurrentHashMap<ByteString, VersionedValue> newMap = new ConcurrentHashMap<>();
 		Object[] keySet = copyMap.keySet().toArray();
 
 		// Map has changed since beginning of recursion, abort
@@ -59,21 +59,18 @@ public class SendReplication implements Runnable {
 			e.printStackTrace();
 		}
 
-		Msg dupeMsg = ProtocolBufferKeyValueStoreRequest.generateDupesRequest(value, ByteString.copyFrom(messageID));
+		Msg dupeMsg = ProtocolBufferKeyValueStoreRequest.generateDupesRequest(
+		    value, ByteString.copyFrom(messageID));
 
-		// TODO: decide if we want retries based on response
-		// Note: currently, UDPClient handles retries and blocks waiting for response
-
+		// send duplication request optimistically, doesn't wait for response
 		try {
-			UDPClient.sendProtocolBufferRequest(
-				    dupeMsg.toByteArray(),
-	                sendLocation.getAddress().getHostAddress(),
-	                sendLocation.getPort(),
-	                messageID);
+			UDPClient.sendReplicaRequest(
+                dupeMsg.toByteArray(),
+                sendLocation.getAddress().getHostAddress(),
+                sendLocation.getPort());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	protected void serveReplication(int from, int mid, int to) {

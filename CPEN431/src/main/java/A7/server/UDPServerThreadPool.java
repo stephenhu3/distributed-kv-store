@@ -218,21 +218,18 @@ public class UDPServerThreadPool {
 			MsgWrapper secondSuccessorNode = ConsistentHashRing.getInstance()
 				.getHashRing().get(secondSuccessorKey);
 
-			// TODO: decide if we want retries based on response
-			// Note: currently, UDPClient handles retries and blocks waiting for response
+			// send out replica requests to two successors optimistically, doesn't wait for response
 			try {
-				UDPClient.sendProtocolBufferRequest(
+				UDPClient.sendReplicaRequest(
                     replicateMsg.toByteArray(),
                     firstSuccessorNode.getAddress().getHostAddress(),
-                    firstSuccessorNode.getPort(),
-                    messageID);
+                    firstSuccessorNode.getPort());
 
-                UDPClient.sendProtocolBufferRequest(
+                UDPClient.sendReplicaRequest(
                     replicateMsg.toByteArray(),
                     secondSuccessorNode.getAddress().getHostAddress(),
-                    secondSuccessorNode.getPort(),
-                    messageID);
-			} catch (Exception e) {
+                    secondSuccessorNode.getPort());
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
         }

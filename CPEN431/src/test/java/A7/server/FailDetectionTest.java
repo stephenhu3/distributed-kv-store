@@ -1,24 +1,19 @@
 package A7.server;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static A7.DistributedSystemConfiguration.REP_FACTOR;
 import static org.junit.Assert.assertEquals;
-
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import A7.core.ConsistentHashRing;
 import A7.core.NodesList;
 import A7.utils.MsgWrapper;
 import A7.utils.UniqueIdentifier;
-import A7.server.GossipSenderThread;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 public class FailDetectionTest {
     ConsistentHashRing hashRing;
     NodesList nodesList;
@@ -73,7 +68,7 @@ public class FailDetectionTest {
     }
 
     @org.junit.Test
-    public void predessorsDuplicateTest() throws NoSuchAlgorithmException, SocketException, UnknownHostException {
+    public void predecessorsDuplicateTest() throws NoSuchAlgorithmException, SocketException, UnknownHostException {
         String downedNode = UniqueIdentifier.MD5Hash("128.208.4.101:11300");
         Entry<String, MsgWrapper> entry = hashRing.getInstance().getHashRing().higherEntry(downedNode);
         if (entry == null) {
@@ -99,7 +94,7 @@ public class FailDetectionTest {
     }
 
     @org.junit.Test
-    public void predessorsDuplicateTest2() throws NoSuchAlgorithmException, SocketException, UnknownHostException {
+    public void predecessorsDuplicateTest2() throws NoSuchAlgorithmException, SocketException, UnknownHostException {
         String downedNode = UniqueIdentifier.MD5Hash("128.208.4.101:11300");
         // Remove second in line of dead node to get 2 in a row dead nodes
         Entry<String, MsgWrapper> entry = hashRing.getInstance().getHashRing().higherEntry(downedNode);
