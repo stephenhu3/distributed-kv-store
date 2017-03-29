@@ -1,41 +1,41 @@
 package A7.server;
 
 import static A7.DistributedSystemConfiguration.MAX_REP_PAYLOAD_SIZE;
-import static A7.utils.Checksum.calculateProtocolBufferChecksum;
 import static A7.utils.UniqueIdentifier.generateUniqueID;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ConcurrentHashMap;
 import com.google.protobuf.ByteString;
+
 import A7.client.UDPClient;
 import A7.core.KeyValueStoreSingleton;
 import A7.core.VersionedValue;
-import A7.proto.KeyValueRequest.KVRequest;
 import A7.proto.Message.Msg;
 import A7.resources.ProtocolBufferKeyValueStoreRequest;
 import A7.utils.MsgWrapper;
 
 public class SendReplication implements Runnable {    
 	MsgWrapper sendLocation;
-	
+	ConcurrentHashMap<ByteString, VersionedValue> copyMap;
 	public SendReplication(MsgWrapper received) {
 		this.sendLocation = received;
+		copyMap = new ConcurrentHashMap<ByteString, VersionedValue>();
+		copyMap.putAll(KeyValueStoreSingleton.getInstance().getMap());
 	}
 
 	// create submap from index "from" to index "to" (exclusive)
 	protected ByteString createSubMap(int from, int to) throws IOException {
 		// Populate new hashMap from ranges provided
 		ConcurrentHashMap<ByteString, VersionedValue> newMap = new ConcurrentHashMap<ByteString, VersionedValue>();
-		Object[] keySet = KeyValueStoreSingleton.getInstance().getMap().keySet().toArray();
-		for(int i = from; i < to; i++) {
+		Object[] keySet = copyMap.keySet().toArray();
+
+		// Map has changed since beginning of recursion, abort
+		for (int i = from; i < to; i++) {
 			newMap.put((ByteString) keySet[i],
-				KeyValueStoreSingleton.getInstance().getMap().get(keySet[i]));
+					copyMap.get(keySet[i]));
 		}
 		// Nothing in range to serialize; return null
 		// (ie. do not serialize the HashMap object itself if there are no keys inside)
@@ -49,7 +49,7 @@ public class SendReplication implements Runnable {
         out.flush();
         return ByteString.copyFrom(bos.toByteArray());
 	}
-	
+
 	protected void sendDupeRequestMsg(ByteString value) {
 		byte[] messageID = new byte[0];
 
@@ -58,12 +58,12 @@ public class SendReplication implements Runnable {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-		
+
 		Msg dupeMsg = ProtocolBufferKeyValueStoreRequest.generateDupesRequest(value, ByteString.copyFrom(messageID));
 
 		// TODO: decide if we want retries based on response
 		// Note: currently, UDPClient handles retries and blocks waiting for response
-		DatagramSocket socket = null;
+
 		try {
 			UDPClient.sendProtocolBufferRequest(
 				    dupeMsg.toByteArray(),
@@ -82,7 +82,7 @@ public class SendReplication implements Runnable {
 			
 			if (headPayload != null) {
 				if (headPayload.size() > MAX_REP_PAYLOAD_SIZE) {
-					int midKey = (mid - from) / 2;
+					int midKey = from + (mid - from) / 2;
 					serveReplication(from, midKey, mid);
 				} else if (headPayload.size() != 0) {
 					sendDupeRequestMsg(headPayload);
@@ -93,7 +93,7 @@ public class SendReplication implements Runnable {
 			
 			if (tailPayload != null) {
 				if (tailPayload.size() > MAX_REP_PAYLOAD_SIZE) {
-					int midKey = (to - mid) / 2;
+					int midKey = mid + (to - mid) / 2 ;
 					serveReplication(mid, midKey, to);
 				} else if (headPayload.size() != 0) {
 					sendDupeRequestMsg(tailPayload);
@@ -106,7 +106,7 @@ public class SendReplication implements Runnable {
 	
     @Override
     public void run() {
-    	Object[] keySet = KeyValueStoreSingleton.getInstance().getMap().keySet().toArray();
+    	Object[] keySet = copyMap.keySet().toArray();
     	int from = 0;
     	int mid = keySet.length;
     	int to = keySet.length;
