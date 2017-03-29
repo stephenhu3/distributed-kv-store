@@ -84,7 +84,7 @@ public class ConsistentHashRing {
             }
         }
         
-        if (hashRing.isEmpty() || key.isEmpty()) {
+        if (hashRing.isEmpty() || key == null || key.isEmpty()) {
             return new MsgWrapper(null, null, 0);
         }
         String hashKey = UniqueIdentifier.MD5Hash(key.toStringUtf8());
