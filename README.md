@@ -52,7 +52,7 @@ available commands include the following:
 
 '-value': Value to send (as a HEX string)
 
-# Building package:
+# Building package
 `mvn package`
 
 # Testing
