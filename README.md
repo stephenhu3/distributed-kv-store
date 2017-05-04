@@ -1,8 +1,10 @@
-#Multiple nodes topology
+# Multi-node Topology
 
-Implements a gossiping algorithm for communicating group membership. Consistent hashing is used for fault-tolerance and maintaining a replication factor of 3.
+This distributed key value store implements a gossiping algorithm for communicating group membership.
 
-# Starting the KV store server
+Consistent hashing is used partioning and maintaining a replication factor of 3.
+
+# Server: Starting the KV store
 `java -jar -Xmx64m target/CPEN431-1.0.jar spawn -name test -port 10129`
 
 # Usage
@@ -15,7 +17,8 @@ Required Flags:
 
 '-port': Port number to host server
 
-# Sending client requests
+# Client: Sending requests
+e.g.
 `java -jar target/CPEN431-1.0.jar kv -ip 127.0.0.1 -port 10129 -cmd put -key 270F -value 270F`
 
 # Usage
