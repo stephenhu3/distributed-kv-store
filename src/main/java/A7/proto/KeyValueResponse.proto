@@ -1,0 +1,9 @@
+syntax = "proto2";
+option java_outer_classname = "KeyValueResponse";
+
+message KVResponse {
+    required uint32 errCode = 1;
+    optional bytes value = 2;
+    optional int32 pid = 3;
+    optional int32 version =  4;
+}
