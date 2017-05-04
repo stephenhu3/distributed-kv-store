@@ -1,4 +1,8 @@
-# Starting the KV store server
+# Single Node Topology
+
+This implementation features a single, consistent master.
+
+# Server: Starting the KV store
 `java -jar -Xmx64m target/CPEN431-1.0.jar spawn -name test -port 10129`
 
 # Usage
@@ -11,8 +15,8 @@ Required Flags:
 
 '-port': Port number to host server
 
-# Sending client KV request
-`java -jar target/CPEN431-1.0.jar kv -ip 127.0.0.1 -port 10129 -cmd put -key 270F -value 270F`
+# Client: Sending request
+e.g. `java -jar target/CPEN431-1.0.jar kv -ip 127.0.0.1 -port 10129 -cmd put -key 270F -value 270F`
 
 # Usage
 Argument:
