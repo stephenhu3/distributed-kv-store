@@ -1,4 +1,0 @@
-logging:
-  level: INFO
-  loggers:
-    s31580129: DEBUG

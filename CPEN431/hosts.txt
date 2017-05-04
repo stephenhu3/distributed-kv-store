@@ -1,3 +1,0 @@
-ec2-52-89-90-28.us-west-2.compute.amazonaws.com:10696
-ec2-35-165-207-125.us-west-2.compute.amazonaws.com:10696
-ec2-52-42-120-169.us-west-2.compute.amazonaws.com:10696

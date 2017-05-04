@@ -1,6 +1,0 @@
-syntax = "proto2";
-option java_outer_classname = "LiveHostsRequest";
-
-message LiveHostsReq {
-    required bytes liveHosts = 1;
-}

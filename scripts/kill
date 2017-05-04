@@ -1,5 +1,0 @@
-#!/bin/bash
-
-ps -ef | grep -E '(A4|ARun)' | grep "java -jar"
-ps -ef | grep CPEN431 | grep "java" | grep -v grep | awk '{print $2}' | xargs kill -9
-ps -ef | grep A4 | grep "java" | grep -v grep | awk '{print $2}' | xargs kill -9
