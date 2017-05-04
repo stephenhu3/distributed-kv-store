@@ -1,8 +1,8 @@
 # Multi-node Topology
 
-This distributed key value store implements a gossiping algorithm for communicating group membership.
+This distributed key value store follows at-most-once semantics (core/RequestCache.java) and implements a gossiping algorithm for communicating group membership (`server/GossipReceiverThread.java`, `server/GossipSenderThread.java`).
 
-Consistent hashing is used partioning and maintaining a replication factor of 3.
+Consistent hashing facilitates partioning and replication (`core/ConsistentHashRing.java`).
 
 # Server: Starting the KV store
 `java -jar -Xmx64m target/CPEN431-1.0.jar spawn -name test -port 10129`
