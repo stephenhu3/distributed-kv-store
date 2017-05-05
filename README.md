@@ -1,6 +1,6 @@
 # Multi-node Topology
 
-This distributed key value store follows at-most-once semantics (core/RequestCache.java) and implements a gossiping algorithm for communicating group membership (`server/GossipReceiverThread.java`, `server/GossipSenderThread.java`).
+This distributed key value store follows at-most-once semantics (`core/RequestCache.java`) and implements a gossiping algorithm for communicating group membership (`server/GossipReceiverThread.java`, `server/GossipSenderThread.java`).
 
 Consistent hashing facilitates partioning and replication (`core/ConsistentHashRing.java`).
 
